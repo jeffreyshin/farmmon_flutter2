@@ -81,7 +81,7 @@ class MyBody extends StatelessWidget {
             const Text('1. iot포털 환경데이터 가져오기', style: TextStyle(fontSize: 15),),
             const Text('2. 환경데이터 파일 작성', style: TextStyle(fontSize: 15),),
             const Text('3. 탄저병 예측 API호출', style: TextStyle(fontSize: 15),),
-            const Text('4. 예측결과를 출력', style: TextStyle(fontSize: 15),),
+            const Text('4. 예측결과를 출력합니다.', style: TextStyle(fontSize: 15),),
           ],
         )
     );
