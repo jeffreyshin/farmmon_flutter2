@@ -4,8 +4,9 @@
 - 충남 논산딸기연구소의 모델을 사용함
 
 1. Layout: 품목을 좌측메뉴에 놓고 품목을 선택하면 우측창에 병해충별 위험도를 나타냄
-2. fl_chart를 이용하여 날짜별 막대그래프로 위험도 표시
-3. HTTP API호출은 get만 되고, post 메소드는 routing error 발생.. param이나 file전송 어떻게 하는지 모르겠음
+2. 좌측창의 아이콘 품목아이콘으로 수정할 것
+3. 우측창에는 fl_chart를 이용하여 날짜별 막대그래프로 위험도 표시
+4. HTTP API호출은 get만 되고, post 메소드는 routing error 발생.. param이나 file전송 어떻게 하는지 모르겠음
 
 ## Getting Started
 
