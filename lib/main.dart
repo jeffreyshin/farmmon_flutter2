@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:http/http.dart' as http;
 
 void main() {
   runApp(MyApp());
@@ -69,6 +72,10 @@ class _MyHomePageState extends State<MyHomePage> {
       case 2:
         page = MyBarChart();
         break;
+      case 3:
+        page = MyAPI();
+        break;
+
       default:
         throw UnimplementedError('no widget for $selectedIndex');
     }
@@ -92,6 +99,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   NavigationRailDestination(
                     icon: Icon(Icons.home),
                     label: Text('파프리카'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.mobile_friendly),
+                    label: Text('오이'),
                   ),
                 ],
                 selectedIndex: selectedIndex,
@@ -274,6 +285,37 @@ class MyBarChart extends StatelessWidget {
                 BarChartRodData(toY: 21, width: 15, color: Colors.amber),
               ]),
             ])),
+      ),
+    );
+  }
+}
+
+class MyAPI extends StatelessWidget {
+  const MyAPI({Key? key}) : super(key: key);
+
+  void _callAPI() async {
+    var serviceKey = 'Mhl9mL16kvqOfLoUJxorRFlPrkeLeO%2FoTgVPBEjFs4pj73UcWtPnsTpOikSTt1Xu9tSM7%2ByzbcMh4WyL7TGypA%3D%3D';
+    var PNU_Code = '4215034022100050000';
+
+    var url = Uri.parse('http://apis.data.go.kr/1390802/SoilEnviron/SoilCharacSctnn/getSoilCharacterSctnn?serviceKey=${serviceKey}&PNU_Code=${PNU_Code}');
+    var response = await http.get(url);
+
+    print('Response status: ${response.statusCode}');
+    print('Response status: ${response.headers}');
+    print('Response body: ${response.body}');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('API Example'),
+      ),
+      body: Center(
+        child: ElevatedButton(
+          onPressed: _callAPI,
+          child: const Text('Call API'),
+        ),
       ),
     );
   }
