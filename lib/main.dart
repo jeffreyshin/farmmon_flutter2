@@ -98,11 +98,11 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
                   NavigationRailDestination(
                     icon: Icon(Icons.home),
-                    label: Text('파프리카'),
+                    label: Text('그래프'),
                   ),
                   NavigationRailDestination(
                     icon: Icon(Icons.mobile_friendly),
-                    label: Text('오이'),
+                    label: Text('API'),
                   ),
                 ],
                 selectedIndex: selectedIndex,
