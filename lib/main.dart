@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:english_words/english_words.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -7,6 +5,8 @@ import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
+import 'dart:convert';
+
 
 void main() {
   runApp(MyApp());
@@ -251,11 +251,11 @@ class MyBarChart extends StatelessWidget {
         child: BarChart(BarChartData(
             borderData: FlBorderData(
                 border: const Border(
-                  top: BorderSide.none,
-                  right: BorderSide.none,
-                  left: BorderSide(width: 1),
-                  bottom: BorderSide(width: 1),
-                )),
+              top: BorderSide.none,
+              right: BorderSide.none,
+              left: BorderSide(width: 1),
+              bottom: BorderSide(width: 1),
+            )),
             groupsSpace: 10,
 
             // add bars
@@ -294,15 +294,34 @@ class MyAPI extends StatelessWidget {
   const MyAPI({Key? key}) : super(key: key);
 
   void _callAPI() async {
-    var serviceKey = 'Mhl9mL16kvqOfLoUJxorRFlPrkeLeO%2FoTgVPBEjFs4pj73UcWtPnsTpOikSTt1Xu9tSM7%2ByzbcMh4WyL7TGypA%3D%3D';
-    var PNU_Code = '4215034022100050000';
+    var url_tech = 'http://147.46.206.95:7890/SNFD';
 
-    var url = Uri.parse('http://apis.data.go.kr/1390802/SoilEnviron/SoilCharacSctnn/getSoilCharacterSctnn?serviceKey=${serviceKey}&PNU_Code=${PNU_Code}');
-    var response = await http.get(url);
+    var mPH = 5.4;
+    var mEC = 3.6;
+    var mNO3 = 179;
+    var mPO4 = 155;
+    var mEH = 370;
+    var mSO4 = 250;
+    var mCL = 100;
+    var mCROP = "good";
 
-    print('Response status: ${response.statusCode}');
-    print('Response status: ${response.headers}');
-    print('Response body: ${response.body}');
+    http.Response response = await http.post(
+      Uri.parse(url_tech),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'mPH': 5.4,
+        'mEC': 3.6,
+        'mNO3': 179,
+        'mPO4': 155,
+        'mEH': 370,
+        'mSO4': 250,
+        'mCL': 100,
+        'mCROP': "good"
+      }),
+    );
+    print(response.body);
   }
 
   @override
@@ -320,3 +339,4 @@ class MyAPI extends StatelessWidget {
     );
   }
 }
+
