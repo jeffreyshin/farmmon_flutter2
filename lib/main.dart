@@ -296,15 +296,6 @@ class MyAPI extends StatelessWidget {
   void _callAPI() async {
     var url_tech = 'http://147.46.206.95:7890/SNFD';
 
-    var mPH = 5.4;
-    var mEC = 3.6;
-    var mNO3 = 179;
-    var mPO4 = 155;
-    var mEH = 370;
-    var mSO4 = 250;
-    var mCL = 100;
-    var mCROP = "good";
-
     http.Response response = await http.post(
       Uri.parse(url_tech),
       headers: <String, String>{
