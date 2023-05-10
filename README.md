@@ -8,6 +8,12 @@
 3. 우측창에는 fl_chart를 이용하여 날짜별 막대그래프로 위험도 표시
 4. HTTP API post SNFD로 확인 완료. file도 비슷하게 하면 될듯
 5. file post는 http대신 dio를 쓴다고 함
+6. json 피싱처리 작업
+7. iot호출 기상파일 만들기
+
+
+
+
 
 var response = await dio.post(
 '주소',
@@ -31,8 +37,9 @@ For help getting started with Flutter development, view the
 samples, guidance on mobile development, and a full API reference.
      ![Screenshot_20230511-001319](https://github.com/jeffreyshin/farmmon_flutter/assets/6800894/3785e0d1-d55f-4752-ab0a-08954c959c57)
                   
-                  
-                  
+             
+             
+.                  
                   
                   
                 
