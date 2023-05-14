@@ -94,7 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 labelType: NavigationRailLabelType.all,
                 destinations: [
                   NavigationRailDestination(
-                    icon: Icon(FontAwesomeIcons.apple),
+                    icon: Icon(FontAwesomeIcons.appleWhole),
                     label: Text('딸기'),
                   ),
                   NavigationRailDestination(
