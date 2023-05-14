@@ -98,11 +98,11 @@ class _MyHomePageState extends State<MyHomePage> {
                     label: Text('딸기'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(FontAwesomeIcons.lemon),
+                    icon: Icon(FontAwesomeIcons.solidLemon),
                     label: Text('토마토'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(FontAwesomeIcons.tractor),
+                    icon: Icon(FontAwesomeIcons.carrot),
                     label: Text('파프리카'),
                   ),
                   NavigationRailDestination(
