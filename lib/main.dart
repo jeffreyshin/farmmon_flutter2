@@ -9,6 +9,8 @@ import 'dart:convert';
 import 'package:farmmon_flutter/icons/custom_icons_icons.dart';
 import 'package:dio/dio.dart';
 import 'dart:io';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 
 void main() {
   runApp(MyApp());
@@ -92,19 +94,19 @@ class _MyHomePageState extends State<MyHomePage> {
                 labelType: NavigationRailLabelType.all,
                 destinations: [
                   NavigationRailDestination(
-                    icon: Icon(Icons.home),
+                    icon: Icon(FontAwesomeIcons.apple),
                     label: Text('딸기'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.favorite),
+                    icon: Icon(FontAwesomeIcons.lemon),
                     label: Text('토마토'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.mobile_friendly),
+                    icon: Icon(FontAwesomeIcons.tractor),
                     label: Text('파프리카'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.mail),
+                    icon: Icon(FontAwesomeIcons.pepperHot),
                     label: Text('사과'),
                   ),
                 ],
@@ -152,10 +154,6 @@ class GeneratorPage extends StatelessWidget {
           SizedBox(height: 10),
           Text('$formatDate'),
           SizedBox(height: 10),
-          Text('1. iot포털 환경데이터 가져오기', style: TextStyle(fontSize: 15),),
-          Text('2. 환경데이터 파일 작성', style: TextStyle(fontSize: 15),),
-          Text('3. 탄저병 예측 API호출', style: TextStyle(fontSize: 15),),
-          Text('4. 예측결과를 출력합니다.', style: TextStyle(fontSize: 15),),
           SizedBox(height: 20),
           Expanded(
             child: MyBarChart(),
