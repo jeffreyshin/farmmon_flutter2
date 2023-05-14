@@ -6,6 +6,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:farmmon_flutter/icons/custom_icons_icons.dart';
 
 
 void main() {
@@ -89,20 +90,20 @@ class _MyHomePageState extends State<MyHomePage> {
                 extended: constraints.maxWidth >= 600,
                 destinations: [
                   NavigationRailDestination(
-                    icon: Icon(Icons.apple),
+                    icon: Icon(CustomIcons.strawberry),
                     label: Text('딸기'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.favorite),
+                    icon: Icon(CustomIcons.tomato),
                     label: Text('토마토'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.home),
-                    label: Text('그래프'),
+                    icon: Icon(CustomIcons.banana),
+                    label: Text('파프리카'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.mobile_friendly),
-                    label: Text('API'),
+                    icon: Icon(CustomIcons.apple),
+                    label: Text('사과'),
                   ),
                 ],
                 selectedIndex: selectedIndex,
@@ -293,8 +294,32 @@ class MyAPI extends StatelessWidget {
   const MyAPI({Key? key}) : super(key: key);
 
   void _callAPI() async {
-    var url_tech = 'http://147.46.206.95:7890/SNFD';
+    var urltech = 'http://147.46.206.95:7890/SNFD';
+    var urliot = 'http://iot.rda.go.kr/api';
+    var apikey = 'r34df5d2d566049e2a809c41da915adc6';
 
+
+    var now = new DateTime.now();
+    String formatDate = DateFormat('yyMMdd').format(now);
+    String formatTime = DateFormat('HH').format(now);
+    var deltaT = int.parse(formatTime);
+    var deltaT12 = deltaT % 12;
+    print(deltaT+deltaT12);
+    print('$formatDate');
+    print('$formatTime');
+
+    for (var i=0; i<deltaT+deltaT12; i++) {
+      var urliot2 = "${urliot}/${apikey}/${formatDate}/12";
+      print(urliot2);
+      var uriiot = Uri.parse(urliot2);
+      http.Response response = await http.get(uriiot);
+      print(response.headers);
+      print(response.statusCode);
+      print(response.body);
+      print(response.runtimeType);
+
+    }
+/*
     http.Response response = await http.post(
       Uri.parse(url_tech),
       headers: <String, String>{
@@ -311,7 +336,7 @@ class MyAPI extends StatelessWidget {
         'mCROP': "good"
       }),
     );
-    print(response.body);
+ */
   }
 
   @override
