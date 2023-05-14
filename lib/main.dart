@@ -7,7 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:farmmon_flutter/icons/custom_icons_icons.dart';
-
+import 'package:dio/dio.dart';
+import 'dart:io';
 
 void main() {
   runApp(MyApp());
@@ -87,22 +88,23 @@ class _MyHomePageState extends State<MyHomePage> {
           children: [
             SafeArea(
               child: NavigationRail(
-                extended: constraints.maxWidth >= 600,
+///                extended: constraints.maxWidth >= 600,
+                labelType: NavigationRailLabelType.all,
                 destinations: [
                   NavigationRailDestination(
-                    icon: Icon(CustomIcons.strawberry),
+                    icon: Icon(Icons.home),
                     label: Text('딸기'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(CustomIcons.tomato),
+                    icon: Icon(Icons.favorite),
                     label: Text('토마토'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(CustomIcons.banana),
+                    icon: Icon(Icons.mobile_friendly),
                     label: Text('파프리카'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(CustomIcons.apple),
+                    icon: Icon(Icons.mail),
                     label: Text('사과'),
                   ),
                 ],
@@ -295,15 +297,17 @@ class MyAPI extends StatelessWidget {
 
   void _callAPI() async {
     var urltech = 'http://147.46.206.95:7890/SNFD';
+    var urlanthracnose = 'http://147.46.206.95:7897/Anthracnose';
     var urliot = 'http://iot.rda.go.kr/api';
     var apikey = 'r34df5d2d566049e2a809c41da915adc6';
 
-
+/*
     var now = new DateTime.now();
     String formatDate = DateFormat('yyMMdd').format(now);
     String formatTime = DateFormat('HH').format(now);
     var deltaT = int.parse(formatTime);
     var deltaT12 = deltaT % 12;
+    deltaT = 24;
     print(deltaT+deltaT12);
     print('$formatDate');
     print('$formatTime');
@@ -319,9 +323,20 @@ class MyAPI extends StatelessWidget {
       print(response.runtimeType);
 
     }
+*/
+    var dio = Dio();
+    var file = './usem.csv';
+    var response = await dio.post(
+        urlanthracnose,
+        data: FormData.fromMap({
+          'file':file,
+        })
+    );
+    print(response.statusCode);
+
 /*
     http.Response response = await http.post(
-      Uri.parse(url_tech),
+      Uri.parse(urltech),
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -336,7 +351,7 @@ class MyAPI extends StatelessWidget {
         'mCROP': "good"
       }),
     );
- */
+*/
   }
 
   @override
