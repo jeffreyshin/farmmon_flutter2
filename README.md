@@ -36,7 +36,7 @@ For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 
-![Screenshot_20230515-134357](https://github.com/jeffreyshin/farmmon_flutter/assets/6800894/39b65be9-f3c1-4278-ac80-ee93ff5e8258){: width="10%" height="30%"}
+![Screenshot_20230515-134357](https://github.com/jeffreyshin/farmmon_flutter/assets/6800894/39b65be9-f3c1-4278-ac80-ee93ff5e8258)
 
              
              
