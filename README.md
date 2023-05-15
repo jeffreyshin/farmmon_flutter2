@@ -11,9 +11,7 @@
 6. json 피싱처리 작업
 7. iot호출 기상파일 만들기
 
-
-
-
+Future<String> uploadImage(File file) async { String fileName = file.path.split('/').last; FormData formData = FormData.fromMap({ "file": await MultipartFile.fromFile(file.path, filename:fileName), }); response = await dio.post("/info", data: formData); return response.data['id']; }
 
 var response = await dio.post(
 '주소',
