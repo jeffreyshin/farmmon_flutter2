@@ -1,4 +1,5 @@
 import 'package:english_words/english_words.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
@@ -11,6 +12,11 @@ import 'package:dio/dio.dart';
 import 'dart:io';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+
+/////////////////////////////////////
+final custom_dt = <String>['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'];
+final temperature = <String>['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'];
+//////////////////////////////////////
 
 void main() {
   runApp(MyApp());
@@ -37,7 +43,9 @@ class MyApp extends StatelessWidget {
 
 class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
-
+  void getData()  {
+    notifyListeners();
+  }
   void getNext() {
     current = WordPair.random();
     notifyListeners();
@@ -132,6 +140,90 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class GeneratorPage extends StatelessWidget {
+
+/////////////////////////////////////////////////////
+
+  void _callAPI() async {
+    var urltech = 'http://147.46.206.95:7890/SNFD';
+    var urlanthracnose = 'http://147.46.206.95:7897/Anthracnose';
+    var urliot = 'http://iot.rda.go.kr/api';
+    var apikey = 'r34df5d2d566049e2a809c41da915adc6';
+
+    /// iot포털 테스트
+    var now = new DateTime.now();
+    String formatDate = DateFormat('yyyyMMdd').format(now);
+    String formatTime = DateFormat('HH').format(now);
+    var urliot2 = "$urliot/$apikey/$formatDate/$formatTime";
+    var uriiot = Uri.parse(urliot2);
+
+    final custom_dt = <String>[];
+    final humidity = <String>[];
+///    final temperature = <String>[];
+    final cotwo = <String>[];
+    final leafwet = <String>[];
+    final gtemperature = <String>[];
+    final quantum = <String>[];
+
+    var deltaT = int.parse(formatTime);
+    var deltaT12 = deltaT % 12;
+    deltaT = 24;
+    if (deltaT < 12) deltaT = deltaT + 12;
+    ///print(deltaT+deltaT12);
+    ///print('$formatDate');
+    ///print('$formatTime');
+    temperature.clear();
+    custom_dt.clear();
+    for (var i=0; i<deltaT+deltaT12; i++) {
+      now = now.subtract(Duration(hours:1));
+      String formatDate = DateFormat('yyyyMMdd').format(now);
+      String formatTime = DateFormat('HH').format(now);
+      urliot2 = "${urliot}/${apikey}/${formatDate}/${formatTime}";
+      ///print(urliot2);
+      uriiot = Uri.parse(urliot2);
+      http.Response response = await http.get(uriiot);
+      ///    Map<String, dynamic> usem = jsonDecode(response.body);
+
+      var json_obj = jsonDecode(response.body);
+      ///print(response.body);
+
+      custom_dt.add(json_obj['datas'][0]['custom_dt']);
+      humidity.add(json_obj['datas'][0]['humidity']);
+      temperature.add(json_obj['datas'][0]['temperature']);
+      leafwet.add(json_obj['datas'][0]['leafwet']);
+      cotwo.add(json_obj['datas'][0]['cotwo']);
+      gtemperature.add(json_obj['datas'][0]['gtemperature']);
+      quantum.add(json_obj['datas'][0]['quantum']);
+
+      ///print(json_obj);
+    }
+    print(custom_dt);
+    print(temperature);
+
+
+    http.Response response = await http.post(
+      Uri.parse(urltech),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'mPH': 5.4,
+        'mEC': 3.6,
+        'mNO3': 179,
+        'mPO4': 155,
+        'mEH': 370,
+        'mSO4': 250,
+        'mCL': 100,
+        'mCROP': "good"
+      }),
+    );
+    print(response.statusCode);
+    print(response.headers);
+    print(response.body);
+
+  }
+
+/////////////////////////////////////////////////////
+
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
@@ -143,7 +235,7 @@ class GeneratorPage extends StatelessWidget {
     } else {
       icon = Icons.favorite_border;
     }
-    var now = new DateTime.now();
+    var now = DateTime.now();
     String formatDate = DateFormat('yy년 MM월 dd일').format(now);
     return Center(
       child: Column(
@@ -158,14 +250,22 @@ class GeneratorPage extends StatelessWidget {
           Expanded(
             child: MyBarChart(),
           ),
+          SizedBox(width: 10),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               ElevatedButton(
                 onPressed: () {
+                  _callAPI();
+                },
+                child: const Text('자료불러오기'),
+              ),
+              SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: () {
                   appState.toggleFavorite();
                 },
-                child: Text('전날'),
+                child: Text('자료보기'),
               ),
               SizedBox(width: 10),
               ElevatedButton(
@@ -245,11 +345,12 @@ class MyBarChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return Padding(
       padding: const EdgeInsets.all(30),
       // implement the bar chart
       child: BarChart(BarChartData(
-          maxY: 25,
+          maxY: 40,
           borderData: FlBorderData(
               border: const Border(
                 top: BorderSide.none,
@@ -262,33 +363,46 @@ class MyBarChart extends StatelessWidget {
           // add bars
           barGroups: [
             BarChartGroupData(x: 1, barRods: [
-              BarChartRodData(toY: 10, width: 15, color: Colors.amber),
+              BarChartRodData(toY: double.parse(temperature[11]), width: 15, color: Colors.amber),
             ]),
             BarChartGroupData(x: 2, barRods: [
-              BarChartRodData(toY: 9, width: 15, color: Colors.amber),
+              BarChartRodData(toY: double.parse(temperature[10]), width: 15, color: Colors.amber),
             ]),
             BarChartGroupData(x: 3, barRods: [
-              BarChartRodData(toY: 4, width: 15, color: Colors.amber),
+              BarChartRodData(toY: double.parse(temperature[9]), width: 15, color: Colors.amber),
             ]),
             BarChartGroupData(x: 4, barRods: [
-              BarChartRodData(toY: 2, width: 15, color: Colors.amber),
+              BarChartRodData(toY: double.parse(temperature[8]), width: 15, color: Colors.amber),
             ]),
             BarChartGroupData(x: 5, barRods: [
-              BarChartRodData(toY: 13, width: 15, color: Colors.amber),
+              BarChartRodData(toY: double.parse(temperature[7]), width: 15, color: Colors.amber),
             ]),
             BarChartGroupData(x: 6, barRods: [
-              BarChartRodData(toY: 17, width: 15, color: Colors.amber),
+              BarChartRodData(toY: double.parse(temperature[6]), width: 15, color: Colors.amber),
             ]),
             BarChartGroupData(x: 7, barRods: [
-              BarChartRodData(toY: 19, width: 15, color: Colors.amber),
+              BarChartRodData(toY: double.parse(temperature[5]), width: 15, color: Colors.amber),
             ]),
             BarChartGroupData(x: 8, barRods: [
-              BarChartRodData(toY: 21, width: 15, color: Colors.amber),
+              BarChartRodData(toY: double.parse(temperature[4]), width: 15, color: Colors.amber),
+            ]),
+            BarChartGroupData(x: 9, barRods: [
+              BarChartRodData(toY: double.parse(temperature[3]), width: 15, color: Colors.amber),
+            ]),
+            BarChartGroupData(x: 10, barRods: [
+              BarChartRodData(toY: double.parse(temperature[2]), width: 15, color: Colors.amber),
+            ]),
+            BarChartGroupData(x: 11, barRods: [
+              BarChartRodData(toY: double.parse(temperature[1]), width: 15, color: Colors.amber),
+            ]),
+            BarChartGroupData(x: 12, barRods: [
+              BarChartRodData(toY: double.parse(temperature[0]), width: 15, color: Colors.amber),
             ]),
           ])),
     );
   }
 }
+
 
 class MyAPI extends StatelessWidget {
   const MyAPI({Key? key}) : super(key: key);
@@ -299,40 +413,96 @@ class MyAPI extends StatelessWidget {
     var urliot = 'http://iot.rda.go.kr/api';
     var apikey = 'r34df5d2d566049e2a809c41da915adc6';
 
-/*
+/// iot포털 테스트
     var now = new DateTime.now();
-    String formatDate = DateFormat('yyMMdd').format(now);
+    String formatDate = DateFormat('yyyyMMdd').format(now);
     String formatTime = DateFormat('HH').format(now);
+    var urliot2 = "${urliot}/${apikey}/${formatDate}/${formatTime}";
+    var uriiot = Uri.parse(urliot2);
+
+    final custom_dt = <String>[];
+    final humidity = <String>[];
+    final temperature = <String>[];
+    final cotwo = <String>[];
+    final leafwet = <String>[];
+    final gtemperature = <String>[];
+    final quantum = <String>[];
+
     var deltaT = int.parse(formatTime);
     var deltaT12 = deltaT % 12;
     deltaT = 24;
-    print(deltaT+deltaT12);
-    print('$formatDate');
-    print('$formatTime');
+    if (deltaT < 12) deltaT = deltaT + 12;
+    ///print(deltaT+deltaT12);
+    ///print('$formatDate');
+    ///print('$formatTime');
+    now = now.subtract(Duration(hours:deltaT+deltaT12));
 
     for (var i=0; i<deltaT+deltaT12; i++) {
-      var urliot2 = "${urliot}/${apikey}/${formatDate}/12";
-      print(urliot2);
-      var uriiot = Uri.parse(urliot2);
+      now = now.add(Duration(hours:1));
+      String formatDate = DateFormat('yyyyMMdd').format(now);
+      String formatTime = DateFormat('HH').format(now);
+      urliot2 = "${urliot}/${apikey}/${formatDate}/${formatTime}";
+      ///print(urliot2);
+      uriiot = Uri.parse(urliot2);
       http.Response response = await http.get(uriiot);
-      print(response.headers);
-      print(response.statusCode);
-      print(response.body);
-      print(response.runtimeType);
+      ///    Map<String, dynamic> usem = jsonDecode(response.body);
 
+      var json_obj = jsonDecode(response.body);
+      ///print(response.body);
+
+      custom_dt.add(json_obj['datas'][0]['custom_dt']);
+      humidity.add(json_obj['datas'][0]['humidity']);
+      temperature.add(json_obj['datas'][0]['temperature']);
+      leafwet.add(json_obj['datas'][0]['leafwet']);
+      cotwo.add(json_obj['datas'][0]['cotwo']);
+      gtemperature.add(json_obj['datas'][0]['gtemperature']);
+      quantum.add(json_obj['datas'][0]['quantum']);
+
+      ///print(json_obj);
     }
-*/
-    var dio = Dio();
-    var file = './usem.csv';
-    var response = await dio.post(
-        urlanthracnose,
-        data: FormData.fromMap({
-          'file':file,
-        })
-    );
-    print(response.statusCode);
+    print(custom_dt);
+    print(temperature);
 
+/*  마지막으로 테스트한 코드
+    var imagePath = './lib/usem.csv';
+    File imageFile = File(imagePath);
+    List<int> imageBytes = imageFile.readAsBytesSync();
+    String base64Image = base64Encode(imageBytes);
+    print(base64Image);
+    Uri url = Uri.parse(urlanthracnose);
+    http.Response response = await http.post(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      }, // this header is essential to send json data
+      body: jsonEncode([
+        {'image': '$base64Image'}
+      ]),
+    );
+    print(response.body);
+    print(response.statusCode);
+*/
 /*
+    var myFile = File('./lib/usem.csv');
+    List<File> imageFileList = List.empty(growable: true);
+    imageFileList.add(myFile);
+
+///    var request = http.Request("POST",  Uri.parse(urlanthracnose));
+
+    var request = http.MultipartRequest("POST", Uri.parse(urlanthracnose));
+
+    request.fields['parameter1'] = '보내고 싶은 파라미터';
+    request.fields['parameter2'] = '보내고 싶은 파라미터2';
+
+    for (var imageFile in imageFileList) {
+      request.files.add(await http.MultipartFile.fromPath('imageFileList', imageFile.path));
+    }
+
+    var response = await request.send();
+    print(response.statusCode);
+    print(response.headers);
+    print(response.request);
+*/
     http.Response response = await http.post(
       Uri.parse(urltech),
       headers: <String, String>{
@@ -349,7 +519,10 @@ class MyAPI extends StatelessWidget {
         'mCROP': "good"
       }),
     );
-*/
+    print(response.statusCode);
+    print(response.headers);
+    print(response.body);
+
   }
 
   @override
