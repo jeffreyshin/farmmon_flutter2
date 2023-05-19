@@ -14,8 +14,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 
 /////////////////////////////////////
-final custom_dt = <String>['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'];
-final temperature = <String>['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'];
+final custom_dt = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
+final temperature = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
 //////////////////////////////////////
 
 void main() {
@@ -139,8 +139,13 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class GeneratorPage extends StatelessWidget {
+class GeneratorPage extends StatefulWidget {
 
+  @override
+  State<GeneratorPage> createState() => _GeneratorPageState();
+}
+
+class _GeneratorPageState extends State<GeneratorPage> {
 /////////////////////////////////////////////////////
 
   void _callAPI() async {
@@ -156,7 +161,7 @@ class GeneratorPage extends StatelessWidget {
     var urliot2 = "$urliot/$apikey/$formatDate/$formatTime";
     var uriiot = Uri.parse(urliot2);
 
-    final custom_dt = <String>[];
+///    final custom_dt = <String>[];
     final humidity = <String>[];
 ///    final temperature = <String>[];
     final cotwo = <String>[];
@@ -171,13 +176,13 @@ class GeneratorPage extends StatelessWidget {
     ///print(deltaT+deltaT12);
     ///print('$formatDate');
     ///print('$formatTime');
-    temperature.clear();
-    custom_dt.clear();
-    for (var i=0; i<deltaT+deltaT12; i++) {
+    ///temperature.clear();
+    ///custom_dt.clear();
+    for (var i=0; i<12; i++) {
       now = now.subtract(Duration(hours:1));
       String formatDate = DateFormat('yyyyMMdd').format(now);
       String formatTime = DateFormat('HH').format(now);
-      urliot2 = "${urliot}/${apikey}/${formatDate}/${formatTime}";
+      urliot2 = "$urliot/$apikey/$formatDate/$formatTime";
       ///print(urliot2);
       uriiot = Uri.parse(urliot2);
       http.Response response = await http.get(uriiot);
@@ -186,9 +191,9 @@ class GeneratorPage extends StatelessWidget {
       var json_obj = jsonDecode(response.body);
       ///print(response.body);
 
-      custom_dt.add(json_obj['datas'][0]['custom_dt']);
+      custom_dt[i] = json_obj['datas'][0]['custom_dt'];
       humidity.add(json_obj['datas'][0]['humidity']);
-      temperature.add(json_obj['datas'][0]['temperature']);
+      temperature[i] = json_obj['datas'][0]['temperature'];
       leafwet.add(json_obj['datas'][0]['leafwet']);
       cotwo.add(json_obj['datas'][0]['cotwo']);
       gtemperature.add(json_obj['datas'][0]['gtemperature']);
@@ -196,9 +201,8 @@ class GeneratorPage extends StatelessWidget {
 
       ///print(json_obj);
     }
-    print(custom_dt);
-    print(temperature);
-
+    ///print(custom_dt);
+    ///print(temperature);
 
     http.Response response = await http.post(
       Uri.parse(urltech),
@@ -216,9 +220,12 @@ class GeneratorPage extends StatelessWidget {
         'mCROP': "good"
       }),
     );
-    print(response.statusCode);
-    print(response.headers);
-    print(response.body);
+    ///print(response.statusCode);
+    ///print(response.headers);
+    ///print(response.body);
+
+    setState(() {
+    });
 
   }
 
@@ -237,6 +244,9 @@ class GeneratorPage extends StatelessWidget {
     }
     var now = DateTime.now();
     String formatDate = DateFormat('yy년 MM월 dd일').format(now);
+
+    _callAPI();
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -256,16 +266,9 @@ class GeneratorPage extends StatelessWidget {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  _callAPI();
-                },
-                child: const Text('자료불러오기'),
-              ),
-              SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: () {
                   appState.toggleFavorite();
                 },
-                child: Text('자료보기'),
+                child: Text('전날'),
               ),
               SizedBox(width: 10),
               ElevatedButton(
@@ -350,7 +353,7 @@ class MyBarChart extends StatelessWidget {
       padding: const EdgeInsets.all(30),
       // implement the bar chart
       child: BarChart(BarChartData(
-          maxY: 40,
+          maxY: 35,
           borderData: FlBorderData(
               border: const Border(
                 top: BorderSide.none,
