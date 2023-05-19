@@ -16,14 +16,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 
 /////////////////////////////////////
-var xlabel = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
 var custom_dt = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
 var temperature = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
-var humidity = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
-var cotwo = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
-var leafwet = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
-var gtemperature = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
-var quantum = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
 //////////////////////////////////////
 
 class MyHttpOverrides extends HttpOverrides{
@@ -50,7 +44,7 @@ class MyApp extends StatelessWidget {
         title: 'FarmMon App',
         theme: ThemeData(
           useMaterial3: true,
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.green),
         ),
         home: MyHomePage(),
       ),
@@ -127,12 +121,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     label: Text('토마토'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.favorite) ,
+                    icon: Icon(FontAwesomeIcons.carrot) ,
                     label: Text('파프리카'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.settings),
-                    label: Text('설정'),
+                    icon: Icon(FontAwesomeIcons.pepperHot),
+                    label: Text('사과'),
                   ),
                 ],
                 selectedIndex: selectedIndex,
@@ -178,6 +172,13 @@ class _GeneratorPageState extends State<GeneratorPage> {
     var urliot2 = "$urliot/$apikey/$formatDate/$formatTime";
     var uriiot = Uri.parse(urliot2);
 
+///    final custom_dt = <String>[];
+    final humidity = <String>[];
+///    final temperature = <String>[];
+    final cotwo = <String>[];
+    final leafwet = <String>[];
+    final gtemperature = <String>[];
+    final quantum = <String>[];
 
     var deltaT = int.parse(formatTime);
     var deltaT12 = deltaT % 12;
@@ -200,15 +201,14 @@ class _GeneratorPageState extends State<GeneratorPage> {
 
       var json_obj = jsonDecode(response.body);
       ///print(response.body);
+
       custom_dt[i] = json_obj['datas'][0]['custom_dt'];
-      humidity[i] = json_obj['datas'][0]['humidity'];
+      humidity.add(json_obj['datas'][0]['humidity']);
       temperature[i] = json_obj['datas'][0]['temperature'];
-      leafwet[i] = json_obj['datas'][0]['leafwet'];
-      cotwo[i] = json_obj['datas'][0]['cotwo'];
-      gtemperature[i] = json_obj['datas'][0]['gtemperature'];
-      quantum[i] = json_obj['datas'][0]['quantum'];
-      DateTime xvalue = DateTime.parse(custom_dt[i]);
-      xlabel[i] = DateFormat('HH:mm').format(xvalue);
+      leafwet.add(json_obj['datas'][0]['leafwet']);
+      cotwo.add(json_obj['datas'][0]['cotwo']);
+      gtemperature.add(json_obj['datas'][0]['gtemperature']);
+      quantum.add(json_obj['datas'][0]['quantum']);
 
       ///print(json_obj);
     }
@@ -255,7 +255,7 @@ class _GeneratorPageState extends State<GeneratorPage> {
       icon = Icons.favorite_border;
     }
     var now = DateTime.now();
-    String formatDate = DateFormat('yyyy년 MM월 dd일').format(now);
+    String formatDate = DateFormat('yy년 MM월 dd일').format(now);
 
     callAPI();
 
@@ -278,26 +278,23 @@ class _GeneratorPageState extends State<GeneratorPage> {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  appState.toggleFavorite();
+                  callAPI();
                 },
-                child: Text('지난주'),
+                child: Text('데이터가져오기'),
               ),
               SizedBox(width: 10),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.amber, backgroundColor: Colors.blueGrey, // Text Color
-                ),
                 onPressed: () {
-                  callAPI();
+                  appState.toggleFavorite();
                 },
-                child: Text('이번주'),
+                child: Text('전날'),
               ),
               SizedBox(width: 10),
               ElevatedButton(
                 onPressed: () {
                   appState.getNext();
                 },
-                child: Text('다음주'),
+                child: Text('다음날'),
               ),
             ],
           ),
@@ -392,24 +389,39 @@ class _MyBarChartState extends State<MyBarChart> {
           // add bars
           barGroups: [
             BarChartGroupData(x: 1, barRods: [
-              BarChartRodData(toY: double.parse(temperature[6]), width: 5, color: Colors.amber),
+              BarChartRodData(toY: double.parse(temperature[11]), width: 5, color: Colors.amber),
             ]),
             BarChartGroupData(x: 2, barRods: [
-              BarChartRodData(toY: double.parse(temperature[5]), width: 5, color: Colors.amber),
+              BarChartRodData(toY: double.parse(temperature[10]), width: 5, color: Colors.amber),
             ]),
             BarChartGroupData(x: 3, barRods: [
-              BarChartRodData(toY: double.parse(temperature[4]), width: 5, color: Colors.amber),
+              BarChartRodData(toY: double.parse(temperature[9]), width: 5, color: Colors.amber),
             ]),
             BarChartGroupData(x: 4, barRods: [
-              BarChartRodData(toY: double.parse(temperature[3]), width: 5, color: Colors.amber),
+              BarChartRodData(toY: double.parse(temperature[8]), width: 5, color: Colors.amber),
             ]),
             BarChartGroupData(x: 5, barRods: [
-              BarChartRodData(toY: double.parse(temperature[2]), width: 5, color: Colors.amber),
+              BarChartRodData(toY: double.parse(temperature[7]), width: 5, color: Colors.amber),
             ]),
             BarChartGroupData(x: 6, barRods: [
-              BarChartRodData(toY: double.parse(temperature[1]), width: 5, color: Colors.amber),
+              BarChartRodData(toY: double.parse(temperature[6]), width: 5, color: Colors.amber),
             ]),
             BarChartGroupData(x: 7, barRods: [
+              BarChartRodData(toY: double.parse(temperature[5]), width: 5, color: Colors.amber),
+            ]),
+            BarChartGroupData(x: 8, barRods: [
+              BarChartRodData(toY: double.parse(temperature[4]), width: 5, color: Colors.amber),
+            ]),
+            BarChartGroupData(x: 9, barRods: [
+              BarChartRodData(toY: double.parse(temperature[3]), width: 5, color: Colors.amber),
+            ]),
+            BarChartGroupData(x: 10, barRods: [
+              BarChartRodData(toY: double.parse(temperature[2]), width: 5, color: Colors.amber),
+            ]),
+            BarChartGroupData(x: 11, barRods: [
+              BarChartRodData(toY: double.parse(temperature[1]), width: 5, color: Colors.amber),
+            ]),
+            BarChartGroupData(x: 12, barRods: [
               BarChartRodData(toY: double.parse(temperature[0]), width: 5, color: Colors.amber),
             ]),
           ],
@@ -420,8 +432,7 @@ class _MyBarChartState extends State<MyBarChart> {
             ),
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 38,
+                showTitles: false,
               ),
             ),
             bottomTitles: AxisTitles(
@@ -447,33 +458,29 @@ class _MyBarChartState extends State<MyBarChart> {
     );
     String text;
     switch (value.toInt()) {
-///      case 0:
-///        text = xlabel[7];
-///        break;
+      case 0:
+        text = 'Mn';
+        break;
       case 1:
-        text = xlabel[6];
+        text = 'Te';
         break;
-///      case 2:
-///        text = xlabel[5];
-///        break;
+      case 2:
+        text = 'Wd';
+        break;
       case 3:
-        text = xlabel[4];
+        text = 'Tu';
         break;
-///      case 4:
-///        text = xlabel[3];
-///        break;
+      case 4:
+        text = 'Fr';
+        break;
       case 5:
-        text = xlabel[2];
+        text = 'St';
         break;
-///      case 6:
-///        text = xlabel[1];
-///        break;
-      case 7:
-        text = xlabel[0];
+      case 6:
+        text = 'Sn';
         break;
-
       default:
-        text = '';
+        text = '오늘';
         break;
     }
     return SideTitleWidget(
@@ -489,6 +496,121 @@ class MyAPI extends StatelessWidget {
   const MyAPI({Key? key}) : super(key: key);
 
   void _callAPI() async {
+    var urltech = 'http://147.46.206.95:7890/SNFD';
+    var urlanthracnose = 'http://147.46.206.95:7897/Anthracnose';
+    var urliot = 'http://iot.rda.go.kr/api';
+    var apikey = 'r34df5d2d566049e2a809c41da915adc6';
+
+/// iot포털 테스트
+    var now = new DateTime.now();
+    String formatDate = DateFormat('yyyyMMdd').format(now);
+    String formatTime = DateFormat('HH').format(now);
+    var urliot2 = "${urliot}/${apikey}/${formatDate}/${formatTime}";
+    var uriiot = Uri.parse(urliot2);
+
+    ///final custom_dt = <String>[];
+    final humidity = <String>[];
+    ///final temperature = <String>[];
+    final cotwo = <String>[];
+    final leafwet = <String>[];
+    final gtemperature = <String>[];
+    final quantum = <String>[];
+
+    var deltaT = int.parse(formatTime);
+    var deltaT12 = deltaT % 12;
+    deltaT = 24;
+    if (deltaT < 12) deltaT = deltaT + 12;
+    ///print(deltaT+deltaT12);
+    ///print('$formatDate');
+    ///print('$formatTime');
+    now = now.subtract(Duration(hours:deltaT+deltaT12));
+
+    for (var i=0; i<12; i++) {
+      now = now.add(Duration(hours:1));
+      String formatDate = DateFormat('yyyyMMdd').format(now);
+      String formatTime = DateFormat('HH').format(now);
+      urliot2 = "$urliot/$apikey/$formatDate/$formatTime";
+      ///print(urliot2);
+      uriiot = Uri.parse(urliot2);
+      http.Response response = await http.get(uriiot);
+      ///    Map<String, dynamic> usem = jsonDecode(response.body);
+
+      var json_obj = jsonDecode(response.body);
+      ///print(response.body);
+
+      custom_dt[i] = json_obj['datas'][0]['custom_dt'];
+      humidity.add(json_obj['datas'][0]['humidity']);
+      temperature[i] = json_obj['datas'][0]['temperature'];
+      leafwet.add(json_obj['datas'][0]['leafwet']);
+      cotwo.add(json_obj['datas'][0]['cotwo']);
+      gtemperature.add(json_obj['datas'][0]['gtemperature']);
+      quantum.add(json_obj['datas'][0]['quantum']);
+
+      ///print(json_obj);
+    }
+    print(custom_dt);
+    print(temperature);
+
+/*  마지막으로 테스트한 코드
+    var imagePath = './lib/usem.csv';
+    File imageFile = File(imagePath);
+    List<int> imageBytes = imageFile.readAsBytesSync();
+    String base64Image = base64Encode(imageBytes);
+    print(base64Image);
+    Uri url = Uri.parse(urlanthracnose);
+    http.Response response = await http.post(
+      url,
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      }, // this header is essential to send json data
+      body: jsonEncode([
+        {'image': '$base64Image'}
+      ]),
+    );
+    print(response.body);
+    print(response.statusCode);
+*/
+/*
+    var myFile = File('./lib/usem.csv');
+    List<File> imageFileList = List.empty(growable: true);
+    imageFileList.add(myFile);
+
+///    var request = http.Request("POST",  Uri.parse(urlanthracnose));
+
+    var request = http.MultipartRequest("POST", Uri.parse(urlanthracnose));
+
+    request.fields['parameter1'] = '보내고 싶은 파라미터';
+    request.fields['parameter2'] = '보내고 싶은 파라미터2';
+
+    for (var imageFile in imageFileList) {
+      request.files.add(await http.MultipartFile.fromPath('imageFileList', imageFile.path));
+    }
+
+    var response = await request.send();
+    print(response.statusCode);
+    print(response.headers);
+    print(response.request);
+*/
+    http.Response response = await http.post(
+      Uri.parse(urltech),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+      },
+      body: jsonEncode({
+        'mPH': 5.4,
+        'mEC': 3.6,
+        'mNO3': 179,
+        'mPO4': 155,
+        'mEH': 370,
+        'mSO4': 250,
+        'mCL': 100,
+        'mCROP': "good"
+      }),
+    );
+    print(response.statusCode);
+    print(response.headers);
+    print(response.body);
+
   }
 
   @override
