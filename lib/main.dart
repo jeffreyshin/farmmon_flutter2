@@ -268,6 +268,13 @@ class _GeneratorPageState extends State<GeneratorPage> {
                 onPressed: () {
                   appState.toggleFavorite();
                 },
+                child: Text('데이터가져오기'),
+              ),
+              SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: () {
+                  appState.toggleFavorite();
+                },
                 child: Text('전날'),
               ),
               SizedBox(width: 10),
