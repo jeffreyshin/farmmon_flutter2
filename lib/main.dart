@@ -16,14 +16,15 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 
 /////////////////////////////////////
-var xlabel = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
-var custom_dt = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
-var temperature = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
-var humidity = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
-var cotwo = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
-var leafwet = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
-var gtemperature = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
-var quantum = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
+var pp = 0;
+var xlabel = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
+var custom_dt = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
+var temperature = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
+var humidity = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
+var cotwo = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
+var leafwet = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
+var gtemperature = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
+var quantum = <String>['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'];
 //////////////////////////////////////
 
 class MyHttpOverrides extends HttpOverrides{
@@ -93,7 +94,7 @@ class _MyHomePageState extends State<MyHomePage> {
     Widget page;
     switch (selectedIndex) {
       case 0:
-        page = GeneratorPage();
+        page = StrawberryPage();
         break;
       case 1:
         page = FavoritesPage();
@@ -156,13 +157,13 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class GeneratorPage extends StatefulWidget {
+class StrawberryPage extends StatefulWidget {
 
   @override
-  State<GeneratorPage> createState() => _GeneratorPageState();
+  State<StrawberryPage> createState() => _StrawberryPageState();
 }
 
-class _GeneratorPageState extends State<GeneratorPage> {
+class _StrawberryPageState extends State<StrawberryPage> {
 /////////////////////////////////////////////////////
 
   void callAPI() async {
@@ -188,7 +189,7 @@ class _GeneratorPageState extends State<GeneratorPage> {
     ///print('$formatTime');
     ///temperature.clear();
     ///custom_dt.clear();
-    for (var i=0; i<12; i++) {
+    for (var i=0; i<16; i++) {
       now = now.subtract(Duration(hours:1));
       String formatDate = DateFormat('yyyyMMdd').format(now);
       String formatTime = DateFormat('HH').format(now);
@@ -278,6 +279,7 @@ class _GeneratorPageState extends State<GeneratorPage> {
             children: [
               ElevatedButton(
                 onPressed: () {
+                  pp = 7;
                   appState.toggleFavorite();
                 },
                 child: Text('지난주'),
@@ -288,6 +290,7 @@ class _GeneratorPageState extends State<GeneratorPage> {
                   foregroundColor: Colors.amber, backgroundColor: Colors.blueGrey, // Text Color
                 ),
                 onPressed: () {
+                  pp=0;
                   callAPI();
                 },
                 child: Text('이번주'),
@@ -295,6 +298,7 @@ class _GeneratorPageState extends State<GeneratorPage> {
               SizedBox(width: 10),
               ElevatedButton(
                 onPressed: () {
+                  pp = 0;
                   appState.getNext();
                 },
                 child: Text('다음주'),
@@ -392,25 +396,25 @@ class _MyBarChartState extends State<MyBarChart> {
           // add bars
           barGroups: [
             BarChartGroupData(x: 1, barRods: [
-              BarChartRodData(toY: double.parse(temperature[6]), width: 5, color: Colors.amber),
+              BarChartRodData(toY: double.parse(temperature[pp+6]), width: 5, color: Colors.amber),
             ]),
             BarChartGroupData(x: 2, barRods: [
-              BarChartRodData(toY: double.parse(temperature[5]), width: 5, color: Colors.amber),
+              BarChartRodData(toY: double.parse(temperature[pp+5]), width: 5, color: Colors.amber),
             ]),
             BarChartGroupData(x: 3, barRods: [
-              BarChartRodData(toY: double.parse(temperature[4]), width: 5, color: Colors.amber),
+              BarChartRodData(toY: double.parse(temperature[pp+4]), width: 5, color: Colors.amber),
             ]),
             BarChartGroupData(x: 4, barRods: [
-              BarChartRodData(toY: double.parse(temperature[3]), width: 5, color: Colors.amber),
+              BarChartRodData(toY: double.parse(temperature[pp+3]), width: 5, color: Colors.amber),
             ]),
             BarChartGroupData(x: 5, barRods: [
-              BarChartRodData(toY: double.parse(temperature[2]), width: 5, color: Colors.amber),
+              BarChartRodData(toY: double.parse(temperature[pp+2]), width: 5, color: Colors.amber),
             ]),
             BarChartGroupData(x: 6, barRods: [
-              BarChartRodData(toY: double.parse(temperature[1]), width: 5, color: Colors.amber),
+              BarChartRodData(toY: double.parse(temperature[pp+1]), width: 5, color: Colors.amber),
             ]),
             BarChartGroupData(x: 7, barRods: [
-              BarChartRodData(toY: double.parse(temperature[0]), width: 5, color: Colors.amber),
+              BarChartRodData(toY: double.parse(temperature[pp+0]), width: 5, color: Colors.amber),
             ]),
           ],
           titlesData: FlTitlesData(
@@ -422,6 +426,11 @@ class _MyBarChartState extends State<MyBarChart> {
               sideTitles: SideTitles(
                 showTitles: true,
                 reservedSize: 38,
+              ),
+            ),
+            rightTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: false,
               ),
             ),
             bottomTitles: AxisTitles(
@@ -443,33 +452,33 @@ class _MyBarChartState extends State<MyBarChart> {
     final style = TextStyle(
 ///      color: AppColors.contentColorBlue.darken(20),
       fontWeight: FontWeight.bold,
-      fontSize: 14,
+      fontSize: 12,
     );
     String text;
     switch (value.toInt()) {
 ///      case 0:
-///        text = xlabel[7];
+///        text = xlabel[pp+7];
 ///        break;
       case 1:
-        text = xlabel[6];
+        text = xlabel[pp+6];
         break;
 ///      case 2:
-///        text = xlabel[5];
+///        text = xlabel[pp+5];
 ///        break;
       case 3:
-        text = xlabel[4];
+        text = xlabel[pp+4];
         break;
 ///      case 4:
-///        text = xlabel[3];
+///        text = xlabel[pp+3];
 ///        break;
       case 5:
-        text = xlabel[2];
+        text = xlabel[pp+2];
         break;
 ///      case 6:
-///        text = xlabel[1];
+///        text = xlabel[pp+1];
 ///        break;
       case 7:
-        text = xlabel[0];
+        text = xlabel[pp+0];
         break;
 
       default:
@@ -483,7 +492,6 @@ class _MyBarChartState extends State<MyBarChart> {
     );
   }
 }
-
 
 class MyAPI extends StatelessWidget {
   const MyAPI({Key? key}) : super(key: key);
