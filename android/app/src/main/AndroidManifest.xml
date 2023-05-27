@@ -2,7 +2,7 @@
     package="com.example.farmmon_flutter">
     <uses-permission android:name="android.permission.INTERNET" />
     <application
-        android:label="farmmon_flutter"
+        android:label="농장보기"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
