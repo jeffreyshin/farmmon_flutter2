@@ -443,7 +443,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                '딸기 탄저병 - ${farmName[ppfarm]}',
+                '${farmName[ppfarm]}',
                 style: TextStyle(fontSize: 25),
               ),
               SizedBox(width: 20),
@@ -467,7 +467,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
             ],
           ),
           SizedBox(height: 10),
-          Text(formatDate),
+          Text('딸기탄저병: $formatDate'),
           SizedBox(height: 20),
           Expanded(
             child: MyBarChart(),
