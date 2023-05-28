@@ -23,16 +23,16 @@ var farmNo = 1;
 var registerdfarms = <String>[
   '',
 ];
-var serviceKey = <String>[
-  'r34df5d2d566049e2a809c41da915adc6',
-];
+
 var farmName = <String>[
-  '농장1',
+  '기본농장',
 ];
 var facilityName = <String>[
   '1번온실',
 ];
-
+var serviceKey = <String>[
+  'r34df5d2d566049e2a809c41da915adc6',
+];
 var xlabel = <String>[
   '',
   '',
@@ -249,7 +249,12 @@ class _MyHomePageState extends State<MyHomePage> {
     ppfarm = (prefs.getInt('myFarm') ?? 0);
     await prefs.setInt('farmNumber', farmNo);
     await prefs.setInt('myFarm', ppfarm);
-    print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
+    // print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
+
+    farmName[0] = (prefs.getString('farmName0') ?? farmName[0]);
+    facilityName[0] = (prefs.getString('facilityName0') ?? facilityName[0]);
+    serviceKey[0] = (prefs.getString('serviceKey0') ?? serviceKey[0]);
+
     for (int i = 1; i < farmNo; i++) {
       farmName.add(prefs.getString('farmName$i') ?? farmName[0]);
       facilityName.add(prefs.getString('facilityName$i') ?? facilityName[0]);
@@ -307,9 +312,11 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
                 selectedIndex: selectedIndex,
                 onDestinationSelected: (value) {
-                  setState(() {
-                    selectedIndex = value;
-                  });
+                  if (mounted) {
+                    setState(() {
+                      selectedIndex = value;
+                    });
+                  }
                 },
               ),
             ),
@@ -411,9 +418,11 @@ class _StrawberryPageState extends State<StrawberryPage> {
     ///print(response.headers);
     ///print(response.body);
 */
-    setState(() {
-      ///      temperature.add("changed");
-    });
+    if (mounted) {
+      setState(() {
+        ///      temperature.add("changed");
+      });
+    }
   }
 
 /////////////////////////////////////////////////////
@@ -453,7 +462,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   SharedPreferences prefs =
                       await SharedPreferences.getInstance();
                   await prefs.setInt('myFarm', ppfarm);
-                  print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
+                  // print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
 
                   if (mounted) {
                     setState(() {
@@ -733,7 +742,12 @@ class _MySettingState extends State<MySetting> {
     await prefs.setInt('farmNumber', farmNo);
     await prefs.setInt('myFarm', ppfarm);
 
-    print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
+    // print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
+
+    farmName[0] = (prefs.getString('farmName0') ?? farmName[0]);
+    facilityName[0] = (prefs.getString('facilityName0') ?? facilityName[0]);
+    serviceKey[0] = (prefs.getString('serviceKey0') ?? serviceKey[0]);
+
     for (int i = 1; i < farmNo; i++) {
       farmName.add(prefs.getString('farmName$i') ?? farmName[0]);
       facilityName.add(prefs.getString('facilityName$i') ?? facilityName[0]);
@@ -743,11 +757,16 @@ class _MySettingState extends State<MySetting> {
 
   void _prefsClear() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    print('prefs clear $farmNo');
+    // print('prefs clear $farmNo');
     prefs.clear();
+    if (farmNo > 1) {
+      farmName.removeRange(1, farmNo);
+      facilityName.removeRange(1, farmNo);
+      serviceKey.removeRange(1, farmNo);
+    }
     farmNo = 1;
     ppfarm = 0;
-    print('cleared $farmNo');
+    // print('cleared $farmNo');
   }
 
   TextEditingController inputController1 = TextEditingController();
@@ -918,30 +937,44 @@ class _MySettingState extends State<MySetting> {
                     Center(
                       child: ElevatedButton(
                         onPressed: () async {
-                          setState(() {
-                            farmNo++;
-                            ppfarm = farmNo - 1;
-                            farmName.add('추가농가$farmNo');
-                            facilityName.add('');
-                            serviceKey.add('');
-                            inputController1.text = farmName[ppfarm];
-                            inputController2.text = facilityName[ppfarm];
-                            inputController3.text = serviceKey[ppfarm];
-                          });
+                          // print('$ppfarm / $farmNo');
+                          farmNo++;
+                          // print('$ppfarm / $farmNo');
+
+                          farmName.add('추가농가$farmNo');
+                          facilityName.add('');
+                          serviceKey.add('');
+
+                          if (mounted) {
+                            setState(() {
+                              ppfarm = farmNo - 1;
+                              // print(ppfarm);
+                              // for (int i = 0; i < farmNo; i++) {
+                              // print(farmName[i]);
+                              // }
+                              inputController1.text = '추가농가$farmNo';
+                              inputController2.text = '';
+                              inputController3.text = '';
+                            });
+                          }
+                          SharedPreferences prefs =
+                              await SharedPreferences.getInstance();
+                          await prefs.setInt('farmNumber', farmNo);
+                          await prefs.setInt('myFarm', ppfarm);
                         },
                         child: const Text('농장추가'),
                       ),
                     ),
-                    SizedBox(width: 20),
+                    SizedBox(width: 10),
                     Center(
                       child: ElevatedButton(
                         onPressed: () async {
-                          setState(() {
-                            _printLatestValue();
-                            farmName[ppfarm] = inputController1.text;
-                            facilityName[ppfarm] = inputController2.text;
-                            serviceKey[ppfarm] = inputController3.text;
-                          });
+                          // save prefs info of the new farm
+                          // _printLatestValue();
+                          farmName[ppfarm] = inputController1.text;
+                          facilityName[ppfarm] = inputController2.text;
+                          serviceKey[ppfarm] = inputController3.text;
+
                           SharedPreferences prefs =
                               await SharedPreferences.getInstance();
                           await prefs.setInt('farmNumber', farmNo);
@@ -953,39 +986,36 @@ class _MySettingState extends State<MySetting> {
                             await prefs.setString(
                                 'serviceKey$i', serviceKey[i]);
                           }
-                        },
-                        child: const Text('수정'),
-                      ),
-                    ),
-                    SizedBox(width: 20),
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: () async {
+                          // go to the next farm
                           ppfarm = (ppfarm + 1) % farmNo;
 
-                          SharedPreferences prefs =
-                              await SharedPreferences.getInstance();
+                          // SharedPreferences prefs =
+                          // await SharedPreferences.getInstance();
                           await prefs.setInt('myFarm', ppfarm);
-                          print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
-                          setState(() {
-                            _printLatestValue();
-                            inputController1.text = farmName[ppfarm];
-                            inputController2.text = facilityName[ppfarm];
-                            inputController3.text = serviceKey[ppfarm];
-                            print('next farm: ${(ppfarm + 1)} / $farmNo');
-                          });
+                          // print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
+                          if (mounted) {
+                            setState(() {
+                              // _printLatestValue();
+                              inputController1.text = farmName[ppfarm];
+                              inputController2.text = facilityName[ppfarm];
+                              inputController3.text = serviceKey[ppfarm];
+                              // print('next farm: ${(ppfarm + 1)} / $farmNo');
+                            });
+                          }
                         },
                         child: const Text('다음'),
                       ),
                     ),
-                    SizedBox(width: 20),
+                    SizedBox(width: 10),
                     Center(
                       child: ElevatedButton(
                         onPressed: () async {
-                          setState(() {
-                            _printLatestValue();
-                            _prefsClear();
-                          });
+                          if (mounted) {
+                            setState(() {
+                              // _printLatestValue();
+                              _prefsClear();
+                            });
+                          }
                         },
                         child: const Text('리셋'),
                       ),
