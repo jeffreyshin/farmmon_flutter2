@@ -243,9 +243,23 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   var selectedIndex = 0;
+  void _prefsLoad() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    farmNo = (prefs.getInt('farmNumber') ?? 1);
+    ppfarm = (prefs.getInt('myFarm') ?? 0);
+    await prefs.setInt('farmNumber', farmNo);
+    await prefs.setInt('myFarm', ppfarm);
+    print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
+    for (int i = 1; i < farmNo; i++) {
+      farmName.add(prefs.getString('farmName$i') ?? farmName[0]);
+      facilityName.add(prefs.getString('facilityName$i') ?? facilityName[0]);
+      serviceKey.add(prefs.getString('serviceKey$i') ?? serviceKey[0]);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    _prefsLoad();
     Widget page;
     switch (selectedIndex) {
       case 0:
@@ -343,6 +357,9 @@ class _StrawberryPageState extends State<StrawberryPage> {
     ///print('$formatTime');
     ///temperature.clear();
     ///customdt.clear();
+
+    // _prefsLoad();
+
     for (var i = 0; i < 16; i++) {
       now = now.subtract(Duration(hours: 1));
       String formatDate = DateFormat('yyyyMMdd').format(now);
@@ -422,9 +439,32 @@ class _StrawberryPageState extends State<StrawberryPage> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           SizedBox(height: 40),
-          Text(
-            '딸기 탄저병',
-            style: TextStyle(fontSize: 25),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '딸기 탄저병 - ${farmName[ppfarm]}',
+                style: TextStyle(fontSize: 25),
+              ),
+              SizedBox(width: 20),
+              ElevatedButton(
+                onPressed: () async {
+                  ppfarm = (ppfarm + 1) % farmNo;
+                  SharedPreferences prefs =
+                      await SharedPreferences.getInstance();
+                  await prefs.setInt('myFarm', ppfarm);
+                  print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
+
+                  if (mounted) {
+                    setState(() {
+                      pp = 0;
+                      callAPI();
+                    });
+                  }
+                },
+                child: Text('다음'),
+              ),
+            ],
           ),
           SizedBox(height: 10),
           Text(formatDate),
@@ -685,19 +725,41 @@ class MySetting extends StatefulWidget {
 }
 
 class _MySettingState extends State<MySetting> {
-  // void _callAPI() async {}
+  void _prefsLoad() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    farmNo = (prefs.getInt('farmNumber') ?? 1);
+    ppfarm = (prefs.getInt('myFarm') ?? 0);
+
+    await prefs.setInt('farmNumber', farmNo);
+    await prefs.setInt('myFarm', ppfarm);
+
+    print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
+    for (int i = 1; i < farmNo; i++) {
+      farmName.add(prefs.getString('farmName$i') ?? farmName[0]);
+      facilityName.add(prefs.getString('facilityName$i') ?? facilityName[0]);
+      serviceKey.add(prefs.getString('serviceKey$i') ?? serviceKey[0]);
+    }
+  }
+
+  void _prefsClear() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    print('prefs clear $farmNo');
+    prefs.clear();
+    farmNo = 1;
+    ppfarm = 0;
+    print('cleared $farmNo');
+  }
 
   TextEditingController inputController1 = TextEditingController();
   TextEditingController inputController2 = TextEditingController();
   TextEditingController inputController3 = TextEditingController();
-  String inputText = '';
-
-  String text = 'first';
+  // String inputText = '';
+  // String text = 'first';
 
   @override
   void initState() {
     super.initState();
-
+    _prefsLoad();
     // Start listening to changes.
     inputController1.addListener(_printLatestValue);
     inputController2.addListener(_printLatestValue);
@@ -867,21 +929,7 @@ class _MySettingState extends State<MySetting> {
                             inputController3.text = serviceKey[ppfarm];
                           });
                         },
-                        child: const Text('농장 추가하기'),
-                      ),
-                    ),
-                    SizedBox(width: 20),
-                    Center(
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          setState(() {
-                            // _printLatestValue();
-                            farmName[ppfarm] = inputController1.text;
-                            facilityName[ppfarm] = inputController2.text;
-                            serviceKey[ppfarm] = inputController3.text;
-                          });
-                        },
-                        child: const Text('농장 등록/수정하기'),
+                        child: const Text('농장추가'),
                       ),
                     ),
                     SizedBox(width: 20),
@@ -890,13 +938,56 @@ class _MySettingState extends State<MySetting> {
                         onPressed: () async {
                           setState(() {
                             _printLatestValue();
-                            ppfarm = (ppfarm + 1) % farmNo;
+                            farmName[ppfarm] = inputController1.text;
+                            facilityName[ppfarm] = inputController2.text;
+                            serviceKey[ppfarm] = inputController3.text;
+                          });
+                          SharedPreferences prefs =
+                              await SharedPreferences.getInstance();
+                          await prefs.setInt('farmNumber', farmNo);
+
+                          for (int i = 0; i < farmNo; i++) {
+                            await prefs.setString('farmName$i', farmName[i]);
+                            await prefs.setString(
+                                'facilityName$i', facilityName[i]);
+                            await prefs.setString(
+                                'serviceKey$i', serviceKey[i]);
+                          }
+                        },
+                        child: const Text('수정'),
+                      ),
+                    ),
+                    SizedBox(width: 20),
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          ppfarm = (ppfarm + 1) % farmNo;
+
+                          SharedPreferences prefs =
+                              await SharedPreferences.getInstance();
+                          await prefs.setInt('myFarm', ppfarm);
+                          print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
+                          setState(() {
+                            _printLatestValue();
                             inputController1.text = farmName[ppfarm];
                             inputController2.text = facilityName[ppfarm];
                             inputController3.text = serviceKey[ppfarm];
+                            print('next farm: ${(ppfarm + 1)} / $farmNo');
                           });
                         },
-                        child: const Text('다음 농장보기'),
+                        child: const Text('다음'),
+                      ),
+                    ),
+                    SizedBox(width: 20),
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          setState(() {
+                            _printLatestValue();
+                            _prefsClear();
+                          });
+                        },
+                        child: const Text('리셋'),
                       ),
                     ),
                   ],
