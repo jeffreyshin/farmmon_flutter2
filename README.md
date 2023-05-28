@@ -34,8 +34,9 @@ For help getting started with Flutter development, view the
 samples, guidance on mobile development, and a full API reference.
 
 
+<img src="https://github.com/jeffreyshin/farmmon_flutter/assets/6800894/e174988b-7b9e-4fb5-bdba-68bac337ae7f.jpg"  width="300" height="600">
+  
 
-![usem](https://github.com/jeffreyshin/farmmon_flutter/assets/6800894/e174988b-7b9e-4fb5-bdba-68bac337ae7f)
 
              
 .                  
