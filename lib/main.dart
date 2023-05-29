@@ -5,11 +5,13 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 
-///import 'package:fl_chart_app/presentation/resources/app_resources.dart';
-///import 'package:fl_chart_app/util/extensions/color_extensions.dart';
+import 'package:farmmon_flutter/presentation/resources/app_resources.dart';
+
+///import 'package:farmmon_flutter/util/extensions/color_extensions.dart';
 // import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:ui';
 // import 'package:farmmon_flutter/icons/custom_icons_icons.dart';
 // import 'package:dio/dio.dart';
 import 'dart:io';
@@ -277,6 +279,9 @@ class _MyHomePageState extends State<MyHomePage> {
         page = MyBarChart();
         break;
       case 3:
+        page = MyLineChartPage();
+        break;
+      case 4:
         page = MySetting();
         break;
 
@@ -306,6 +311,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     label: Text('파프리카'),
                   ),
                   NavigationRailDestination(
+                    icon: Icon(Icons.thermostat),
+                    label: Text('환경'),
+                  ),
+                  NavigationRailDestination(
                     icon: Icon(Icons.settings),
                     label: Text('설정'),
                   ),
@@ -330,6 +339,74 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       );
     });
+  }
+}
+
+class MyLineChartPage extends StatefulWidget {
+  const MyLineChartPage({super.key});
+
+  @override
+  State<MyLineChartPage> createState() => _MyLineChartPageState();
+}
+
+class _MyLineChartPageState extends State<MyLineChartPage>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          SizedBox(height: 40),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                '${farmName[ppfarm]}',
+                style: TextStyle(fontSize: 25),
+              ),
+              SizedBox(width: 20),
+              ElevatedButton(
+                onPressed: () async {
+                  ppfarm = (ppfarm + 1) % farmNo;
+                  SharedPreferences prefs =
+                      await SharedPreferences.getInstance();
+                  await prefs.setInt('myFarm', ppfarm);
+                  // print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
+
+                  if (mounted) {
+                    setState(() {
+                      pp = 0;
+                    });
+                  }
+                },
+                child: Text('다음'),
+              ),
+            ],
+          ),
+          SizedBox(height: 20),
+          Text('환경데이터 보기'),
+          Expanded(
+            child: MyLineChart(),
+          ),
+          SizedBox(height: 20),
+        ],
+      ),
+    );
   }
 }
 
@@ -476,8 +553,28 @@ class _StrawberryPageState extends State<StrawberryPage> {
             ],
           ),
           SizedBox(height: 10),
-          Text('딸기탄저병: $formatDate'),
-          SizedBox(height: 20),
+          Text(formatDate),
+          SizedBox(height: 10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('탄저병: '),
+              Text(
+                '■',
+                style: TextStyle(
+                  color: Colors.amber,
+                ),
+              ),
+              SizedBox(width: 20),
+              Text('잿빛곰팡이병: '),
+              Text(
+                '■',
+                style: TextStyle(
+                  color: Colors.indigo,
+                ),
+              ),
+            ],
+          ),
           Expanded(
             child: MyBarChart(),
           ),
@@ -578,6 +675,203 @@ class FavoritesPage extends StatelessWidget {
   }
 }
 
+class MyLineChart extends StatefulWidget {
+  const MyLineChart({super.key});
+
+  @override
+  State<MyLineChart> createState() => _MyLineChartState();
+}
+
+class _MyLineChartState extends State<MyLineChart> {
+  List<Color> gradientColors = [
+    AppColors.contentColorCyan,
+    AppColors.contentColorBlue,
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(30),
+      // implement the bar chart
+      child: LineChart(
+        LineChartData(
+          maxY: 100,
+          minY: 0,
+          borderData: FlBorderData(
+              border: const Border(
+            top: BorderSide.none,
+            right: BorderSide(width: 1),
+            left: BorderSide(width: 1),
+            bottom: BorderSide(width: 1),
+          )),
+          // groupsSpace: 10,
+          // add bars
+
+          lineBarsData: [
+            LineChartBarData(
+              spots: [
+                FlSpot(1, double.parse(temperature[pp + 6]) * 2),
+                FlSpot(2, double.parse(temperature[pp + 5]) * 2),
+                FlSpot(3, double.parse(temperature[pp + 4]) * 2),
+                FlSpot(4, double.parse(temperature[pp + 3]) * 2),
+                FlSpot(5, double.parse(temperature[pp + 2]) * 2),
+                FlSpot(6, double.parse(temperature[pp + 1]) * 2),
+                FlSpot(7, double.parse(temperature[pp + 0]) * 2),
+              ],
+              isCurved: true,
+              color: AppColors.contentColorRed,
+              // gradient: LinearGradient(colors: gradientColors),
+              barWidth: 5,
+              isStrokeCapRound: true,
+              dotData: FlDotData(
+                show: false,
+              ),
+            ),
+            LineChartBarData(
+              spots: [
+                FlSpot(1, double.parse(humidity[pp + 6])),
+                FlSpot(2, double.parse(humidity[pp + 5])),
+                FlSpot(3, double.parse(humidity[pp + 4])),
+                FlSpot(4, double.parse(humidity[pp + 3])),
+                FlSpot(5, double.parse(humidity[pp + 2])),
+                FlSpot(6, double.parse(humidity[pp + 1])),
+                FlSpot(7, double.parse(humidity[pp + 0])),
+              ],
+              isCurved: true,
+              color: AppColors.contentColorBlue,
+              // gradient: LinearGradient(colors: gradientColors),
+              barWidth: 5,
+              isStrokeCapRound: true,
+              dotData: FlDotData(
+                show: false,
+              ),
+            ),
+            LineChartBarData(
+              spots: [
+                FlSpot(1, double.parse(cotwo[pp + 6]) / 10),
+                FlSpot(2, double.parse(cotwo[pp + 5]) / 10),
+                FlSpot(3, double.parse(cotwo[pp + 4]) / 10),
+                FlSpot(4, double.parse(cotwo[pp + 3]) / 10),
+                FlSpot(5, double.parse(cotwo[pp + 2]) / 10),
+                FlSpot(6, double.parse(cotwo[pp + 1]) / 10),
+                FlSpot(7, double.parse(cotwo[pp + 0]) / 10),
+              ],
+              isCurved: true,
+              color: AppColors.contentColorBlack,
+              gradient: LinearGradient(colors: gradientColors),
+              barWidth: 0,
+              isStrokeCapRound: true,
+              dotData: FlDotData(
+                show: false,
+              ),
+              belowBarData: BarAreaData(
+                show: true,
+                // color: gradientColors.map((color) => color.withOpacity(0.3)).toList(),
+              ),
+            ),
+          ],
+
+          titlesData: FlTitlesData(
+            show: true,
+            topTitles: AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: getTitles2,
+                reservedSize: 38,
+              ),
+            ),
+            rightTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 38,
+              ),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                interval: 1,
+                reservedSize: 57,
+                getTitlesWidget: (value, titleMeta) {
+                  return Padding(
+                    // You can use any widget here
+                    padding: EdgeInsets.only(top: 8.0),
+                    child: RotatedBox(
+                      quarterTurns: 1,
+                      child: getTitles(value, titleMeta),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+        swapAnimationDuration: Duration(milliseconds: 250), // Optional
+        swapAnimationCurve: Curves.linear, // Optional
+      ),
+    );
+  }
+  // getTitles,
+
+  Widget getTitles(double value, TitleMeta meta) {
+    final style = TextStyle(
+      // color: AppgetTitlesColors.contentColorBlue.darken(20),
+      fontWeight: FontWeight.bold,
+      fontSize: 12,
+    );
+    String text;
+    switch (value.toInt()) {
+      case 0:
+        text = xlabel[pp + 7];
+        break;
+      case 1:
+        text = xlabel[pp + 6];
+        break;
+      case 2:
+        text = xlabel[pp + 5];
+        break;
+      case 3:
+        text = xlabel[pp + 4];
+        break;
+      case 4:
+        text = xlabel[pp + 3];
+        break;
+      case 5:
+        text = xlabel[pp + 2];
+        break;
+      case 6:
+        text = xlabel[pp + 1];
+        break;
+      case 7:
+        text = xlabel[pp + 0];
+        break;
+      default:
+        text = '';
+        break;
+    }
+    return SideTitleWidget(
+      axisSide: meta.axisSide,
+      space: 4,
+      child: Text(text, style: style),
+    );
+  }
+
+  Widget getTitles2(double value, TitleMeta meta) {
+    final style = TextStyle(
+      // color: AppColors.contentColorBlue.darken(20),
+      fontWeight: FontWeight.bold,
+      fontSize: 12,
+    );
+    return SideTitleWidget(
+      axisSide: meta.axisSide,
+      space: 4,
+      child: Text('${value ~/ 2}'),
+    );
+  }
+}
+
 class MyBarChart extends StatefulWidget {
   const MyBarChart({super.key});
 
@@ -593,7 +887,7 @@ class _MyBarChartState extends State<MyBarChart> {
       // implement the bar chart
       child: BarChart(
         BarChartData(
-          maxY: 35,
+          maxY: 50,
           borderData: FlBorderData(
               border: const Border(
             top: BorderSide.none,
@@ -609,42 +903,70 @@ class _MyBarChartState extends State<MyBarChart> {
                   toY: double.parse(temperature[pp + 6]),
                   width: 5,
                   color: Colors.amber),
+              BarChartRodData(
+                  toY: double.parse(humidity[pp + 6]) / 2,
+                  width: 5,
+                  color: Colors.indigo),
             ]),
             BarChartGroupData(x: 2, barRods: [
               BarChartRodData(
-                  toY: double.parse(temperature[pp + 5]),
+                  toY: double.parse(temperature[pp + 5]) / 2,
                   width: 5,
                   color: Colors.amber),
+              BarChartRodData(
+                  toY: double.parse(humidity[pp + 5]) / 2,
+                  width: 5,
+                  color: Colors.indigo),
             ]),
             BarChartGroupData(x: 3, barRods: [
               BarChartRodData(
                   toY: double.parse(temperature[pp + 4]),
                   width: 5,
                   color: Colors.amber),
+              BarChartRodData(
+                  toY: double.parse(humidity[pp + 4]) / 2,
+                  width: 5,
+                  color: Colors.indigo),
             ]),
             BarChartGroupData(x: 4, barRods: [
               BarChartRodData(
                   toY: double.parse(temperature[pp + 3]),
                   width: 5,
                   color: Colors.amber),
+              BarChartRodData(
+                  toY: double.parse(humidity[pp + 3]) / 2,
+                  width: 5,
+                  color: Colors.indigo),
             ]),
             BarChartGroupData(x: 5, barRods: [
               BarChartRodData(
                   toY: double.parse(temperature[pp + 2]),
                   width: 5,
                   color: Colors.amber),
+              BarChartRodData(
+                  toY: double.parse(humidity[pp + 2]) / 2,
+                  width: 5,
+                  color: Colors.indigo),
             ]),
             BarChartGroupData(x: 6, barRods: [
               BarChartRodData(
                   toY: double.parse(temperature[pp + 1]),
                   width: 5,
                   color: Colors.amber),
+              BarChartRodData(
+                  toY: double.parse(humidity[pp + 1]) / 2,
+                  width: 5,
+                  color: Colors.indigo),
             ]),
             BarChartGroupData(x: 7, barRods: [
               BarChartRodData(
                   toY: double.parse(temperature[pp + 0]),
                   width: 5,
                   color: Colors.amber),
+              BarChartRodData(
+                  toY: double.parse(humidity[pp + 0]) / 2,
+                  width: 5,
+                  color: Colors.indigo),
             ]),
           ],
           titlesData: FlTitlesData(
@@ -666,13 +988,23 @@ class _MyBarChartState extends State<MyBarChart> {
             bottomTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                getTitlesWidget: getTitles,
-                reservedSize: 38,
+                getTitlesWidget: (value, titleMeta) {
+                  return Padding(
+                    // You can use any widget here
+                    padding: EdgeInsets.only(top: 8.0),
+                    child: RotatedBox(
+                      quarterTurns: 1,
+                      child: getTitles(value, titleMeta),
+                    ),
+                  );
+                },
+                reservedSize: 57,
+                // interval: 12,
               ),
             ),
           ),
         ),
-        swapAnimationDuration: Duration(milliseconds: 500), // Optional
+        swapAnimationDuration: Duration(milliseconds: 250), // Optional
         swapAnimationCurve: Curves.linear, // Optional
       ),
     );
@@ -686,34 +1018,30 @@ class _MyBarChartState extends State<MyBarChart> {
     );
     String text;
     switch (value.toInt()) {
-      ///      case 0:
-      ///        text = xlabel[pp+7];
-      ///        break;
+      case 0:
+        text = xlabel[pp + 7];
+        break;
       case 1:
         text = xlabel[pp + 6];
         break;
-
-      ///      case 2:
-      ///        text = xlabel[pp+5];
-      ///        break;
+      case 2:
+        text = xlabel[pp + 5];
+        break;
       case 3:
         text = xlabel[pp + 4];
         break;
-
-      ///      case 4:
-      ///        text = xlabel[pp+3];
-      ///        break;
+      case 4:
+        text = xlabel[pp + 3];
+        break;
       case 5:
         text = xlabel[pp + 2];
         break;
-
-      ///      case 6:
-      ///        text = xlabel[pp+1];
-      ///        break;
+      case 6:
+        text = xlabel[pp + 1];
+        break;
       case 7:
         text = xlabel[pp + 0];
         break;
-
       default:
         text = '';
         break;
