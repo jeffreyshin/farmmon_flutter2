@@ -300,14 +300,22 @@ class _MyHomePageState extends State<MyHomePage> {
                 destinations: [
                   NavigationRailDestination(
                     icon: Icon(FontAwesomeIcons.appleWhole),
+                    // icon: Image(
+                    // image: AssetImage("images/strawberry.png"),
+                    // width: 27.0),
                     label: Text('딸기'),
                   ),
                   NavigationRailDestination(
                     icon: Icon(FontAwesomeIcons.solidLemon),
+                    // icon: Image(
+                    // image: AssetImage("images/tomato.png"), width: 25.0),
                     label: Text('토마토'),
                   ),
                   NavigationRailDestination(
                     icon: Icon(Icons.favorite),
+                    // icon: Image(
+                    // image: AssetImage("images/bellpepper.png"),
+                    // width: 30.0),
                     label: Text('파프리카'),
                   ),
                   NavigationRailDestination(
@@ -558,15 +566,15 @@ class _StrawberryPageState extends State<StrawberryPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('탄저병: '),
+              Text('탄저병:'),
               Text(
                 '■',
                 style: TextStyle(
                   color: Colors.amber,
                 ),
               ),
-              SizedBox(width: 20),
-              Text('잿빛곰팡이병: '),
+              SizedBox(width: 10),
+              Text('잿빛곰팡이병:'),
               Text(
                 '■',
                 style: TextStyle(
@@ -665,7 +673,7 @@ class FavoritesPage extends StatelessWidget {
           child: Text('You have '
               '${appState.favorites.length} favorites:'),
         ),
-        for (int i = 1; i <= 25; i++) // var pair in appState.favorites
+        for (int i = 1; i <= 5; i++) // var pair in appState.favorites
           ListTile(
             leading: Icon(Icons.favorite),
             title: Text('공주농가$i'), // ${pair.asLowerCase}
@@ -691,7 +699,7 @@ class _MyLineChartState extends State<MyLineChart> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(30),
+      padding: const EdgeInsets.all(10),
       // implement the bar chart
       child: LineChart(
         LineChartData(
@@ -910,7 +918,7 @@ class _MyBarChartState extends State<MyBarChart> {
             ]),
             BarChartGroupData(x: 2, barRods: [
               BarChartRodData(
-                  toY: double.parse(temperature[pp + 5]) / 2,
+                  toY: double.parse(temperature[pp + 5]),
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
