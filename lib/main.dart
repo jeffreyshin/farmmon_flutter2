@@ -11,11 +11,11 @@ import 'package:farmmon_flutter/presentation/resources/app_resources.dart';
 // import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:ui';
-// import 'package:farmmon_flutter/icons/custom_icons_icons.dart';
+// import 'dart:ui';
+import 'package:farmmon_flutter/icons/custom_icons_icons.dart';
 // import 'package:dio/dio.dart';
 import 'dart:io';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+// import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /////////////////////////////////////
@@ -273,10 +273,10 @@ class _MyHomePageState extends State<MyHomePage> {
         page = StrawberryPage();
         break;
       case 1:
-        page = FavoritesPage();
+        page = Placeholder();
         break;
       case 2:
-        page = MyBarChart();
+        page = Placeholder();
         break;
       case 3:
         page = MyLineChartPage();
@@ -299,20 +299,21 @@ class _MyHomePageState extends State<MyHomePage> {
                 labelType: NavigationRailLabelType.all,
                 destinations: [
                   NavigationRailDestination(
-                    icon: Icon(FontAwesomeIcons.appleWhole),
+                    icon: Icon(CustomIcons.strawberry), //solidLemon
+                    // icon: Icon(FontAwesomeIcons.appleWhole),
                     // icon: Image(
                     // image: AssetImage("images/strawberry.png"),
                     // width: 27.0),
                     label: Text('딸기'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(FontAwesomeIcons.solidLemon),
+                    icon: Icon(CustomIcons.tomato), //solidLemon
                     // icon: Image(
                     // image: AssetImage("images/tomato.png"), width: 25.0),
                     label: Text('토마토'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.favorite),
+                    icon: Icon(CustomIcons.bellpepper), //solidLemon
                     // icon: Image(
                     // image: AssetImage("images/bellpepper.png"),
                     // width: 30.0),
@@ -407,7 +408,6 @@ class _MyLineChartPageState extends State<MyLineChartPage>
             ],
           ),
           SizedBox(height: 20),
-          Text('환경데이터 보기'),
           Expanded(
             child: MyLineChart(),
           ),
@@ -714,7 +714,29 @@ class _MyLineChartState extends State<MyLineChart> {
           )),
           // groupsSpace: 10,
           // add bars
-
+          lineTouchData: LineTouchData(
+            touchTooltipData: LineTouchTooltipData(
+              maxContentWidth: 100,
+              tooltipBgColor: Colors.black,
+              getTooltipItems: (touchedSpots) {
+                return touchedSpots.map((LineBarSpot touchedSpot) {
+                  final multiplyer = [0.5, 1, 10];
+                  final textStyle = TextStyle(
+                    color: touchedSpot.bar.gradient?.colors[0] ??
+                        touchedSpot.bar.color,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  );
+                  return LineTooltipItem(
+                    ' ${(touchedSpot.y * multiplyer[touchedSpot.barIndex]).toStringAsFixed(1)} ',
+                    textStyle,
+                  );
+                }).toList();
+              },
+            ),
+            handleBuiltInTouches: true,
+            getTouchLineStart: (data, index) => 0,
+          ),
           lineBarsData: [
             LineChartBarData(
               spots: [
@@ -732,7 +754,7 @@ class _MyLineChartState extends State<MyLineChart> {
               barWidth: 5,
               isStrokeCapRound: true,
               dotData: FlDotData(
-                show: false,
+                show: true,
               ),
             ),
             LineChartBarData(
@@ -745,13 +767,14 @@ class _MyLineChartState extends State<MyLineChart> {
                 FlSpot(6, double.parse(humidity[pp + 1])),
                 FlSpot(7, double.parse(humidity[pp + 0])),
               ],
+
               isCurved: true,
               color: AppColors.contentColorBlue,
               // gradient: LinearGradient(colors: gradientColors),
               barWidth: 5,
               isStrokeCapRound: true,
               dotData: FlDotData(
-                show: false,
+                show: true,
               ),
             ),
             LineChartBarData(
@@ -787,13 +810,26 @@ class _MyLineChartState extends State<MyLineChart> {
             leftTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
-                getTitlesWidget: getTitles2,
+                getTitlesWidget: (value, titleMeta) {
+                  return Padding(
+                    // You can use any widget here
+                    padding: EdgeInsets.only(top: 8.0),
+                    child: getTitles2(value, titleMeta),
+                  );
+                },
                 reservedSize: 38,
               ),
             ),
             rightTitles: AxisTitles(
               sideTitles: SideTitles(
                 showTitles: true,
+                getTitlesWidget: (value, titleMeta) {
+                  return Padding(
+                    // You can use any widget here
+                    padding: EdgeInsets.only(top: 8.0),
+                    child: getTitles3(value, titleMeta),
+                  );
+                },
                 reservedSize: 38,
               ),
             ),
@@ -821,11 +857,10 @@ class _MyLineChartState extends State<MyLineChart> {
       ),
     );
   }
-  // getTitles,
 
   Widget getTitles(double value, TitleMeta meta) {
     final style = TextStyle(
-      // color: AppgetTitlesColors.contentColorBlue.darken(20),
+      // color: Colors.black,
       fontWeight: FontWeight.bold,
       fontSize: 12,
     );
@@ -867,15 +902,30 @@ class _MyLineChartState extends State<MyLineChart> {
   }
 
   Widget getTitles2(double value, TitleMeta meta) {
-    final style = TextStyle(
-      // color: AppColors.contentColorBlue.darken(20),
-      fontWeight: FontWeight.bold,
-      fontSize: 12,
+    final stylered = TextStyle(
+      color: Colors.redAccent,
+      // color: AppColors.contentColorBlue,
+      // fontWeight: FontWeight.bold,
+      fontSize: 14,
     );
     return SideTitleWidget(
       axisSide: meta.axisSide,
       space: 4,
-      child: Text('${value ~/ 2}'),
+      child: Text('${value ~/ 2}', style: stylered),
+    );
+  }
+
+  Widget getTitles3(double value, TitleMeta meta) {
+    final styleblue = TextStyle(
+      color: Colors.blueAccent,
+      // color: AppColors.contentColorBlue,
+      // fontWeight: FontWeight.bold,
+      fontSize: 14,
+    );
+    return SideTitleWidget(
+      axisSide: meta.axisSide,
+      space: 4,
+      child: Text(value.toStringAsFixed(0), style: styleblue),
     );
   }
 }
