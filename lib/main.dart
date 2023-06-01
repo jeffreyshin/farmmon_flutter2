@@ -23,7 +23,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 var pp = 0;
 var ppfarm = 0;
 var farmNo = 1;
-var MAXX = 28;
+var MAXX = 36;
 var registerdfarms = <String>[
   '',
 ];

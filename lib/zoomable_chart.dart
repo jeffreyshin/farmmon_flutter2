@@ -26,7 +26,7 @@ class _ZoomableChartState extends State<ZoomableChart> {
   @override
   void initState() {
     super.initState();
-    minX = widget.maxX / 3;
+    minX = widget.maxX * 2 / 3;
     maxX = widget.maxX;
   }
 
