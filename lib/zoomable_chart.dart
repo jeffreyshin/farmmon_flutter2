@@ -35,7 +35,7 @@ class _ZoomableChartState extends State<ZoomableChart> {
     return GestureDetector(
       onDoubleTap: () {
         setState(() {
-          minX = 0;
+          minX = widget.maxX - 7;
           maxX = widget.maxX;
         });
       },
