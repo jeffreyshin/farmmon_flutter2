@@ -319,7 +319,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
     ///customdt.clear();
 
     // _prefsLoad();
-
+// 데이터 저장해놓고 마지막 데이터만 호출하는 것으로 수정할 것
     for (var i = 0; i < MAXX; i++) {
       String formatDate = DateFormat('yyyyMMdd').format(now);
       String formatTime = DateFormat('HH').format(now);
