@@ -26,7 +26,7 @@ class _ZoomableChartState extends State<ZoomableChart> {
   @override
   void initState() {
     super.initState();
-    minX = widget.maxX * 2 / 3;
+    minX = widget.maxX - 7;
     maxX = widget.maxX;
   }
 
@@ -50,8 +50,8 @@ class _ZoomableChartState extends State<ZoomableChart> {
         var lastMinMaxDistance = max(lastMaxXValue - lastMinXValue, 0.0);
 
         setState(() {
-          minX -= lastMinMaxDistance * 0.005 * horizontalDistance;
-          maxX -= lastMinMaxDistance * 0.005 * horizontalDistance;
+          minX -= lastMinMaxDistance * 0.01 * horizontalDistance;
+          maxX -= lastMinMaxDistance * 0.01 * horizontalDistance;
 
           if (minX < 0) {
             minX = 0;
@@ -61,7 +61,7 @@ class _ZoomableChartState extends State<ZoomableChart> {
             maxX = widget.maxX;
             minX = maxX - lastMinMaxDistance;
           }
-          print("$minX, $maxX");
+          // print("$minX, $maxX");
         });
       },
       onScaleStart: (details) {
@@ -69,6 +69,7 @@ class _ZoomableChartState extends State<ZoomableChart> {
         lastMaxXValue = maxX;
       },
       onScaleUpdate: (details) {
+        /*
         var horizontalScale = details.horizontalScale;
         if (horizontalScale == 0) return;
         print(horizontalScale);
@@ -92,6 +93,7 @@ class _ZoomableChartState extends State<ZoomableChart> {
           }
           print("$minX, $maxX");
         });
+        */
       },
       child: widget.builder(minX, maxX),
     );
