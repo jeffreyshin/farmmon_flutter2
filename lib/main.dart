@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:farmmon_flutter/zoomable_chart.dart';
 
 import 'package:farmmon_flutter/presentation/resources/app_resources.dart';
 
@@ -22,6 +23,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 var pp = 0;
 var ppfarm = 0;
 var farmNo = 1;
+var MAXX = 28;
 var registerdfarms = <String>[
   '',
 ];
@@ -35,150 +37,16 @@ var facilityName = <String>[
 var serviceKey = <String>[
   'r34df5d2d566049e2a809c41da915adc6',
 ];
-var xlabel = <String>[
-  '',
-  '',
-  '',
-  '',
-  '',
-  '',
-  '',
-  '',
-  '',
-  '',
-  '',
-  '',
-  '',
-  '',
-  '',
-  ''
-];
-var customdt = <String>[
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0'
-];
-var temperature = <String>[
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0'
-];
-var humidity = <String>[
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0'
-];
-var cotwo = <String>[
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0'
-];
-var leafwet = <String>[
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0'
-];
-var gtemperature = <String>[
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0'
-];
-var quantum = <String>[
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0',
-  '0'
-];
+
+var xlabel = List<String>.filled(50, '');
+var customdt = List<String>.filled(50, '0');
+var temperature = List<String>.filled(50, '0');
+var humidity = List<String>.filled(50, '0');
+var cotwo = List<String>.filled(50, '0');
+var leafwet = List<String>.filled(50, '0');
+var gtemperature = List<String>.filled(50, '0');
+var quantum = List<String>.filled(50, '0');
+
 //////////////////////////////////////
 
 class MyHttpOverrides extends HttpOverrides {
@@ -380,7 +248,7 @@ class _MyLineChartPageState extends State<MyLineChartPage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          SizedBox(height: 40),
+          SizedBox(height: 50),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -407,7 +275,7 @@ class _MyLineChartPageState extends State<MyLineChartPage>
               ),
             ],
           ),
-          SizedBox(height: 20),
+          SizedBox(height: 30),
           Expanded(
             child: MyLineChart(),
           ),
@@ -440,9 +308,9 @@ class _StrawberryPageState extends State<StrawberryPage> {
     var uriiot = Uri.parse(urliot2);
 
     var deltaT = int.parse(formatTime);
-    // var deltaT12 = deltaT % 12;
+    var deltaT12 = deltaT % 12;
     deltaT = 24;
-    if (deltaT < 12) deltaT = deltaT + 12;
+    if (deltaT < 12) deltaT = deltaT + deltaT12;
 
     ///print(deltaT+deltaT12);
     ///print('$formatDate');
@@ -452,8 +320,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
 
     // _prefsLoad();
 
-    for (var i = 0; i < 16; i++) {
-      now = now.subtract(Duration(hours: 1));
+    for (var i = 0; i < MAXX; i++) {
       String formatDate = DateFormat('yyyyMMdd').format(now);
       String formatTime = DateFormat('HH').format(now);
       urliot2 = "$urliot/$apikey/$formatDate/$formatTime";
@@ -461,6 +328,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
       ///print(urliot2);
       uriiot = Uri.parse(urliot2);
       http.Response response = await http.get(uriiot);
+      now = now.subtract(Duration(hours: 1));
 
       ///    Map<String, dynamic> usem = jsonDecode(response.body);
 
@@ -701,159 +569,160 @@ class _MyLineChartState extends State<MyLineChart> {
     return Padding(
       padding: const EdgeInsets.all(10),
       // implement the bar chart
-      child: LineChart(
-        LineChartData(
-          maxY: 100,
-          minY: 0,
-          borderData: FlBorderData(
-              border: const Border(
-            top: BorderSide.none,
-            right: BorderSide(width: 1),
-            left: BorderSide(width: 1),
-            bottom: BorderSide(width: 1),
-          )),
-          // groupsSpace: 10,
-          // add bars
-          lineTouchData: LineTouchData(
-            touchTooltipData: LineTouchTooltipData(
-              maxContentWidth: 100,
-              tooltipBgColor: Colors.black,
-              getTooltipItems: (touchedSpots) {
-                return touchedSpots.map((LineBarSpot touchedSpot) {
-                  final multiplyer = [0.5, 1, 10];
-                  final textStyle = TextStyle(
-                    color: touchedSpot.bar.gradient?.colors[0] ??
-                        touchedSpot.bar.color,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 14,
-                  );
-                  return LineTooltipItem(
-                    ' ${(touchedSpot.y * multiplyer[touchedSpot.barIndex]).toStringAsFixed(1)} ',
-                    textStyle,
-                  );
-                }).toList();
-              },
-            ),
-            handleBuiltInTouches: true,
-            getTouchLineStart: (data, index) => 0,
-          ),
-          lineBarsData: [
-            LineChartBarData(
-              spots: [
-                FlSpot(1, double.parse(temperature[pp + 6]) * 2),
-                FlSpot(2, double.parse(temperature[pp + 5]) * 2),
-                FlSpot(3, double.parse(temperature[pp + 4]) * 2),
-                FlSpot(4, double.parse(temperature[pp + 3]) * 2),
-                FlSpot(5, double.parse(temperature[pp + 2]) * 2),
-                FlSpot(6, double.parse(temperature[pp + 1]) * 2),
-                FlSpot(7, double.parse(temperature[pp + 0]) * 2),
-              ],
-              isCurved: true,
-              color: AppColors.contentColorRed,
-              // gradient: LinearGradient(colors: gradientColors),
-              barWidth: 5,
-              isStrokeCapRound: true,
-              dotData: FlDotData(
-                show: true,
-              ),
-            ),
-            LineChartBarData(
-              spots: [
-                FlSpot(1, double.parse(humidity[pp + 6])),
-                FlSpot(2, double.parse(humidity[pp + 5])),
-                FlSpot(3, double.parse(humidity[pp + 4])),
-                FlSpot(4, double.parse(humidity[pp + 3])),
-                FlSpot(5, double.parse(humidity[pp + 2])),
-                FlSpot(6, double.parse(humidity[pp + 1])),
-                FlSpot(7, double.parse(humidity[pp + 0])),
-              ],
+      child: AspectRatio(
+        aspectRatio: 16 / 9,
+        child: ZoomableChart(
+          maxX: MAXX.toDouble() - 1,
+          builder: (minX, maxX) {
+            return LineChart(
+              LineChartData(
+                clipData: FlClipData.all(),
+                minX: minX,
+                maxX: maxX,
+                maxY: 100,
+                minY: 1,
+                borderData: FlBorderData(
+                    border: const Border(
+                  top: BorderSide.none,
+                  right: BorderSide(width: 1),
+                  left: BorderSide(width: 1),
+                  bottom: BorderSide(width: 1),
+                )),
+                // groupsSpace: 10,
+                // add bars
+                lineTouchData:
+                    // LineTouchData(enabled: false),
+                    LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    maxContentWidth: 100,
+                    tooltipBgColor: Colors.black,
+                    getTooltipItems: (touchedSpots) {
+                      return touchedSpots.map((LineBarSpot touchedSpot) {
+                        final multiplyer = [0.5, 1, 10];
+                        final textStyle = TextStyle(
+                          color: touchedSpot.bar.gradient?.colors[0] ??
+                              touchedSpot.bar.color,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 14,
+                        );
+                        return LineTooltipItem(
+                          ' ${(touchedSpot.y * multiplyer[touchedSpot.barIndex]).toStringAsFixed(1)} ',
+                          textStyle,
+                        );
+                      }).toList();
+                    },
+                  ),
+                  handleBuiltInTouches: true,
+                  getTouchLineStart: (data, index) => 0,
+                ),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: [
+                      for (int i = 0; i < MAXX; i++)
+                        FlSpot(i.toDouble(),
+                            double.parse(temperature[pp + (MAXX - i - 1)]) * 2)
+                    ],
 
-              isCurved: true,
-              color: AppColors.contentColorBlue,
-              // gradient: LinearGradient(colors: gradientColors),
-              barWidth: 5,
-              isStrokeCapRound: true,
-              dotData: FlDotData(
-                show: true,
-              ),
-            ),
-            LineChartBarData(
-              spots: [
-                FlSpot(1, double.parse(cotwo[pp + 6]) / 10),
-                FlSpot(2, double.parse(cotwo[pp + 5]) / 10),
-                FlSpot(3, double.parse(cotwo[pp + 4]) / 10),
-                FlSpot(4, double.parse(cotwo[pp + 3]) / 10),
-                FlSpot(5, double.parse(cotwo[pp + 2]) / 10),
-                FlSpot(6, double.parse(cotwo[pp + 1]) / 10),
-                FlSpot(7, double.parse(cotwo[pp + 0]) / 10),
-              ],
-              isCurved: true,
-              color: AppColors.contentColorBlack,
-              gradient: LinearGradient(colors: gradientColors),
-              barWidth: 0,
-              isStrokeCapRound: true,
-              dotData: FlDotData(
-                show: false,
-              ),
-              belowBarData: BarAreaData(
-                show: true,
-                // color: gradientColors.map((color) => color.withOpacity(0.3)).toList(),
-              ),
-            ),
-          ],
-
-          titlesData: FlTitlesData(
-            show: true,
-            topTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                getTitlesWidget: (value, titleMeta) {
-                  return Padding(
-                    // You can use any widget here
-                    padding: EdgeInsets.only(top: 8.0),
-                    child: getTitles2(value, titleMeta),
-                  );
-                },
-                reservedSize: 38,
-              ),
-            ),
-            rightTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                getTitlesWidget: (value, titleMeta) {
-                  return Padding(
-                    // You can use any widget here
-                    padding: EdgeInsets.only(top: 8.0),
-                    child: getTitles3(value, titleMeta),
-                  );
-                },
-                reservedSize: 38,
-              ),
-            ),
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                interval: 1,
-                reservedSize: 57,
-                getTitlesWidget: (value, titleMeta) {
-                  return Padding(
-                    // You can use any widget here
-                    padding: EdgeInsets.only(top: 8.0),
-                    child: RotatedBox(
-                      quarterTurns: 1,
-                      child: getTitles(value, titleMeta),
+                    isCurved: true,
+                    color: AppColors.contentColorRed,
+                    // gradient: LinearGradient(colors: gradientColors),
+                    barWidth: 5,
+                    isStrokeCapRound: true,
+                    dotData: FlDotData(
+                      show: true,
                     ),
-                  );
-                },
+                  ),
+                  LineChartBarData(
+                    spots: [
+                      for (int i = 0; i < MAXX; i++)
+                        FlSpot(i.toDouble(),
+                            double.parse(humidity[pp + (MAXX - i - 1)]))
+                    ],
+                    isCurved: true,
+                    color: AppColors.contentColorBlue,
+                    // gradient: LinearGradient(colors: gradientColors),
+                    barWidth: 5,
+                    isStrokeCapRound: true,
+                    dotData: FlDotData(
+                      show: true,
+                    ),
+                  ),
+                  LineChartBarData(
+                    spots: [
+                      for (int i = 0; i < MAXX; i++)
+                        FlSpot(i.toDouble(),
+                            double.parse(cotwo[pp + (MAXX - i - 1)]) / 10)
+                    ],
+                    isCurved: true,
+                    color: AppColors.contentColorBlack,
+                    gradient: LinearGradient(colors: gradientColors),
+                    barWidth: 0,
+                    isStrokeCapRound: true,
+                    dotData: FlDotData(
+                      show: false,
+                    ),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      // color: gradientColors.map((color) => color.withOpacity(0.3)).toList(),
+                    ),
+                  ),
+                ],
+
+                titlesData: FlTitlesData(
+                  show: true,
+                  topTitles: AxisTitles(
+                    sideTitles: SideTitles(showTitles: false),
+                  ),
+                  leftTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (value, titleMeta) {
+                        return Padding(
+                          // You can use any widget here
+                          padding: EdgeInsets.only(top: 8.0),
+                          child: getTitles2(value, titleMeta),
+                        );
+                      },
+                      reservedSize: 38,
+                    ),
+                  ),
+                  rightTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (value, titleMeta) {
+                        return Padding(
+                          // You can use any widget here
+                          padding: EdgeInsets.only(top: 8.0),
+                          child: getTitles3(value, titleMeta),
+                        );
+                      },
+                      reservedSize: 38,
+                    ),
+                  ),
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      interval: 1,
+                      reservedSize: 57,
+                      getTitlesWidget: (value, titleMeta) {
+                        return Padding(
+                          // You can use any widget here
+                          padding: EdgeInsets.only(top: 8.0),
+                          child: RotatedBox(
+                            quarterTurns: 1,
+                            child: getTitles(value, titleMeta),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
+              swapAnimationDuration: Duration(milliseconds: 250), // Optional
+              swapAnimationCurve: Curves.linear, // Optional
+            );
+          },
         ),
-        swapAnimationDuration: Duration(milliseconds: 250), // Optional
-        swapAnimationCurve: Curves.linear, // Optional
       ),
     );
   }
@@ -865,35 +734,56 @@ class _MyLineChartState extends State<MyLineChart> {
       fontSize: 12,
     );
     String text;
+    text = xlabel[pp + (MAXX - value.toInt() - 1)];
+/*
     switch (value.toInt()) {
       case 0:
-        text = xlabel[pp + 7];
+        text = xlabel[pp + 13]
         break;
       case 1:
-        text = xlabel[pp + 6];
+        text = xlabel[pp + 12];
         break;
       case 2:
-        text = xlabel[pp + 5];
+        text = xlabel[pp + 11];
         break;
       case 3:
-        text = xlabel[pp + 4];
+        text = xlabel[pp + 10];
         break;
       case 4:
-        text = xlabel[pp + 3];
+        text = xlabel[pp + 9];
         break;
       case 5:
-        text = xlabel[pp + 2];
+        text = xlabel[pp + 8];
         break;
       case 6:
-        text = xlabel[pp + 1];
+        text = xlabel[pp + 7];
         break;
       case 7:
+        text = xlabel[pp + 6];
+        break;
+      case 8:
+        text = xlabel[pp + 5];
+        break;
+      case 9:
+        text = xlabel[pp + 4];
+        break;
+      case 10:
+        text = xlabel[pp + 3];
+        break;
+      case 11:
+        text = xlabel[pp + 2];
+        break;
+      case 12:
+        text = xlabel[pp + 1];
+        break;
+      case 13:
         text = xlabel[pp + 0];
         break;
       default:
         text = '';
         break;
     }
+    */
     return SideTitleWidget(
       axisSide: meta.axisSide,
       space: 4,
