@@ -9,6 +9,7 @@
 4. HTTP API post SNFD로 확인 완료. file이 잘 안되서 json전송방식으로 바꾸기로 했음
 5. 일단, iot포털데이터를 받아서 그래프 업데이트만 구현함
 6. 농가 등록메뉴 구성함(사용자편이 무시하고 기능만 구현: 농가명_필수, 장치명_선택, iot포털serviceKey_필수)
+7. 시간별 환경데이터 갱신된 데이터만 받아오도록 수정
 
 
 Future<String> uploadImage(File file) async { String fileName = file.path.split('/').last; FormData formData = FormData.fromMap({ "file": await MultipartFile.fromFile(file.path, filename:fileName), }); response = await dio.post("/info", data: formData); return response.data['id']; }
