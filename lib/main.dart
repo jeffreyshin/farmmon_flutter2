@@ -1,33 +1,36 @@
-import 'package:english_words/english_words.dart';
-// import 'package:flutter/cupertino.dart';
+import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:english_words/english_words.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
 import 'package:fl_chart/fl_chart.dart';
 import 'package:farmmon_flutter/zoomable_chart.dart';
-
 import 'package:farmmon_flutter/presentation/resources/app_resources.dart';
-
-///import 'package:farmmon_flutter/util/extensions/color_extensions.dart';
-// import 'package:google_fonts/google_fonts.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-// import 'dart:ui';
 import 'package:farmmon_flutter/icons/custom_icons_icons.dart';
-// import 'package:dio/dio.dart';
-import 'dart:io';
-// import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
-/////////////////////////////////////
+// import 'package:flutter/foundation.dart';
+// import 'package:flutter/services.dart';
+// import 'dart:ffi';
+// import 'package:flutter/cupertino.dart';
+// import 'package:farmmon_flutter/util/extensions/color_extensions.dart';
+// import 'package:google_fonts/google_fonts.dart';
+// import 'dart:ui';
+// import 'package:dio/dio.dart';
+// import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 var pp = 0;
 var ppfarm = 0;
 var farmNo = 1;
+var lastDatetime = '';
 var MAXX = 24;
+
 var registerdfarms = <String>[
   '',
 ];
-
 var farmName = <String>[
   '기본농장',
 ];
@@ -38,16 +41,153 @@ var serviceKey = <String>[
   'r34df5d2d566049e2a809c41da915adc6',
 ];
 
-var xlabel = List<String>.filled(50, '');
-var customdt = List<String>.filled(50, '0');
-var temperature = List<String>.filled(50, '0');
-var humidity = List<String>.filled(50, '0');
-var cotwo = List<String>.filled(50, '0');
-var leafwet = List<String>.filled(50, '0');
-var gtemperature = List<String>.filled(50, '0');
-var quantum = List<String>.filled(50, '0');
+// var xlabel = List<String>.filled(50, '', growable: true);
+// var customdt = List<String>.filled(50, '0', growable: true);
+// var temperature = List<String>.filled(50, '0', growable: true);
+// var humidity = List<String>.filled(50, '0', growable: true);
+// var cotwo = List<String>.filled(50, '0', growable: true);
+// var leafwet = List<String>.filled(50, '0', growable: true);
+// var gtemperature = List<String>.filled(50, '0', growable: true);
+// var quantum = List<String>.filled(50, '0', growable: true);
 
-//////////////////////////////////////
+/////////////////////////////////////////////
+class Sensor {
+  String? customDt;
+  double? temperature;
+  double? humidity;
+  double? cotwo;
+  double? leafwet;
+  double? gtemperature;
+  double? quantum;
+  String? xlabel;
+
+  Sensor({
+    this.customDt,
+    this.temperature,
+    this.humidity,
+    this.cotwo,
+    this.leafwet,
+    this.gtemperature,
+    this.quantum,
+    this.xlabel,
+  });
+
+  factory Sensor.fromJson(Map<String, dynamic> json) {
+    return Sensor(
+      customDt: json['custom_dt'] as String,
+      temperature: json['temperature'] as double,
+      humidity: json['humidity'] as double,
+      cotwo: json['cotwo'] as double,
+      leafwet: json['leafwet'] as double,
+      gtemperature: json['gtemperature'] as double,
+      quantum: json['quantum'] as double,
+      xlabel: json['xlabel'] as String,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['custom_dt'] = customDt;
+    data['temperature'] = temperature;
+    data['humidity'] = humidity;
+    data['cotwo'] = cotwo;
+    data['leafwet'] = leafwet;
+    data['gtemperature'] = gtemperature;
+    data['quantum'] = quantum;
+    return data;
+  }
+}
+
+class SensorList {
+  final List<Sensor>? sensors;
+  SensorList({this.sensors});
+
+  factory SensorList.fromJson(String jsonString) {
+    List<dynamic> listFromJson = json.decode(jsonString);
+    List<Sensor> sensors = <Sensor>[];
+
+    sensors = listFromJson.map((sensor) => Sensor.fromJson(sensor)).toList();
+    return SensorList(sensors: sensors);
+  }
+}
+
+Sensor sensor = Sensor(
+  customDt: "2023-06-04 02:07:11",
+  temperature: 15.7,
+  humidity: 84.9,
+  cotwo: 546.0,
+  leafwet: 1.1,
+  gtemperature: 17.8,
+  quantum: 0.0,
+  xlabel: "",
+);
+
+// List<Sensor> sensorList = <Sensor>[];
+var sensorList = List<Sensor>.filled(50, sensor, growable: true);
+
+/////////////////////////////////////////////////////////////
+
+Future<File> writeJsonAsString(String? data) async {
+  // final file = File('json/sensor.json');
+  final dir = await getApplicationDocumentsDirectory();
+  // Directory dir = Directory('/storage/emulated/0/Documents');
+  // print('${dir.path}/sensor.json');
+  // print('writing json file');
+  return File('${dir.path}/sensor.json').writeAsString(data ?? '');
+  // return file.writeAsString(data ?? '');
+}
+
+Future readJsonAsString() async {
+  final dir = await getApplicationDocumentsDirectory();
+  // Directory dir = Directory('/storage/emulated/0/Documents');
+  // print('${dir.path}/sensor.json');
+  var routeFromJsonFile = await File('${dir.path}/sensor.json').readAsString();
+  sensorList = (SensorList.fromJson(routeFromJsonFile).sensors ?? <Sensor>[]);
+}
+/////////////////////////////////////////////////////////////////////
+
+void prefsLoad() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  farmNo = (prefs.getInt('farmNumber') ?? 1);
+  ppfarm = (prefs.getInt('myFarm') ?? 0);
+  lastDatetime = (prefs.getString('lastDatetime') ?? "2023-06-04 01:00:00");
+
+  await prefs.setInt('farmNumber', farmNo);
+  await prefs.setInt('myFarm', ppfarm);
+  await prefs.setString('lastDatetime', lastDatetime);
+  // print("prefs Loading... lastDatetime: $lastDatetime");
+
+  // print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
+
+  farmName[0] = (prefs.getString('farmName0') ?? farmName[0]);
+  facilityName[0] = (prefs.getString('facilityName0') ?? facilityName[0]);
+  serviceKey[0] = (prefs.getString('serviceKey0') ?? serviceKey[0]);
+
+  for (int i = 1; i < farmNo; i++) {
+    farmName.add(prefs.getString('farmName$i') ?? farmName[0]);
+    facilityName.add(prefs.getString('facilityName$i') ?? facilityName[0]);
+    serviceKey.add(prefs.getString('serviceKey$i') ?? serviceKey[0]);
+  }
+}
+
+void prefsClear() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  // print('prefs clear $farmNo');
+  prefs.clear();
+  if (farmNo > 1) {
+    farmName.removeRange(1, farmNo);
+    facilityName.removeRange(1, farmNo);
+    serviceKey.removeRange(1, farmNo);
+  }
+  farmNo = 1;
+  ppfarm = 0;
+  lastDatetime = "2023-06-04 02:07:11";
+  print('prefs cleared $farmNo');
+}
+
+/////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////
 
 class MyHttpOverrides extends HttpOverrides {
   @override
@@ -60,6 +200,7 @@ class MyHttpOverrides extends HttpOverrides {
 
 void main() {
   HttpOverrides.global = MyHttpOverrides();
+  readJsonAsString();
   runApp(MyApp());
 }
 
@@ -104,6 +245,27 @@ class MyAppState extends ChangeNotifier {
     }
     notifyListeners();
   }
+
+  Future<void> getSensorList() async {
+    // final dir = await getApplicationDocumentsDirectory();
+    // Directory dir = Directory('/storage/emulated/0/Documents');
+    // final routeFromJsonFile =
+    //     await rootBundle.loadString('${dir.path}/sensor.json');
+    // final routeFromJsonFile = await rootBundle
+    // .loadString('/storage/emulated/0/Documents/sensor.json');
+    // sensorList = (SensorList.fromJson(routeFromJsonFile).sensors ?? <Sensor>[]);
+    // print('getSensorList====================');
+    // print(sensorList[0].customDt);
+    // print(sensorList[0].customDt);
+    // print(sensorList[0].customDt);
+
+    // print(jsonString);
+
+    // current = WordPair.random();
+    notifyListeners();
+    // String jsonString = jsonEncode(sensorList);
+    // print(jsonString);
+  }
 }
 
 class MyHomePage extends StatefulWidget {
@@ -113,28 +275,10 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   var selectedIndex = 0;
-  void _prefsLoad() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    farmNo = (prefs.getInt('farmNumber') ?? 1);
-    ppfarm = (prefs.getInt('myFarm') ?? 0);
-    await prefs.setInt('farmNumber', farmNo);
-    await prefs.setInt('myFarm', ppfarm);
-    // print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
-
-    farmName[0] = (prefs.getString('farmName0') ?? farmName[0]);
-    facilityName[0] = (prefs.getString('facilityName0') ?? facilityName[0]);
-    serviceKey[0] = (prefs.getString('serviceKey0') ?? serviceKey[0]);
-
-    for (int i = 1; i < farmNo; i++) {
-      farmName.add(prefs.getString('farmName$i') ?? farmName[0]);
-      facilityName.add(prefs.getString('facilityName$i') ?? facilityName[0]);
-      serviceKey.add(prefs.getString('serviceKey$i') ?? serviceKey[0]);
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
-    _prefsLoad();
+    prefsLoad();
     Widget page;
     switch (selectedIndex) {
       case 0:
@@ -219,73 +363,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 }
 
-class MyLineChartPage extends StatefulWidget {
-  const MyLineChartPage({super.key});
-
-  @override
-  State<MyLineChartPage> createState() => _MyLineChartPageState();
-}
-
-class _MyLineChartPageState extends State<MyLineChartPage>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(vsync: this);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          SizedBox(height: 50),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '${farmName[ppfarm]}',
-                style: TextStyle(fontSize: 25),
-              ),
-              SizedBox(width: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  ppfarm = (ppfarm + 1) % farmNo;
-                  SharedPreferences prefs =
-                      await SharedPreferences.getInstance();
-                  await prefs.setInt('myFarm', ppfarm);
-                  // print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
-
-                  if (mounted) {
-                    setState(() {
-                      pp = 0;
-                    });
-                  }
-                },
-                child: Text('다음'),
-              ),
-            ],
-          ),
-          SizedBox(height: 30),
-          Expanded(
-            child: MyLineChart(),
-          ),
-          SizedBox(height: 20),
-        ],
-      ),
-    );
-  }
-}
-
 class StrawberryPage extends StatefulWidget {
   @override
   State<StrawberryPage> createState() => _StrawberryPageState();
@@ -300,12 +377,25 @@ class _StrawberryPageState extends State<StrawberryPage> {
     var urliot = 'http://iot.rda.go.kr/api';
     var apikey = serviceKey[ppfarm];
 
-    /// iot포털 테스트
+    // iot portal test
     var now = DateTime.now();
+
+    // Json data load
+    readJsonAsString();
+    int difference = int.parse(
+        now.difference(DateTime.parse(lastDatetime)).inHours.toString());
+    // print('Difference: $difference');
+
+    lastDatetime = DateFormat('yyyy-MM-dd HH:mm:ss').format(now);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('lastDatetime', lastDatetime);
+    // print("prefs Save lastDatetime $lastDatetime");
+
     String formatDate = DateFormat('yyyyMMdd').format(now);
     String formatTime = DateFormat('HH').format(now);
-    var urliot2 = "$urliot/$apikey/$formatDate/$formatTime";
-    var uriiot = Uri.parse(urliot2);
+
+    var urliotString = "$urliot/$apikey/$formatDate/$formatTime";
+    var uriiot = Uri.parse(urliotString);
 
     var deltaT = int.parse(formatTime);
     var deltaT12 = deltaT % 12;
@@ -318,35 +408,64 @@ class _StrawberryPageState extends State<StrawberryPage> {
     ///temperature.clear();
     ///customdt.clear();
 
-    // _prefsLoad();
+    // prefsLoad();
+
 // 데이터 저장해놓고 마지막 데이터만 호출하는 것으로 수정할 것
-    for (var i = 0; i < MAXX; i++) {
+    for (int i = 0; i < difference; i++) {
       String formatDate = DateFormat('yyyyMMdd').format(now);
       String formatTime = DateFormat('HH').format(now);
-      urliot2 = "$urliot/$apikey/$formatDate/$formatTime";
+      urliotString = "$urliot/$apikey/$formatDate/$formatTime";
 
       ///print(urliot2);
-      uriiot = Uri.parse(urliot2);
+      uriiot = Uri.parse(urliotString);
       http.Response response = await http.get(uriiot);
       now = now.subtract(Duration(hours: 1));
 
-      ///    Map<String, dynamic> usem = jsonDecode(response.body);
+      //    Map<String, dynamic> usem = jsonDecode(response.body);
 
       var jsonObj = jsonDecode(response.body);
 
-      ///print(response.body);
-      customdt[i] = jsonObj['datas'][0]['custom_dt'];
-      humidity[i] = jsonObj['datas'][0]['humidity'];
-      temperature[i] = jsonObj['datas'][0]['temperature'];
-      leafwet[i] = jsonObj['datas'][0]['leafwet'];
-      cotwo[i] = jsonObj['datas'][0]['cotwo'];
-      gtemperature[i] = jsonObj['datas'][0]['gtemperature'];
-      quantum[i] = jsonObj['datas'][0]['quantum'];
-      DateTime xvalue = DateTime.parse(customdt[i]);
-      xlabel[i] = DateFormat('HH:mm').format(xvalue);
+      //print(response.body);
 
-      ///print(json_obj);
+      // customdt.insert(i, jsonObj['datas'][0]['custom_dt']);
+      // humidity.insert(i, jsonObj['datas'][0]['humidity']);
+      // temperature.insert(i, jsonObj['datas'][0]['temperature']);
+      // leafwet.insert(i, jsonObj['datas'][0]['leafwet']);
+      // cotwo.insert(i, jsonObj['datas'][0]['cotwo']);
+      // gtemperature.insert(i, jsonObj['datas'][0]['gtemperature']);
+      // quantum.insert(i, jsonObj['datas'][0]['quantum']);
+      // DateTime xvalue = DateTime.parse(jsonObj['datas'][0]['custom_dt']);
+      // xlabel.insert(i, DateFormat('HH:mm').format(xvalue));
+
+      // customdt[i] = jsonObj['datas'][0]['custom_dt'];
+      // humidity[i] = jsonObj['datas'][0]['humidity'];
+      // temperature[i] = jsonObj['datas'][0]['temperature'];
+      // leafwet[i] = jsonObj['datas'][0]['leafwet'];
+      // cotwo[i] = jsonObj['datas'][0]['cotwo'];
+      // gtemperature[i] = jsonObj['datas'][0]['gtemperature'];
+      // quantum[i] = jsonObj['datas'][0]['quantum'];
+      // DateTime xvalue = DateTime.parse(customdt[i]);
+      // xlabel[i] = DateFormat('HH:mm').format(xvalue);
+
+      Sensor nsensor = Sensor(
+        customDt: jsonObj['datas'][0]['custom_dt'],
+        temperature: double.parse(jsonObj['datas'][0]['temperature']),
+        humidity: double.parse(jsonObj['datas'][0]['humidity']),
+        cotwo: double.parse(jsonObj['datas'][0]['cotwo']),
+        leafwet: double.parse(jsonObj['datas'][0]['leafwet']),
+        gtemperature: double.parse(jsonObj['datas'][0]['gtemperature']),
+        quantum: double.parse(jsonObj['datas'][0]['quantum']),
+        xlabel: DateFormat('HH:mm').format(
+          DateTime.parse(jsonObj['datas'][0]['custom_dt']),
+        ),
+      );
+
+      // sensorList.insert(0, nsensor);
+      sensorList.insert(i, nsensor);
+      // print('$i----${nsensor.customDt}');
     }
+    String jsonString = jsonEncode(sensorList);
+    writeJsonAsString(jsonString);
 
     ///print(customdt);
     ///print(temperature);
@@ -405,7 +524,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                '${farmName[ppfarm]}',
+                farmName[ppfarm],
                 style: TextStyle(fontSize: 25),
               ),
               SizedBox(width: 20),
@@ -421,6 +540,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
                     setState(() {
                       pp = 0;
                       callAPI();
+                      // appState.getNext();
                     });
                   }
                 },
@@ -474,6 +594,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
                 onPressed: () {
                   pp = 0;
                   callAPI();
+                  // appState.getNext();
                 },
                 child: Text('이번주'),
               ),
@@ -481,11 +602,90 @@ class _StrawberryPageState extends State<StrawberryPage> {
               ElevatedButton(
                 onPressed: () {
                   pp = 0;
+                  // readJsonAsString();
+                  // appState.getSensorList();
+
+                  // print('getSensorList====================');
+                  // print(sensorList[0].customDt);
+                  // print(sensorList[0].customDt);
+                  // print(sensorList[0].customDt);
+
+                  // String jsonString = jsonEncode(sensorList);
+                  // print(jsonString);
+                  // writeJsonAsString(jsonString);
+
                   appState.getNext();
                 },
                 child: Text('다음주'),
               ),
             ],
+          ),
+          SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+}
+
+class MyLineChartPage extends StatefulWidget {
+  const MyLineChartPage({super.key});
+
+  @override
+  State<MyLineChartPage> createState() => _MyLineChartPageState();
+}
+
+class _MyLineChartPageState extends State<MyLineChartPage>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          SizedBox(height: 50),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                farmName[ppfarm],
+                style: TextStyle(fontSize: 25),
+              ),
+              SizedBox(width: 20),
+              ElevatedButton(
+                onPressed: () async {
+                  ppfarm = (ppfarm + 1) % farmNo;
+                  SharedPreferences prefs =
+                      await SharedPreferences.getInstance();
+                  await prefs.setInt('myFarm', ppfarm);
+                  // print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
+
+                  if (mounted) {
+                    setState(() {
+                      pp = 0;
+                    });
+                  }
+                },
+                child: Text('다음'),
+              ),
+            ],
+          ),
+          SizedBox(height: 30),
+          Expanded(
+            child: MyLineChart(),
           ),
           SizedBox(height: 20),
         ],
@@ -547,6 +747,188 @@ class FavoritesPage extends StatelessWidget {
             title: Text('공주농가$i'), // ${pair.asLowerCase}
           ),
       ],
+    );
+  }
+}
+
+class MyBarChart extends StatefulWidget {
+  const MyBarChart({super.key});
+
+  @override
+  State<MyBarChart> createState() => _MyBarChartState();
+}
+
+class _MyBarChartState extends State<MyBarChart> {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(30),
+      // implement the bar chart
+      child: BarChart(
+        BarChartData(
+          maxY: 50,
+          borderData: FlBorderData(
+              border: const Border(
+            top: BorderSide.none,
+            right: BorderSide.none,
+            left: BorderSide(width: 1),
+            bottom: BorderSide(width: 1),
+          )),
+          groupsSpace: 10,
+          // add bars
+          barGroups: [
+            BarChartGroupData(x: 1, barRods: [
+              BarChartRodData(
+                  toY: double.parse(sensorList[pp + 6].temperature.toString()),
+                  width: 5,
+                  color: Colors.amber),
+              BarChartRodData(
+                  toY: double.parse(sensorList[pp + 6].humidity.toString()) / 2,
+                  width: 5,
+                  color: Colors.indigo),
+            ]),
+            BarChartGroupData(x: 2, barRods: [
+              BarChartRodData(
+                  toY: double.parse(sensorList[pp + 5].temperature.toString()),
+                  width: 5,
+                  color: Colors.amber),
+              BarChartRodData(
+                  toY: double.parse(sensorList[pp + 5].humidity.toString()) / 2,
+                  width: 5,
+                  color: Colors.indigo),
+            ]),
+            BarChartGroupData(x: 3, barRods: [
+              BarChartRodData(
+                  toY: double.parse(sensorList[pp + 4].temperature.toString()),
+                  width: 5,
+                  color: Colors.amber),
+              BarChartRodData(
+                  toY: double.parse(sensorList[pp + 4].humidity.toString()) / 2,
+                  width: 5,
+                  color: Colors.indigo),
+            ]),
+            BarChartGroupData(x: 4, barRods: [
+              BarChartRodData(
+                  toY: double.parse(sensorList[pp + 3].temperature.toString()),
+                  width: 5,
+                  color: Colors.amber),
+              BarChartRodData(
+                  toY: double.parse(sensorList[pp + 3].humidity.toString()) / 2,
+                  width: 5,
+                  color: Colors.indigo),
+            ]),
+            BarChartGroupData(x: 5, barRods: [
+              BarChartRodData(
+                  toY: double.parse(sensorList[pp + 2].temperature.toString()),
+                  width: 5,
+                  color: Colors.amber),
+              BarChartRodData(
+                  toY: double.parse(sensorList[pp + 2].humidity.toString()) / 2,
+                  width: 5,
+                  color: Colors.indigo),
+            ]),
+            BarChartGroupData(x: 6, barRods: [
+              BarChartRodData(
+                  toY: double.parse(sensorList[pp + 1].temperature.toString()),
+                  width: 5,
+                  color: Colors.amber),
+              BarChartRodData(
+                  toY: double.parse(sensorList[pp + 1].humidity.toString()) / 2,
+                  width: 5,
+                  color: Colors.indigo),
+            ]),
+            BarChartGroupData(x: 7, barRods: [
+              BarChartRodData(
+                  toY: double.parse(sensorList[pp + 0].temperature.toString()),
+                  width: 5,
+                  color: Colors.amber),
+              BarChartRodData(
+                  toY: double.parse(sensorList[pp + 0].humidity.toString()) / 2,
+                  width: 5,
+                  color: Colors.indigo),
+            ]),
+          ],
+          titlesData: FlTitlesData(
+            show: true,
+            topTitles: AxisTitles(
+              sideTitles: SideTitles(showTitles: false),
+            ),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 38,
+              ),
+            ),
+            rightTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: false,
+              ),
+            ),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                getTitlesWidget: (value, titleMeta) {
+                  return Padding(
+                    // You can use any widget here
+                    padding: EdgeInsets.only(top: 8.0),
+                    child: RotatedBox(
+                      quarterTurns: 1,
+                      child: getTitles(value, titleMeta),
+                    ),
+                  );
+                },
+                reservedSize: 57,
+                // interval: 12,
+              ),
+            ),
+          ),
+        ),
+        swapAnimationDuration: Duration(milliseconds: 250), // Optional
+        swapAnimationCurve: Curves.linear, // Optional
+      ),
+    );
+  }
+
+  Widget getTitles(double value, TitleMeta meta) {
+    final style = TextStyle(
+      ///      color: AppColors.contentColorBlue.darken(20),
+      fontWeight: FontWeight.bold,
+      fontSize: 12,
+    );
+    String text;
+    switch (value.toInt()) {
+      case 0:
+        text = sensorList[pp + 7].xlabel.toString();
+        break;
+      case 1:
+        text = sensorList[pp + 6].xlabel.toString();
+        break;
+      case 2:
+        text = sensorList[pp + 5].xlabel.toString();
+        break;
+      case 3:
+        text = sensorList[pp + 4].xlabel.toString();
+        break;
+      case 4:
+        text = sensorList[pp + 3].xlabel.toString();
+        break;
+      case 5:
+        text = sensorList[pp + 2].xlabel.toString();
+        break;
+      case 6:
+        text = sensorList[pp + 1].xlabel.toString();
+        break;
+      case 7:
+        text = sensorList[pp + 0].xlabel.toString();
+        break;
+      default:
+        text = '';
+        break;
+    }
+    return SideTitleWidget(
+      axisSide: meta.axisSide,
+      space: 4,
+      child: Text(text, style: style),
     );
   }
 }
@@ -619,8 +1001,12 @@ class _MyLineChartState extends State<MyLineChart> {
                   LineChartBarData(
                     spots: [
                       for (int i = 0; i < MAXX; i++)
-                        FlSpot(i.toDouble(),
-                            double.parse(temperature[pp + (MAXX - i - 1)]) * 2)
+                        FlSpot(
+                            i.toDouble(),
+                            double.parse(sensorList[pp + (MAXX - i - 1)]
+                                    .temperature
+                                    .toString()) *
+                                2)
                     ],
 
                     isCurved: true,
@@ -635,8 +1021,11 @@ class _MyLineChartState extends State<MyLineChart> {
                   LineChartBarData(
                     spots: [
                       for (int i = 0; i < MAXX; i++)
-                        FlSpot(i.toDouble(),
-                            double.parse(humidity[pp + (MAXX - i - 1)]))
+                        FlSpot(
+                            i.toDouble(),
+                            double.parse(sensorList[pp + (MAXX - i - 1)]
+                                .humidity
+                                .toString()))
                     ],
                     isCurved: true,
                     color: AppColors.contentColorBlue,
@@ -650,8 +1039,12 @@ class _MyLineChartState extends State<MyLineChart> {
                   LineChartBarData(
                     spots: [
                       for (int i = 0; i < MAXX; i++)
-                        FlSpot(i.toDouble(),
-                            double.parse(cotwo[pp + (MAXX - i - 1)]) / 10)
+                        FlSpot(
+                            i.toDouble(),
+                            double.parse(sensorList[pp + (MAXX - i - 1)]
+                                    .cotwo
+                                    .toString()) /
+                                10)
                     ],
                     isCurved: true,
                     color: AppColors.contentColorBlack,
@@ -734,7 +1127,7 @@ class _MyLineChartState extends State<MyLineChart> {
       fontSize: 12,
     );
     String text;
-    text = xlabel[pp + (MAXX - value.toInt() - 1)];
+    text = sensorList[pp + (MAXX - value.toInt() - 1)].xlabel.toString();
 /*
     switch (value.toInt()) {
       case 0:
@@ -820,188 +1213,6 @@ class _MyLineChartState extends State<MyLineChart> {
   }
 }
 
-class MyBarChart extends StatefulWidget {
-  const MyBarChart({super.key});
-
-  @override
-  State<MyBarChart> createState() => _MyBarChartState();
-}
-
-class _MyBarChartState extends State<MyBarChart> {
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(30),
-      // implement the bar chart
-      child: BarChart(
-        BarChartData(
-          maxY: 50,
-          borderData: FlBorderData(
-              border: const Border(
-            top: BorderSide.none,
-            right: BorderSide.none,
-            left: BorderSide(width: 1),
-            bottom: BorderSide(width: 1),
-          )),
-          groupsSpace: 10,
-          // add bars
-          barGroups: [
-            BarChartGroupData(x: 1, barRods: [
-              BarChartRodData(
-                  toY: double.parse(temperature[pp + 6]),
-                  width: 5,
-                  color: Colors.amber),
-              BarChartRodData(
-                  toY: double.parse(humidity[pp + 6]) / 2,
-                  width: 5,
-                  color: Colors.indigo),
-            ]),
-            BarChartGroupData(x: 2, barRods: [
-              BarChartRodData(
-                  toY: double.parse(temperature[pp + 5]),
-                  width: 5,
-                  color: Colors.amber),
-              BarChartRodData(
-                  toY: double.parse(humidity[pp + 5]) / 2,
-                  width: 5,
-                  color: Colors.indigo),
-            ]),
-            BarChartGroupData(x: 3, barRods: [
-              BarChartRodData(
-                  toY: double.parse(temperature[pp + 4]),
-                  width: 5,
-                  color: Colors.amber),
-              BarChartRodData(
-                  toY: double.parse(humidity[pp + 4]) / 2,
-                  width: 5,
-                  color: Colors.indigo),
-            ]),
-            BarChartGroupData(x: 4, barRods: [
-              BarChartRodData(
-                  toY: double.parse(temperature[pp + 3]),
-                  width: 5,
-                  color: Colors.amber),
-              BarChartRodData(
-                  toY: double.parse(humidity[pp + 3]) / 2,
-                  width: 5,
-                  color: Colors.indigo),
-            ]),
-            BarChartGroupData(x: 5, barRods: [
-              BarChartRodData(
-                  toY: double.parse(temperature[pp + 2]),
-                  width: 5,
-                  color: Colors.amber),
-              BarChartRodData(
-                  toY: double.parse(humidity[pp + 2]) / 2,
-                  width: 5,
-                  color: Colors.indigo),
-            ]),
-            BarChartGroupData(x: 6, barRods: [
-              BarChartRodData(
-                  toY: double.parse(temperature[pp + 1]),
-                  width: 5,
-                  color: Colors.amber),
-              BarChartRodData(
-                  toY: double.parse(humidity[pp + 1]) / 2,
-                  width: 5,
-                  color: Colors.indigo),
-            ]),
-            BarChartGroupData(x: 7, barRods: [
-              BarChartRodData(
-                  toY: double.parse(temperature[pp + 0]),
-                  width: 5,
-                  color: Colors.amber),
-              BarChartRodData(
-                  toY: double.parse(humidity[pp + 0]) / 2,
-                  width: 5,
-                  color: Colors.indigo),
-            ]),
-          ],
-          titlesData: FlTitlesData(
-            show: true,
-            topTitles: AxisTitles(
-              sideTitles: SideTitles(showTitles: false),
-            ),
-            leftTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                reservedSize: 38,
-              ),
-            ),
-            rightTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: false,
-              ),
-            ),
-            bottomTitles: AxisTitles(
-              sideTitles: SideTitles(
-                showTitles: true,
-                getTitlesWidget: (value, titleMeta) {
-                  return Padding(
-                    // You can use any widget here
-                    padding: EdgeInsets.only(top: 8.0),
-                    child: RotatedBox(
-                      quarterTurns: 1,
-                      child: getTitles(value, titleMeta),
-                    ),
-                  );
-                },
-                reservedSize: 57,
-                // interval: 12,
-              ),
-            ),
-          ),
-        ),
-        swapAnimationDuration: Duration(milliseconds: 250), // Optional
-        swapAnimationCurve: Curves.linear, // Optional
-      ),
-    );
-  }
-
-  Widget getTitles(double value, TitleMeta meta) {
-    final style = TextStyle(
-      ///      color: AppColors.contentColorBlue.darken(20),
-      fontWeight: FontWeight.bold,
-      fontSize: 12,
-    );
-    String text;
-    switch (value.toInt()) {
-      case 0:
-        text = xlabel[pp + 7];
-        break;
-      case 1:
-        text = xlabel[pp + 6];
-        break;
-      case 2:
-        text = xlabel[pp + 5];
-        break;
-      case 3:
-        text = xlabel[pp + 4];
-        break;
-      case 4:
-        text = xlabel[pp + 3];
-        break;
-      case 5:
-        text = xlabel[pp + 2];
-        break;
-      case 6:
-        text = xlabel[pp + 1];
-        break;
-      case 7:
-        text = xlabel[pp + 0];
-        break;
-      default:
-        text = '';
-        break;
-    }
-    return SideTitleWidget(
-      axisSide: meta.axisSide,
-      space: 4,
-      child: Text(text, style: style),
-    );
-  }
-}
-
 class MySetting extends StatefulWidget {
   const MySetting({Key? key}) : super(key: key);
 
@@ -1010,41 +1221,6 @@ class MySetting extends StatefulWidget {
 }
 
 class _MySettingState extends State<MySetting> {
-  void _prefsLoad() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    farmNo = (prefs.getInt('farmNumber') ?? 1);
-    ppfarm = (prefs.getInt('myFarm') ?? 0);
-
-    await prefs.setInt('farmNumber', farmNo);
-    await prefs.setInt('myFarm', ppfarm);
-
-    // print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
-
-    farmName[0] = (prefs.getString('farmName0') ?? farmName[0]);
-    facilityName[0] = (prefs.getString('facilityName0') ?? facilityName[0]);
-    serviceKey[0] = (prefs.getString('serviceKey0') ?? serviceKey[0]);
-
-    for (int i = 1; i < farmNo; i++) {
-      farmName.add(prefs.getString('farmName$i') ?? farmName[0]);
-      facilityName.add(prefs.getString('facilityName$i') ?? facilityName[0]);
-      serviceKey.add(prefs.getString('serviceKey$i') ?? serviceKey[0]);
-    }
-  }
-
-  void _prefsClear() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    // print('prefs clear $farmNo');
-    prefs.clear();
-    if (farmNo > 1) {
-      farmName.removeRange(1, farmNo);
-      facilityName.removeRange(1, farmNo);
-      serviceKey.removeRange(1, farmNo);
-    }
-    farmNo = 1;
-    ppfarm = 0;
-    // print('cleared $farmNo');
-  }
-
   TextEditingController inputController1 = TextEditingController();
   TextEditingController inputController2 = TextEditingController();
   TextEditingController inputController3 = TextEditingController();
@@ -1054,7 +1230,7 @@ class _MySettingState extends State<MySetting> {
   @override
   void initState() {
     super.initState();
-    _prefsLoad();
+    prefsLoad();
     // Start listening to changes.
     inputController1.addListener(_printLatestValue);
     inputController2.addListener(_printLatestValue);
@@ -1289,7 +1465,7 @@ class _MySettingState extends State<MySetting> {
                           if (mounted) {
                             setState(() {
                               // _printLatestValue();
-                              _prefsClear();
+                              prefsClear();
                             });
                           }
                         },

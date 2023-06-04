@@ -46,7 +46,7 @@ class _ZoomableChartState extends State<ZoomableChart> {
       onHorizontalDragUpdate: (details) {
         var horizontalDistance = details.primaryDelta ?? 0;
         if (horizontalDistance == 0) return;
-        print(horizontalDistance);
+        // print(horizontalDistance);
         var lastMinMaxDistance = max(lastMaxXValue - lastMinXValue, 0.0);
 
         setState(() {
