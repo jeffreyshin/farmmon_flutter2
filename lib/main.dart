@@ -209,7 +209,7 @@ void callAPI() async {
   // iot portal test
   var now = DateTime.now();
   var nowtosave = now;
-
+  lastDatetime = sensorList[0].customDt.toString();
   // Json data load
   // readJsonAsString();
   int difference = int.parse(
@@ -297,6 +297,7 @@ void callAPI() async {
     writeJsonAsString(jsonString);
     SharedPreferences prefs = await SharedPreferences.getInstance();
     lastDatetime = DateFormat('yyyy-MM-dd HH:mm:ss').format(nowtosave);
+    lastDatetime = sensorList[0].customDt.toString();
 
     // await prefs.setString('lastDatetime', lastDatetime);
     print("prefs Save lastDatetime $lastDatetime");
@@ -620,7 +621,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
           Expanded(
             child: MyBarChart(),
           ),
-          // Text(lastDatetime),
+          Text(lastDatetime),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -826,7 +827,7 @@ class _MyBarChartState extends State<MyBarChart> {
       padding: const EdgeInsets.all(30),
       // implement the bar chart
       child: BarChart(
-        key: ValueKey(updateKey),
+        key: ValueKey(sensorList[0].customDt),
         BarChartData(
           maxY: 50,
           borderData: FlBorderData(
