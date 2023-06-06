@@ -111,14 +111,14 @@ class SensorList {
 }
 
 Sensor sensor = Sensor(
-  customDt: "2023-06-04 02:07:11",
+  customDt: "2023-06-04 01:00:00",
   temperature: 0.0,
   humidity: 0.0,
   cotwo: 0.0,
   leafwet: 0.0,
   gtemperature: 0.0,
   quantum: 0.0,
-  xlabel: "",
+  xlabel: " ",
 );
 
 // List<Sensor> sensorList = <Sensor>[];
