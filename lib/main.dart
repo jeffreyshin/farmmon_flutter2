@@ -26,6 +26,7 @@ var pp = 0;
 var ppfarm = 0;
 var farmNo = 1;
 var lastDatetime = '';
+var updateKey = '';
 var MAXX = 24;
 
 var registerdfarms = <String>[
@@ -163,7 +164,12 @@ void prefsClear() async {
   }
   farmNo = 1;
   ppfarm = 0;
-  lastDatetime = "2023-06-04 01:00:00";
+  final today = DateTime.now();
+  final twodaysago = today.subtract(const Duration(days: 2));
+  lastDatetime = DateFormat('yyyy-MM-dd HH:mm:ss').format(twodaysago);
+  sensorList = List<Sensor>.filled(50, sensor, growable: true);
+  String jsonString = jsonEncode(sensorList);
+  writeJsonAsString(jsonString);
   print('prefs cleared: only $farmNo farm left');
 }
 
@@ -230,6 +236,7 @@ void callAPI() async {
   // prefsLoad();
 
 // 데이터 저장해놓고 마지막 데이터만 호출하는 것으로 수정할 것
+  print('befor for loop');
   for (int i = 0; i < difference; i++) {
     String formatDate = DateFormat('yyyyMMdd').format(now);
     String formatTime = DateFormat('HH').format(now);
@@ -239,7 +246,7 @@ void callAPI() async {
     uriiot = Uri.parse(urliotString);
     http.Response response = await http.get(uriiot);
     now = now.subtract(Duration(hours: 1));
-    print(response.statusCode);
+    // print(response.body);
     r = response.statusCode;
     //    Map<String, dynamic> usem = jsonDecode(response.body);
 
@@ -282,17 +289,22 @@ void callAPI() async {
 
     // sensorList.insert(0, nsensor);
     sensorList.insert(i, nsensor);
-    // print('$i----${nsensor.customDt}');
+    print('$i----${nsensor.customDt}');
   }
+  print('after for loop');
   if (r == 200 || difference > 0) {
     String jsonString = jsonEncode(sensorList);
     writeJsonAsString(jsonString);
     SharedPreferences prefs = await SharedPreferences.getInstance();
-    lastDatetime = DateFormat('yyyy-MM-dd HH:00:00').format(nowtosave);
+    lastDatetime = DateFormat('yyyy-MM-dd HH:mm:ss').format(nowtosave);
 
     // await prefs.setString('lastDatetime', lastDatetime);
     print("prefs Save lastDatetime $lastDatetime");
   }
+  print('after data update procedure... ');
+  updateKey = DateTime.now().toString();
+  var temp = sensorList[0].temperature;
+  sensorList[0].temperature = temp;
 
   ///print(customdt);
   ///print(temperature);
@@ -341,12 +353,12 @@ void main() {
   readJsonAsString();
   print(sensorList[0].customDt.toString());
   HttpOverrides.global = MyHttpOverrides();
-  Future.delayed(const Duration(milliseconds: 3000), () {
-    print(sensorList[0].customDt.toString());
-    lastDatetime = sensorList[0].customDt.toString();
+  // Future.delayed(const Duration(milliseconds: 3000), () {
+  print(sensorList[0].customDt.toString());
+  lastDatetime = sensorList[0].customDt.toString();
 
-    runApp(MyApp());
-  });
+  runApp(MyApp());
+  // });
   // readJsonAsString();
   // print(sensorList[0].temperature.toString());
   // print('main : read Json file');
@@ -525,6 +537,11 @@ class _StrawberryPageState extends State<StrawberryPage> {
 /////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////
+  @override
+  void didChangeDependencies() {
+    print('didChangeDependencies 호출');
+    updateKey = DateTime.now().toString();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -562,13 +579,16 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   await prefs.setInt('myFarm', ppfarm);
                   // print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
 
-                  if (mounted) {
-                    setState(() {
-                      pp = 0;
-                      callAPI();
-                      // appState.getNext();
-                    });
-                  }
+                  callAPI();
+                  // Future.delayed(const Duration(milliseconds: 1000), () {
+                  // if (mounted) {
+                  setState(() {
+                    pp = 0;
+                    appState.getNext();
+                    // print('after 1000 milliseconds');
+                    // });
+                    // }
+                  });
                 },
                 child: Text('다음'),
               ),
@@ -600,8 +620,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
           Expanded(
             child: MyBarChart(),
           ),
-          SizedBox(width: 10),
-          Text(lastDatetime),
+          // Text(lastDatetime),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -621,7 +640,11 @@ class _StrawberryPageState extends State<StrawberryPage> {
                 onPressed: () {
                   pp = 0;
                   callAPI();
-                  appState.getNext();
+                  if (mounted) {
+                    setState(() {
+                      appState.getNext();
+                    });
+                  }
                 },
                 child: Text('이번주'),
               ),
@@ -630,7 +653,6 @@ class _StrawberryPageState extends State<StrawberryPage> {
                 onPressed: () {
                   pp = 0;
                   // lastDatetime = "2023-06-04 02:07:11";
-
                   // appState.readJsonAsString();
                   // appState.getSensorList();
 
@@ -642,8 +664,11 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   // String jsonString = jsonEncode(sensorList);
                   // print(jsonString);
                   // writeJsonAsString(jsonString);
-
-                  appState.getNext();
+                  if (mounted) {
+                    setState(() {
+                      appState.getNext();
+                    });
+                  }
                 },
                 child: Text('다음주'),
               ),
@@ -789,11 +814,19 @@ class MyBarChart extends StatefulWidget {
 
 class _MyBarChartState extends State<MyBarChart> {
   @override
+  void initState() {
+    super.initState();
+    print('Bar Chart initState 호출');
+    updateKey = DateTime.now().toString();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.all(30),
       // implement the bar chart
       child: BarChart(
+        key: ValueKey(updateKey),
         BarChartData(
           maxY: 50,
           borderData: FlBorderData(
