@@ -113,8 +113,12 @@ class SensorList {
   }
 }
 
+final today = DateTime.now();
+final twodaysago = today.subtract(const Duration(days: 2));
+final twodaysagoString = DateFormat('yyyy-MM-dd HH:00:00').format(twodaysago);
+
 Sensor sensor = Sensor(
-  customDt: "2023-06-04 01:00:00",
+  customDt: twodaysagoString,
   temperature: 0.0,
   humidity: 0.0,
   cotwo: 0.0,
@@ -244,6 +248,8 @@ class MyAppState extends ChangeNotifier {
     var now = DateTime.now();
     var nowtosave = now;
     lastDatetime = sensorList[0].customDt.toString();
+    lastDatetime = "${lastDatetime.substring(0, 14)}00:00";
+
     // Json data load
     // readJsonAsString();
     difference = int.parse(
@@ -354,7 +360,7 @@ class MyAppState extends ChangeNotifier {
     //     ///      temperature.add("changed");
     //   });
     // }
-    // notifyListeners();
+    notifyListeners();
   }
 
 /////////////////////////////////////////////////////////////////////
@@ -364,7 +370,12 @@ class MyAppState extends ChangeNotifier {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     farmNo = (prefs.getInt('farmNumber') ?? 1);
     ppfarm = (prefs.getInt('myFarm') ?? 0);
-    lastDatetime = (prefs.getString('lastDatetime') ?? "2023-06-05 01:00:00");
+
+    final today = DateTime.now();
+    final twodaysago = today.subtract(const Duration(days: 2));
+    final twodaysagoString =
+        DateFormat('yyyy-MM-dd HH:00:00').format(twodaysago);
+    lastDatetime = (prefs.getString('lastDatetime') ?? twodaysagoString);
 
     await prefs.setInt('farmNumber', farmNo);
     await prefs.setInt('myFarm', ppfarm);
@@ -397,10 +408,10 @@ class MyAppState extends ChangeNotifier {
     ppfarm = 0;
     final today = DateTime.now();
     final twodaysago = today.subtract(const Duration(days: 2));
-    lastDatetime = DateFormat('yyyy-MM-dd HH:mm:ss').format(twodaysago);
+    lastDatetime = DateFormat('yyyy-MM-dd HH:00:00').format(twodaysago);
     sensorList = List<Sensor>.filled(50, sensor, growable: true);
     String jsonString = jsonEncode(sensorList);
-    writeJsonAsString(jsonString);
+    await writeJsonAsString(jsonString);
     print('prefs cleared: only $farmNo farm left');
   }
 }
@@ -439,6 +450,8 @@ class _MyHomePageState extends State<MyHomePage> {
     readJsonAsString().then((value) {
       setState(() {
         lastDatetime = sensorList[0].customDt.toString();
+        lastDatetime = "${lastDatetime.substring(0, 14)}00:00";
+        print(lastDatetime);
       });
     });
     print('initState');
@@ -623,7 +636,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
           Expanded(
             child: MyBarChart(),
           ),
-          Text(lastDatetime),
+          // Text(lastDatetime),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -640,24 +653,26 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   foregroundColor: Colors.amber,
                   backgroundColor: Colors.blueGrey, // Text Color
                 ),
-                onPressed: () {
+                onPressed: () async {
                   pp = 0;
                   appState.callAPI();
                   if (r == 200 || difference > 0) {
                     String jsonString = jsonEncode(sensorList);
-                    appState.writeJsonAsString(jsonString);
+                    await appState.writeJsonAsString(jsonString);
 
                     // SharedPreferences prefs = await SharedPreferences.getInstance();
                     // lastDatetime = DateFormat('yyyy-MM-dd HH:mm:ss').format(nowtosave);
+
                     lastDatetime = sensorList[0].customDt.toString();
+                    lastDatetime = "${lastDatetime.substring(0, 14)}00:00";
 
                     // await prefs.setString('lastDatetime', lastDatetime);
                     print("prefs Save lastDatetime $lastDatetime");
                   }
                   print('after data update procedure... ');
                   updateKey = DateTime.now().toString();
-                  var temp = sensorList[0].temperature;
-                  sensorList[0].temperature = temp;
+                  // var temp = sensorList[0].temperature;
+                  // sensorList[0].temperature = temp;
 
                   if (mounted) {
                     setState(() {
@@ -845,7 +860,8 @@ class _MyBarChartState extends State<MyBarChart> {
       padding: const EdgeInsets.all(30),
       // implement the bar chart
       child: BarChart(
-        key: ValueKey(sensorList[0].customDt),
+        // key: ValueKey(sensorList[0].customDt),
+        key: ValueKey(updateKey),
         BarChartData(
           maxY: 50,
           borderData: FlBorderData(
