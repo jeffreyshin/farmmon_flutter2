@@ -143,12 +143,12 @@ void prefsLoad() async {
   final twodaysagoString = DateFormat('yyyy-MM-dd HH:00:00').format(twodaysago);
   lastDatetime = (prefs.getString('lastDatetime') ?? twodaysagoString);
 
-  await prefs.setInt('farmNumber', farmNo);
-  await prefs.setInt('myFarm', ppfarm);
+  prefs.setInt('farmNumber', farmNo);
+  prefs.setInt('myFarm', ppfarm);
   // await prefs.setString('lastDatetime', lastDatetime);
   print("prefs Loading... lastDatetime: $lastDatetime");
 
-  // print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
+  print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
 
   farmName[0] = (prefs.getString('farmName0') ?? farmName[0]);
   facilityName[0] = (prefs.getString('facilityName0') ?? facilityName[0]);
@@ -175,7 +175,7 @@ class MyHttpOverrides extends HttpOverrides {
 }
 
 void main() {
-  prefsLoad();
+  // prefsLoad();
   print(sensorList[0].customDt.toString());
   HttpOverrides.global = MyHttpOverrides();
   // Future.delayed(const Duration(milliseconds: 3000), () {
@@ -1344,11 +1344,12 @@ class _MySettingState extends State<MySetting> {
   @override
   void initState() {
     super.initState();
-    // prefsLoad();
+    prefsLoad();
     // Start listening to changes.
     inputController1.addListener(_printLatestValue);
     inputController2.addListener(_printLatestValue);
     inputController3.addListener(_printLatestValue);
+
     inputController1.text = farmName[ppfarm];
     inputController2.text = facilityName[ppfarm];
     inputController3.text = serviceKey[ppfarm];
@@ -1505,9 +1506,9 @@ class _MySettingState extends State<MySetting> {
                     Center(
                       child: ElevatedButton(
                         onPressed: () async {
-                          // print('$ppfarm / $farmNo');
+                          print('$ppfarm / $farmNo');
                           farmNo++;
-                          // print('$ppfarm / $farmNo');
+                          print('$ppfarm / $farmNo');
 
                           farmName.add('추가농가$farmNo');
                           facilityName.add('');
@@ -1560,7 +1561,7 @@ class _MySettingState extends State<MySetting> {
                           // SharedPreferences prefs =
                           // await SharedPreferences.getInstance();
                           await prefs.setInt('myFarm', ppfarm);
-                          // print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
+                          print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
                           if (mounted) {
                             setState(() {
                               // _printLatestValue();
