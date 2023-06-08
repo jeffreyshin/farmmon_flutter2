@@ -133,6 +133,34 @@ var sensorList = List<Sensor>.filled(50, sensor, growable: true);
 
 /////////////////////////////////////////////////////////////
 
+void prefsLoad() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  farmNo = (prefs.getInt('farmNumber') ?? 1);
+  ppfarm = (prefs.getInt('myFarm') ?? 0);
+
+  final today = DateTime.now();
+  final twodaysago = today.subtract(const Duration(days: 2));
+  final twodaysagoString = DateFormat('yyyy-MM-dd HH:00:00').format(twodaysago);
+  lastDatetime = (prefs.getString('lastDatetime') ?? twodaysagoString);
+
+  await prefs.setInt('farmNumber', farmNo);
+  await prefs.setInt('myFarm', ppfarm);
+  // await prefs.setString('lastDatetime', lastDatetime);
+  print("prefs Loading... lastDatetime: $lastDatetime");
+
+  // print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
+
+  farmName[0] = (prefs.getString('farmName0') ?? farmName[0]);
+  facilityName[0] = (prefs.getString('facilityName0') ?? facilityName[0]);
+  serviceKey[0] = (prefs.getString('serviceKey0') ?? serviceKey[0]);
+
+  for (int i = 1; i < farmNo; i++) {
+    farmName.add(prefs.getString('farmName$i') ?? farmName[0]);
+    facilityName.add(prefs.getString('facilityName$i') ?? facilityName[0]);
+    serviceKey.add(prefs.getString('serviceKey$i') ?? serviceKey[0]);
+  }
+}
+
 /////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////
@@ -147,7 +175,7 @@ class MyHttpOverrides extends HttpOverrides {
 }
 
 void main() {
-  // prefsLoad();
+  prefsLoad();
   print(sensorList[0].customDt.toString());
   HttpOverrides.global = MyHttpOverrides();
   // Future.delayed(const Duration(milliseconds: 3000), () {
@@ -238,7 +266,7 @@ class MyAppState extends ChangeNotifier {
     // return file.writeAsString(data ?? '');
   }
 
-  void callAPI() async {
+  Future callAPI() async {
     // var urltech = 'http://147.46.206.95:7890/SNFD';
     // var urlanthracnose = 'http://147.46.206.95:7897/Anthracnose';
     var urliot = 'http://iot.rda.go.kr/api';
@@ -361,39 +389,11 @@ class MyAppState extends ChangeNotifier {
     //   });
     // }
     notifyListeners();
+    return 0;
   }
 
 /////////////////////////////////////////////////////////////////////
   ///
-
-  void prefsLoad() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    farmNo = (prefs.getInt('farmNumber') ?? 1);
-    ppfarm = (prefs.getInt('myFarm') ?? 0);
-
-    final today = DateTime.now();
-    final twodaysago = today.subtract(const Duration(days: 2));
-    final twodaysagoString =
-        DateFormat('yyyy-MM-dd HH:00:00').format(twodaysago);
-    lastDatetime = (prefs.getString('lastDatetime') ?? twodaysagoString);
-
-    await prefs.setInt('farmNumber', farmNo);
-    await prefs.setInt('myFarm', ppfarm);
-    // await prefs.setString('lastDatetime', lastDatetime);
-    print("prefs Loading... lastDatetime: $lastDatetime");
-
-    // print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
-
-    farmName[0] = (prefs.getString('farmName0') ?? farmName[0]);
-    facilityName[0] = (prefs.getString('facilityName0') ?? facilityName[0]);
-    serviceKey[0] = (prefs.getString('serviceKey0') ?? serviceKey[0]);
-
-    for (int i = 1; i < farmNo; i++) {
-      farmName.add(prefs.getString('farmName$i') ?? farmName[0]);
-      facilityName.add(prefs.getString('facilityName$i') ?? facilityName[0]);
-      serviceKey.add(prefs.getString('serviceKey$i') ?? serviceKey[0]);
-    }
-  }
 
   void prefsClear() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -595,7 +595,16 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   await prefs.setInt('myFarm', ppfarm);
                   // print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
 
-                  appState.callAPI();
+                  // appState.callAPI();
+
+                  appState.callAPI().then((value) {
+                    setState(() {
+                      lastDatetime = sensorList[0].customDt.toString();
+                      lastDatetime = "${lastDatetime.substring(0, 14)}00:00";
+                      print(lastDatetime);
+                    });
+                  });
+
                   // Future.delayed(const Duration(milliseconds: 1000), () {
                   // if (mounted) {
                   setState(() {
@@ -653,24 +662,32 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   foregroundColor: Colors.amber,
                   backgroundColor: Colors.blueGrey, // Text Color
                 ),
-                onPressed: () async {
+                onPressed: () {
                   pp = 0;
-                  appState.callAPI();
-                  if (r == 200 || difference > 0) {
-                    String jsonString = jsonEncode(sensorList);
-                    await appState.writeJsonAsString(jsonString);
+                  // appState.callAPI();
+                  appState.callAPI().then((value) {
+                    setState(() {
+                      lastDatetime = sensorList[0].customDt.toString();
+                      lastDatetime = "${lastDatetime.substring(0, 14)}00:00";
+                      print(lastDatetime);
+                      if (difference > 0) {
+                        String jsonString = jsonEncode(sensorList);
+                        appState.writeJsonAsString(jsonString);
 
-                    // SharedPreferences prefs = await SharedPreferences.getInstance();
-                    // lastDatetime = DateFormat('yyyy-MM-dd HH:mm:ss').format(nowtosave);
+                        // SharedPreferences prefs = await SharedPreferences.getInstance();
+                        // lastDatetime = DateFormat('yyyy-MM-dd HH:mm:ss').format(nowtosave);
 
-                    lastDatetime = sensorList[0].customDt.toString();
-                    lastDatetime = "${lastDatetime.substring(0, 14)}00:00";
+                        lastDatetime = sensorList[0].customDt.toString();
+                        lastDatetime = "${lastDatetime.substring(0, 14)}00:00";
 
-                    // await prefs.setString('lastDatetime', lastDatetime);
-                    print("prefs Save lastDatetime $lastDatetime");
-                  }
+                        // await prefs.setString('lastDatetime', lastDatetime);
+                        print("prefs Save lastDatetime $lastDatetime");
+                      }
+                    });
+                  });
                   print('after data update procedure... ');
-                  updateKey = DateTime.now().toString();
+                  // updateKey = DateTime.now().toString();
+
                   // var temp = sensorList[0].temperature;
                   // sensorList[0].temperature = temp;
 
@@ -861,7 +878,7 @@ class _MyBarChartState extends State<MyBarChart> {
       // implement the bar chart
       child: BarChart(
         // key: ValueKey(sensorList[0].customDt),
-        key: ValueKey(updateKey),
+        // key: ValueKey(updateKey),
         BarChartData(
           maxY: 50,
           borderData: FlBorderData(
@@ -980,7 +997,7 @@ class _MyBarChartState extends State<MyBarChart> {
             ),
           ),
         ),
-        swapAnimationDuration: Duration(milliseconds: 250), // Optional
+        swapAnimationDuration: Duration(milliseconds: 300), // Optional
         swapAnimationCurve: Curves.linear, // Optional
       ),
     );
@@ -1327,7 +1344,7 @@ class _MySettingState extends State<MySetting> {
   @override
   void initState() {
     super.initState();
-    // appState.prefsLoad();
+    // prefsLoad();
     // Start listening to changes.
     inputController1.addListener(_printLatestValue);
     inputController2.addListener(_printLatestValue);
@@ -1379,9 +1396,9 @@ class _MySettingState extends State<MySetting> {
                       return null;
                     },
                     onChanged: (text) {
-                      // setState(() {
-                      // farmName[ppfarm] = text;
-                      // });
+                      setState(() {
+                        farmName[ppfarm] = text;
+                      });
                     },
                     decoration: InputDecoration(
                       labelText: farmName[ppfarm],
@@ -1413,9 +1430,9 @@ class _MySettingState extends State<MySetting> {
                       return null;
                     },
                     onChanged: (text) {
-                      // setState(() {
-                      // facilityName[ppfarm] = text;
-                      // });
+                      setState(() {
+                        facilityName[ppfarm] = text;
+                      });
                     },
                     decoration: InputDecoration(
                       labelText: facilityName[ppfarm],
@@ -1448,9 +1465,9 @@ class _MySettingState extends State<MySetting> {
                       return null;
                     },
                     onChanged: (text) {
-                      // setState(() {
-                      // serviceKey[ppfarm] = text;
-                      // });
+                      setState(() {
+                        serviceKey[ppfarm] = text;
+                      });
                     },
                     decoration: InputDecoration(
                       labelText: serviceKey[ppfarm],
