@@ -218,6 +218,7 @@ class MyAppState extends ChangeNotifier {
 
   void getNext() {
     current = WordPair.random();
+    farmNoUpdate = farmNo;
     notifyListeners();
 
     // readJsonAsString();
@@ -1349,9 +1350,9 @@ class _MySettingState extends State<MySetting> {
 
   @override
   void initState() {
-    super.initState();
     prefsLoad();
-    print(farmNo);
+    print('farmNo at initState: $farmNo');
+    super.initState();
     // Start listening to changes.
     inputController1.addListener(_printLatestValue);
     inputController2.addListener(_printLatestValue);
@@ -1379,7 +1380,7 @@ class _MySettingState extends State<MySetting> {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
-
+    appState.farmNoUpdate = farmNo;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
