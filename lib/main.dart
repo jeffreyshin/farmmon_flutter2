@@ -143,8 +143,8 @@ void prefsLoad() async {
   final twodaysagoString = DateFormat('yyyy-MM-dd HH:00:00').format(twodaysago);
   lastDatetime = (prefs.getString('lastDatetime') ?? twodaysagoString);
 
-  prefs.setInt('farmNumber', farmNo);
-  prefs.setInt('myFarm', ppfarm);
+  // prefs.setInt('farmNumber', farmNo);
+  // prefs.setInt('myFarm', ppfarm);
   // await prefs.setString('lastDatetime', lastDatetime);
   print("prefs Loading... lastDatetime: $lastDatetime");
 
@@ -175,7 +175,7 @@ class MyHttpOverrides extends HttpOverrides {
 }
 
 void main() {
-  // prefsLoad();
+  prefsLoad();
   print(sensorList[0].customDt.toString());
   HttpOverrides.global = MyHttpOverrides();
   // Future.delayed(const Duration(milliseconds: 3000), () {
@@ -211,7 +211,7 @@ class MyApp extends StatelessWidget {
 
 class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
-
+  var farmNoUpdate = 1;
   void getData() {
     notifyListeners();
   }
@@ -303,7 +303,7 @@ class MyAppState extends ChangeNotifier {
     // prefsLoad();
 
 // 데이터 저장해놓고 마지막 데이터만 호출하는 것으로 수정할 것
-    print('befor for loop');
+    print('before for loop');
     for (int i = 0; i < difference; i++) {
       String formatDate = DateFormat('yyyyMMdd').format(now);
       String formatTime = DateFormat('HH').format(now);
@@ -315,6 +315,7 @@ class MyAppState extends ChangeNotifier {
       now = now.subtract(Duration(hours: 1));
       // print(response.body);
       r = response.statusCode;
+      // print(r);
       //    Map<String, dynamic> usem = jsonDecode(response.body);
 
       var jsonObj = jsonDecode(response.body);
@@ -452,6 +453,7 @@ class _MyHomePageState extends State<MyHomePage> {
         lastDatetime = sensorList[0].customDt.toString();
         lastDatetime = "${lastDatetime.substring(0, 14)}00:00";
         print(lastDatetime);
+        print('farmNo at initState: $farmNo');
       });
     });
     print('initState');
@@ -463,6 +465,8 @@ class _MyHomePageState extends State<MyHomePage> {
     Widget page;
     switch (selectedIndex) {
       case 0:
+        appState.farmNoUpdate = farmNo;
+        print('farmNo update:  ${appState.farmNoUpdate}');
         page = StrawberryPage();
         break;
       case 1:
@@ -475,6 +479,8 @@ class _MyHomePageState extends State<MyHomePage> {
         page = MyLineChartPage();
         break;
       case 4:
+        appState.farmNoUpdate = farmNo;
+        print('farmNo update:  ${appState.farmNoUpdate}');
         page = MySetting();
         break;
 
@@ -670,7 +676,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
                       lastDatetime = sensorList[0].customDt.toString();
                       lastDatetime = "${lastDatetime.substring(0, 14)}00:00";
                       print(lastDatetime);
-                      if (difference > 0) {
+                      if ((r == 200) && (difference > 0)) {
                         String jsonString = jsonEncode(sensorList);
                         appState.writeJsonAsString(jsonString);
 
@@ -1345,6 +1351,7 @@ class _MySettingState extends State<MySetting> {
   void initState() {
     super.initState();
     prefsLoad();
+    print(farmNo);
     // Start listening to changes.
     inputController1.addListener(_printLatestValue);
     inputController2.addListener(_printLatestValue);
@@ -1397,9 +1404,9 @@ class _MySettingState extends State<MySetting> {
                       return null;
                     },
                     onChanged: (text) {
-                      setState(() {
-                        farmName[ppfarm] = text;
-                      });
+                      // setState(() {
+                      //   farmName[ppfarm] = text;
+                      // });
                     },
                     decoration: InputDecoration(
                       labelText: farmName[ppfarm],
@@ -1431,9 +1438,9 @@ class _MySettingState extends State<MySetting> {
                       return null;
                     },
                     onChanged: (text) {
-                      setState(() {
-                        facilityName[ppfarm] = text;
-                      });
+                      // setState(() {
+                      //   facilityName[ppfarm] = text;
+                      // });
                     },
                     decoration: InputDecoration(
                       labelText: facilityName[ppfarm],
@@ -1466,9 +1473,9 @@ class _MySettingState extends State<MySetting> {
                       return null;
                     },
                     onChanged: (text) {
-                      setState(() {
-                        serviceKey[ppfarm] = text;
-                      });
+                      // setState(() {
+                      //   serviceKey[ppfarm] = text;
+                      // });
                     },
                     decoration: InputDecoration(
                       labelText: serviceKey[ppfarm],
@@ -1494,7 +1501,7 @@ class _MySettingState extends State<MySetting> {
                 ),
                 Padding(
                   padding: const EdgeInsets.all(5),
-                  child: Text('총 $farmNo농가가 등록되었습니다!!!'),
+                  child: Text('총 ${appState.farmNoUpdate}농가가 등록되었습니다!!!'),
                 ),
                 Text('선택농가: ${ppfarm + 1} - 이름: ${farmName[ppfarm]}'),
                 SizedBox(
