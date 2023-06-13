@@ -23,6 +23,7 @@ dependencies:
   font_awesome_flutter: ^10.4.0
   shared_preferences: ^2.1.1
   path_provider: ^2.0.15
+  archive: ^3.3.7
 
 dev_dependencies:
   flutter_test:

@@ -11,6 +11,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:farmmon_flutter/zoomable_chart.dart';
 import 'package:farmmon_flutter/presentation/resources/app_resources.dart';
 import 'package:farmmon_flutter/icons/custom_icons_icons.dart';
+import 'package:archive/archive_io.dart';
 
 // import 'package:flutter/foundation.dart';
 // import 'package:flutter/services.dart';
@@ -31,27 +32,10 @@ var MAXX = 24;
 var difference = 0;
 var r = 0;
 
-var registerdfarms = <String>[
-  '',
-];
-var farmName = <String>[
-  '기본농장',
-];
-var facilityName = <String>[
-  '1번온실',
-];
-var serviceKey = <String>[
-  'r34df5d2d566049e2a809c41da915adc6',
-];
-
-// var xlabel = List<String>.filled(50, '', growable: true);
-// var customdt = List<String>.filled(50, '0', growable: true);
-// var temperature = List<String>.filled(50, '0', growable: true);
-// var humidity = List<String>.filled(50, '0', growable: true);
-// var cotwo = List<String>.filled(50, '0', growable: true);
-// var leafwet = List<String>.filled(50, '0', growable: true);
-// var gtemperature = List<String>.filled(50, '0', growable: true);
-// var quantum = List<String>.filled(50, '0', growable: true);
+var farmName = List<String>.filled(1, '기본농장', growable: true);
+var facilityName = List<String>.filled(1, '1번온실', growable: true);
+var serviceKey =
+    List<String>.filled(1, 'r34df5d2d566049e2a809c41da915adc6', growable: true);
 
 /////////////////////////////////////////////
 class Sensor {
@@ -100,6 +84,30 @@ class Sensor {
   }
 }
 
+/////////////////////////////////////////////
+class Weather {
+  String? Input;
+  String? type;
+
+  Weather({
+    this.Input,
+    this.type,
+  });
+
+  factory Weather.fromJson(Map<String, dynamic> json) => Weather(
+        Input: json['Input'],
+        type: json['type'],
+      );
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['Input'] = Input;
+    data['type'] = type;
+    return data;
+  }
+}
+//////////////////////////////////////////////////////
+
 class SensorList {
   List<Sensor>? sensors;
   SensorList({this.sensors});
@@ -115,7 +123,7 @@ class SensorList {
 
 final today = DateTime.now();
 final twodaysago = today.subtract(const Duration(days: 2));
-final twodaysagoString = DateFormat('yyyy-MM-dd HH:00:00').format(twodaysago);
+final twodaysagoString = DateFormat('yyyyMMdd HH00').format(twodaysago);
 
 Sensor sensor = Sensor(
   customDt: twodaysagoString,
@@ -128,19 +136,18 @@ Sensor sensor = Sensor(
   xlabel: " ",
 );
 
-// List<Sensor> sensorList = <Sensor>[];
 var sensorList = List<Sensor>.filled(50, sensor, growable: true);
 
 /////////////////////////////////////////////////////////////
 
-void prefsLoad() async {
+Future prefsLoad() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   farmNo = (prefs.getInt('farmNumber') ?? 1);
   ppfarm = (prefs.getInt('myFarm') ?? 0);
 
   final today = DateTime.now();
   final twodaysago = today.subtract(const Duration(days: 2));
-  final twodaysagoString = DateFormat('yyyy-MM-dd HH:00:00').format(twodaysago);
+  final twodaysagoString = DateFormat('yyyyMMdd HH00').format(twodaysago);
   lastDatetime = (prefs.getString('lastDatetime') ?? twodaysagoString);
 
   // prefs.setInt('farmNumber', farmNo);
@@ -159,6 +166,7 @@ void prefsLoad() async {
     facilityName.add(prefs.getString('facilityName$i') ?? facilityName[0]);
     serviceKey.add(prefs.getString('serviceKey$i') ?? serviceKey[0]);
   }
+  return 0;
 }
 
 /////////////////////////////////////////////////////////////////////
@@ -174,13 +182,13 @@ class MyHttpOverrides extends HttpOverrides {
   }
 }
 
-void main() {
-  prefsLoad();
-  print(sensorList[0].customDt.toString());
+void main() async {
+  // prefsLoad();
+  // print(sensorList[0].customDt.toString());
   HttpOverrides.global = MyHttpOverrides();
   // Future.delayed(const Duration(milliseconds: 3000), () {
-  print(sensorList[0].customDt.toString());
-  lastDatetime = sensorList[0].customDt.toString();
+  // print(sensorList[0].customDt.toString());
+  // lastDatetime = sensorList[0].customDt.toString();
 
   runApp(MyApp());
   // });
@@ -211,14 +219,15 @@ class MyApp extends StatelessWidget {
 
 class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
-  var farmNoUpdate = 1;
+  // var farmNoUpdate = farmNo;
+
   void getData() {
     notifyListeners();
   }
 
   void getNext() {
-    current = WordPair.random();
-    farmNoUpdate = farmNo;
+    // current = WordPair.random();
+    // farmNoUpdate = farmNo;
     notifyListeners();
 
     // readJsonAsString();
@@ -227,11 +236,11 @@ class MyAppState extends ChangeNotifier {
   var favorites = <WordPair>[];
 
   void toggleFavorite() {
-    if (favorites.contains(current)) {
-      favorites.remove(current);
-    } else {
-      favorites.add(current);
-    }
+    // if (favorites.contains(current)) {
+    //   favorites.remove(current);
+    // } else {
+    //   favorites.add(current);
+    // }
     notifyListeners();
   }
 
@@ -277,7 +286,7 @@ class MyAppState extends ChangeNotifier {
     var now = DateTime.now();
     var nowtosave = now;
     lastDatetime = sensorList[0].customDt.toString();
-    lastDatetime = "${lastDatetime.substring(0, 14)}00:00";
+    lastDatetime = "${lastDatetime.substring(0, 11)}0000";
 
     // Json data load
     // readJsonAsString();
@@ -304,7 +313,7 @@ class MyAppState extends ChangeNotifier {
     // prefsLoad();
 
 // 데이터 저장해놓고 마지막 데이터만 호출하는 것으로 수정할 것
-    print('before for loop');
+    // print('before for loop');
     for (int i = 0; i < difference; i++) {
       String formatDate = DateFormat('yyyyMMdd').format(now);
       String formatTime = DateFormat('HH').format(now);
@@ -322,29 +331,11 @@ class MyAppState extends ChangeNotifier {
       var jsonObj = jsonDecode(response.body);
 
       //print(response.body);
-
-      // customdt.insert(i, jsonObj['datas'][0]['custom_dt']);
-      // humidity.insert(i, jsonObj['datas'][0]['humidity']);
-      // temperature.insert(i, jsonObj['datas'][0]['temperature']);
-      // leafwet.insert(i, jsonObj['datas'][0]['leafwet']);
-      // cotwo.insert(i, jsonObj['datas'][0]['cotwo']);
-      // gtemperature.insert(i, jsonObj['datas'][0]['gtemperature']);
-      // quantum.insert(i, jsonObj['datas'][0]['quantum']);
-      // DateTime xvalue = DateTime.parse(jsonObj['datas'][0]['custom_dt']);
-      // xlabel.insert(i, DateFormat('HH:mm').format(xvalue));
-
-      // customdt[i] = jsonObj['datas'][0]['custom_dt'];
-      // humidity[i] = jsonObj['datas'][0]['humidity'];
-      // temperature[i] = jsonObj['datas'][0]['temperature'];
-      // leafwet[i] = jsonObj['datas'][0]['leafwet'];
-      // cotwo[i] = jsonObj['datas'][0]['cotwo'];
-      // gtemperature[i] = jsonObj['datas'][0]['gtemperature'];
-      // quantum[i] = jsonObj['datas'][0]['quantum'];
-      // DateTime xvalue = DateTime.parse(customdt[i]);
-      // xlabel[i] = DateFormat('HH:mm').format(xvalue);
+      var custom_dt = jsonObj['datas'][0]['custom_dt'].toString();
+      custom_dt = DateFormat('yyyyMMdd HH00').format(DateTime.parse(custom_dt));
 
       Sensor nsensor = Sensor(
-        customDt: jsonObj['datas'][0]['custom_dt'],
+        customDt: custom_dt,
         temperature: double.parse(jsonObj['datas'][0]['temperature']),
         humidity: double.parse(jsonObj['datas'][0]['humidity']),
         cotwo: double.parse(jsonObj['datas'][0]['cotwo']),
@@ -360,13 +351,14 @@ class MyAppState extends ChangeNotifier {
       sensorList.insert(i, nsensor);
       print('$i----${nsensor.customDt}');
     }
-    print('after for loop');
+    // print('after for loop');
 
     ///print(customdt);
     ///print(temperature);
 /*
     http.Response response = await http.post(
-      Uri.parse(urltech),
+      Uri.parse(urlanthracnose),
+
       headers: <String, String>{
         'Content-Type': 'application/json; charset=UTF-8',
       },
@@ -410,7 +402,7 @@ class MyAppState extends ChangeNotifier {
     ppfarm = 0;
     final today = DateTime.now();
     final twodaysago = today.subtract(const Duration(days: 2));
-    lastDatetime = DateFormat('yyyy-MM-dd HH:00:00').format(twodaysago);
+    lastDatetime = DateFormat('yyyyMMdd HH00').format(twodaysago);
     sensorList = List<Sensor>.filled(50, sensor, growable: true);
     String jsonString = jsonEncode(sensorList);
     await writeJsonAsString(jsonString);
@@ -449,14 +441,18 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    readJsonAsString().then((value) {
-      setState(() {
-        lastDatetime = sensorList[0].customDt.toString();
-        lastDatetime = "${lastDatetime.substring(0, 14)}00:00";
-        print(lastDatetime);
-        print('farmNo at initState: $farmNo');
+    prefsLoad().then((value) {
+      readJsonAsString().then((value) {
+        setState(() {
+          lastDatetime = sensorList[0].customDt.toString();
+          lastDatetime = "${lastDatetime.substring(0, 11)}0000";
+          print(lastDatetime);
+          print('farmNo at initState: $farmNo');
+        });
       });
     });
+    // print(sensorList[0].customDt.toString());
+
     print('initState');
   }
 
@@ -466,8 +462,8 @@ class _MyHomePageState extends State<MyHomePage> {
     Widget page;
     switch (selectedIndex) {
       case 0:
-        appState.farmNoUpdate = farmNo;
-        print('farmNo update:  ${appState.farmNoUpdate}');
+        // appState.farmNoUpdate = farmNo;
+        // print('farmNo update:  ${appState.farmNoUpdate}');
         page = StrawberryPage();
         break;
       case 1:
@@ -480,8 +476,8 @@ class _MyHomePageState extends State<MyHomePage> {
         page = MyLineChartPage();
         break;
       case 4:
-        appState.farmNoUpdate = farmNo;
-        print('farmNo update:  ${appState.farmNoUpdate}');
+        // appState.farmNoUpdate = farmNo;
+        // print('farmNo update:  ${appState.farmNoUpdate}');
         page = MySetting();
         break;
 
@@ -500,23 +496,14 @@ class _MyHomePageState extends State<MyHomePage> {
                 destinations: [
                   NavigationRailDestination(
                     icon: Icon(CustomIcons.strawberry), //solidLemon
-                    // icon: Icon(FontAwesomeIcons.appleWhole),
-                    // icon: Image(
-                    // image: AssetImage("images/strawberry.png"),
-                    // width: 27.0),
                     label: Text('딸기'),
                   ),
                   NavigationRailDestination(
                     icon: Icon(CustomIcons.tomato), //solidLemon
-                    // icon: Image(
-                    // image: AssetImage("images/tomato.png"), width: 25.0),
                     label: Text('토마토'),
                   ),
                   NavigationRailDestination(
                     icon: Icon(CustomIcons.bellpepper), //solidLemon
-                    // icon: Image(
-                    // image: AssetImage("images/bellpepper.png"),
-                    // width: 30.0),
                     label: Text('파프리카'),
                   ),
                   NavigationRailDestination(
@@ -560,11 +547,11 @@ class _StrawberryPageState extends State<StrawberryPage> {
 /////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////
-  @override
-  void didChangeDependencies() {
-    print('didChangeDependencies 호출');
-    updateKey = DateTime.now().toString();
-  }
+  // @override
+  // void didChangeDependencies() {
+  //   print('didChangeDependencies 호출');
+  //   updateKey = DateTime.now().toString();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -607,7 +594,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   appState.callAPI().then((value) {
                     setState(() {
                       lastDatetime = sensorList[0].customDt.toString();
-                      lastDatetime = "${lastDatetime.substring(0, 14)}00:00";
+                      lastDatetime = "${lastDatetime.substring(0, 11)}0000";
                       print(lastDatetime);
                     });
                   });
@@ -675,7 +662,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   appState.callAPI().then((value) {
                     setState(() {
                       lastDatetime = sensorList[0].customDt.toString();
-                      lastDatetime = "${lastDatetime.substring(0, 14)}00:00";
+                      lastDatetime = "${lastDatetime.substring(0, 11)}0000";
                       print(lastDatetime);
                       if ((r == 200) && (difference > 0)) {
                         String jsonString = jsonEncode(sensorList);
@@ -685,14 +672,14 @@ class _StrawberryPageState extends State<StrawberryPage> {
                         // lastDatetime = DateFormat('yyyy-MM-dd HH:mm:ss').format(nowtosave);
 
                         lastDatetime = sensorList[0].customDt.toString();
-                        lastDatetime = "${lastDatetime.substring(0, 14)}00:00";
+                        lastDatetime = "${lastDatetime.substring(0, 11)}0000";
 
                         // await prefs.setString('lastDatetime', lastDatetime);
-                        print("prefs Save lastDatetime $lastDatetime");
+                        // print("prefs Save lastDatetime $lastDatetime");
                       }
                     });
                   });
-                  print('after data update procedure... ');
+                  // print('after data update procedure... ');
                   // updateKey = DateTime.now().toString();
 
                   // var temp = sensorList[0].temperature;
@@ -708,7 +695,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
               ),
               SizedBox(width: 10),
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   pp = 0;
                   // lastDatetime = "2023-06-04 02:07:11";
                   // appState.readJsonAsString();
@@ -722,6 +709,83 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   // String jsonString = jsonEncode(sensorList);
                   // print(jsonString);
                   // writeJsonAsString(jsonString);
+
+                  // Zip a directory to out.zip using the zipDirectory convenience method
+
+                  var encoder = ZipFileEncoder();
+
+                  final dir = await getApplicationDocumentsDirectory();
+
+                  var k = 0;
+                  for (k = 0; k < 96; k++) {
+                    var v1 = sensorList[k].customDt.toString();
+                    var d1 = DateTime.parse(v1);
+                    String formatTime = DateFormat('HH').format(d1);
+                    if (formatTime == '12') break;
+                  }
+                  var weatherString = 'datetime,temperature,humidity,leafwet\n';
+                  for (int j = k + 96; j >= 0; j--) {
+                    var v1 = sensorList[j].customDt.toString();
+                    var v2 = sensorList[j].temperature.toString();
+                    var v3 = sensorList[j].humidity.toString();
+                    var v4 = sensorList[j].leafwet.toString();
+                    weatherString = "$weatherString$v1,$v2,$v3,$v4\n";
+                  }
+                  // print(weatherString);
+                  (File('${dir.path}/weather.csv')
+                          .writeAsString(weatherString ?? ''))
+                      .then((value) {
+                    encoder.create('${dir.path}/input.zip');
+                    encoder.addFile(File('${dir.path}/weather.csv'));
+                    encoder.close();
+                  });
+
+                  // zip weather.csv
+
+                  //base64 encoding
+                  var z = await File('${dir.path}/input.zip').readAsBytes();
+                  String token = base64.encode(z);
+
+                  var body = jsonEncode({
+                    'Input': token,
+                    'type': "file",
+                  });
+
+                  // http request
+                  var urlanthracnose = 'http://147.46.206.95:7897/Anthracnose';
+
+                  http.Response response = await http.post(
+                    Uri.parse(urlanthracnose),
+                    headers: <String, String>{
+                      'Content-Type': 'application/json',
+                    },
+                    body: body,
+                  );
+                  // print(response.statusCode);
+                  // print(response.headers);
+                  // print(response.body);
+                  var r = response.body;
+                  r = r.replaceAll("\\", "");
+                  var i = r.indexOf('output');
+                  var ii = r.indexOf("\}\}");
+
+                  var rr = r.substring(i + 10, ii + 2);
+
+                  final output = json.decode(rr);
+                  print(output.runtimeType);
+                  for (int i = 0; i < 3; i++) {
+                    print(output['$i']['date']);
+                    print(output['$i']['type']);
+                    print(output['$i']['PINF']);
+                    print("");
+                  }
+
+                  // if (mounted) {
+                  //   setState(() {
+                  //     ///      temperature.add("changed");
+                  //   });
+                  // }
+
                   if (mounted) {
                     setState(() {
                       appState.getNext();
@@ -1380,7 +1444,7 @@ class _MySettingState extends State<MySetting> {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
-    appState.farmNoUpdate = farmNo;
+    // appState.farmNoUpdate = farmNo;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -1502,7 +1566,7 @@ class _MySettingState extends State<MySetting> {
                 ),
                 Padding(
                   padding: const EdgeInsets.all(5),
-                  child: Text('총 ${appState.farmNoUpdate}농가가 등록되었습니다!!!'),
+                  child: Text('총 ${farmNo}농가가 등록되었습니다!!!'),
                 ),
                 Text('선택농가: ${ppfarm + 1} - 이름: ${farmName[ppfarm]}'),
                 SizedBox(
