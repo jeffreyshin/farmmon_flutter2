@@ -30,7 +30,7 @@ var ppfarm = 0;
 var farmNo = 1;
 var lastDatetime = '';
 var updateKey = '';
-var MAXX = 24;
+var MAXX = 72;
 var difference = 0;
 var statusCode = 0;
 
@@ -374,7 +374,6 @@ class MyAppState extends ChangeNotifier {
       var jsonObj = jsonDecode(response.body);
       var custom_dt = jsonObj['datas'][0]['custom_dt'].toString();
       custom_dt = DateFormat('yyyyMMdd HH00').format(DateTime.parse(custom_dt));
-
       Sensor nsensor = Sensor(
         customDt: custom_dt,
         temperature: double.parse(jsonObj['datas'][0]['temperature']),
@@ -383,14 +382,14 @@ class MyAppState extends ChangeNotifier {
         leafwet: double.parse(jsonObj['datas'][0]['leafwet']),
         gtemperature: double.parse(jsonObj['datas'][0]['gtemperature']),
         quantum: double.parse(jsonObj['datas'][0]['quantum']),
-        xlabel: DateFormat('HH:mm').format(
+        xlabel: DateFormat('MM/dd HH').format(
           DateTime.parse(jsonObj['datas'][0]['custom_dt']),
         ),
       );
 
       // sensorList.insert(0, nsensor);
       sensorList.insert(i, nsensor);
-      print('$i----${nsensor.customDt}');
+      // print('$i----${nsensor.customDt}');
       var progress = ((i + 1) / difference) * 100;
       user_msg = "${progress.toStringAsFixed(0)}%";
       notifyListeners();
@@ -1311,7 +1310,7 @@ class _MyLineChartState extends State<MyLineChart> {
                     sideTitles: SideTitles(
                       showTitles: true,
                       interval: 1,
-                      reservedSize: 57,
+                      reservedSize: 77,
                       getTitlesWidget: (value, titleMeta) {
                         return Padding(
                           // You can use any widget here
