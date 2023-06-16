@@ -12,6 +12,8 @@ import 'package:farmmon_flutter/zoomable_chart.dart';
 import 'package:farmmon_flutter/presentation/resources/app_resources.dart';
 import 'package:farmmon_flutter/icons/custom_icons_icons.dart';
 import 'package:archive/archive_io.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:flutter/foundation.dart';
 
 // import 'package:flutter/foundation.dart';
 // import 'package:flutter/services.dart';
@@ -30,7 +32,7 @@ var lastDatetime = '';
 var updateKey = '';
 var MAXX = 24;
 var difference = 0;
-var r = 0;
+var statusCode = 0;
 
 var farmName = List<String>.filled(1, '기본농장', growable: true);
 var facilityName = List<String>.filled(1, '1번온실', growable: true);
@@ -85,28 +87,6 @@ class Sensor {
 }
 
 /////////////////////////////////////////////
-class Weather {
-  String? Input;
-  String? type;
-
-  Weather({
-    this.Input,
-    this.type,
-  });
-
-  factory Weather.fromJson(Map<String, dynamic> json) => Weather(
-        Input: json['Input'],
-        type: json['type'],
-      );
-
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['Input'] = Input;
-    data['type'] = type;
-    return data;
-  }
-}
-//////////////////////////////////////////////////////
 
 class SensorList {
   List<Sensor>? sensors;
@@ -121,12 +101,61 @@ class SensorList {
   }
 }
 
+///////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////
+class PINF {
+  String? customDt;
+  double? anthracnose;
+  double? botrytis;
+  String? xlabel;
+
+  PINF({
+    this.customDt,
+    this.anthracnose,
+    this.botrytis,
+    this.xlabel,
+  });
+
+  factory PINF.fromJson(Map<String, dynamic> json) => PINF(
+        customDt: json['custom_dt'],
+        anthracnose: json['anthracnose'],
+        botrytis: json['botrytis'],
+        xlabel: json['xlabel'],
+      );
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = new Map<String, dynamic>();
+    data['custom_dt'] = customDt;
+    data['anthracnose'] = anthracnose;
+    data['botrytis'] = botrytis;
+    data['xlabel'] = xlabel;
+    return data;
+  }
+}
+
+/////////////////////////////////////////////
+
+class PINFList {
+  List<PINF>? pinfs;
+  PINFList({this.pinfs});
+
+  factory PINFList.fromJson(String jsonString) {
+    List<dynamic> listFromJson = json.decode(jsonString);
+    List<PINF> pinfs = <PINF>[];
+
+    pinfs = listFromJson.map((pinf) => PINF.fromJson(pinf)).toList();
+    return PINFList(pinfs: pinfs);
+  }
+}
+
+///////////////////////////////////////////////////////////
 final today = DateTime.now();
-final twodaysago = today.subtract(const Duration(days: 2));
-final twodaysagoString = DateFormat('yyyyMMdd HH00').format(twodaysago);
+final somedaysago = today.subtract(const Duration(days: 15));
+final somedaysagoString = DateFormat('yyyyMMdd HH00').format(somedaysago);
 
 Sensor sensor = Sensor(
-  customDt: twodaysagoString,
+  customDt: somedaysagoString,
   temperature: 0.0,
   humidity: 0.0,
   cotwo: 0.0,
@@ -137,6 +166,17 @@ Sensor sensor = Sensor(
 );
 
 var sensorList = List<Sensor>.filled(50, sensor, growable: true);
+/////////////////////////////////////////////////////////////
+final somedaysagoString2 = DateFormat('yyyy-MM-dd').format(somedaysago);
+
+PINF pinf = PINF(
+  customDt: somedaysagoString2,
+  anthracnose: 0.0,
+  botrytis: 0.0,
+  xlabel: " ",
+);
+
+var pinfList = List<PINF>.filled(50, pinf, growable: true);
 
 /////////////////////////////////////////////////////////////
 
@@ -146,9 +186,9 @@ Future prefsLoad() async {
   ppfarm = (prefs.getInt('myFarm') ?? 0);
 
   final today = DateTime.now();
-  final twodaysago = today.subtract(const Duration(days: 2));
-  final twodaysagoString = DateFormat('yyyyMMdd HH00').format(twodaysago);
-  lastDatetime = (prefs.getString('lastDatetime') ?? twodaysagoString);
+  final somedaysago = today.subtract(const Duration(days: 15));
+  final somedaysagoString = DateFormat('yyyyMMdd HH00').format(somedaysago);
+  lastDatetime = (prefs.getString('lastDatetime') ?? somedaysagoString);
 
   // prefs.setInt('farmNumber', farmNo);
   // prefs.setInt('myFarm', ppfarm);
@@ -169,8 +209,85 @@ Future prefsLoad() async {
   return 0;
 }
 
-/////////////////////////////////////////////////////////////////////
+Future prefsSave() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  await prefs.setInt('farmNumber', farmNo);
 
+  for (int i = 0; i < farmNo; i++) {
+    await prefs.setString('farmName$i', farmName[i]);
+    await prefs.setString('facilityName$i', facilityName[i]);
+    await prefs.setString('serviceKey$i', serviceKey[i]);
+  }
+  await prefs.setInt('myFarm', ppfarm);
+  print('prefs Save: ${(ppfarm + 1)} / $farmNo');
+}
+
+void prefsClear() async {
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  // print('prefs clear $farmNo');
+  prefs.clear();
+  if (farmNo > 1) {
+    farmName.removeRange(1, farmNo);
+    facilityName.removeRange(1, farmNo);
+    serviceKey.removeRange(1, farmNo);
+  }
+  farmNo = 1;
+  ppfarm = 0;
+  final today = DateTime.now();
+  final somedaysago = today.subtract(const Duration(days: 15));
+  lastDatetime = DateFormat('yyyyMMdd HH00').format(somedaysago);
+  sensorList = List<Sensor>.filled(50, sensor, growable: true);
+  String jsonString = jsonEncode(sensorList);
+  await writeJsonAsString('sensor.json', jsonString);
+
+  pinfList = List<PINF>.filled(50, pinf, growable: true);
+  jsonString = jsonEncode(pinfList);
+  await writeJsonAsString('pinf.json', jsonString);
+
+  print('prefs cleared: only $farmNo farm left');
+}
+
+/////////////////////////////////////////////////////////////////////
+Future readJsonAsString() async {
+  try {
+    final dir = await getApplicationDocumentsDirectory();
+    // Directory dir = Directory('/storage/emulated/0/Documents');
+    // print('${dir.path}/sensor.json');
+    print('read json file');
+    var routeFromJsonFile =
+        await File('${dir.path}/sensor.json').readAsString();
+    sensorList = (SensorList.fromJson(routeFromJsonFile).sensors ?? <Sensor>[]);
+    routeFromJsonFile = await File('${dir.path}/pinf.json').readAsString();
+    pinfList = (PINFList.fromJson(routeFromJsonFile).pinfs ?? <PINF>[]);
+  } catch (e) {
+    return 0;
+  }
+}
+
+Future<File> writeJsonAsString(String? file, String? data) async {
+  // final file = File('json/sensor.json');
+  final dir = await getApplicationDocumentsDirectory();
+  // Directory dir = Directory('/storage/emulated/0/Documents');
+  // print('${dir.path}/sensor.json');
+  print('writing json file: $file');
+  if (Platform.isAndroid) showToast("파일을 저장했습니다");
+  // notifyListeners();
+  return File('${dir.path}/$file').writeAsString(data ?? '');
+  // return file.writeAsString(data ?? '');
+}
+
+/////////////////////////////////////////////////////////////
+
+showToast(String message) {
+  return Fluttertoast.showToast(
+    msg: message,
+    gravity: ToastGravity.BOTTOM,
+    backgroundColor: Colors.blueAccent,
+    fontSize: 20,
+    textColor: Colors.white,
+    toastLength: Toast.LENGTH_SHORT,
+  );
+}
 /////////////////////////////////////////////////////////////
 
 class MyHttpOverrides extends HttpOverrides {
@@ -184,17 +301,9 @@ class MyHttpOverrides extends HttpOverrides {
 
 void main() async {
   // prefsLoad();
-  // print(sensorList[0].customDt.toString());
   HttpOverrides.global = MyHttpOverrides();
-  // Future.delayed(const Duration(milliseconds: 3000), () {
-  // print(sensorList[0].customDt.toString());
   // lastDatetime = sensorList[0].customDt.toString();
-
   runApp(MyApp());
-  // });
-  // readJsonAsString();
-  // print(sensorList[0].temperature.toString());
-  // print('main : read Json file');
 }
 
 class MyApp extends StatelessWidget {
@@ -219,77 +328,19 @@ class MyApp extends StatelessWidget {
 
 class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
+  var favorites = <WordPair>[];
+  var user_msg = '';
   // var farmNoUpdate = farmNo;
 
-  void getData() {
-    notifyListeners();
-  }
-
-  void getNext() {
-    // current = WordPair.random();
-    // farmNoUpdate = farmNo;
-    notifyListeners();
-
-    // readJsonAsString();
-  }
-
-  var favorites = <WordPair>[];
-
-  void toggleFavorite() {
-    // if (favorites.contains(current)) {
-    //   favorites.remove(current);
-    // } else {
-    //   favorites.add(current);
-    // }
-    notifyListeners();
-  }
-
-  Future<void> getSensorList() async {
-    // final dir = await getApplicationDocumentsDirectory();
-    // Directory dir = Directory('/storage/emulated/0/Documents');
-    // final routeFromJsonFile =
-    //     await rootBundle.loadString('${dir.path}/sensor.json');
-    // final routeFromJsonFile = await rootBundle
-    // .loadString('/storage/emulated/0/Documents/sensor.json');
-    // sensorList = (SensorList.fromJson(routeFromJsonFile).sensors ?? <Sensor>[]);
-    // print('getSensorList====================');
-    // print(sensorList[0].customDt);
-    // print(sensorList[0].customDt);
-    // print(sensorList[0].customDt);
-
-    // print(jsonString);
-
-    // current = WordPair.random();
-    notifyListeners();
-    // String jsonString = jsonEncode(sensorList);
-    // print(jsonString);
-  }
-
-  Future<File> writeJsonAsString(String? data) async {
-    // final file = File('json/sensor.json');
-    final dir = await getApplicationDocumentsDirectory();
-    // Directory dir = Directory('/storage/emulated/0/Documents');
-    // print('${dir.path}/sensor.json');
-    print('writing json file');
-    // notifyListeners();
-    return File('${dir.path}/sensor.json').writeAsString(data ?? '');
-    // return file.writeAsString(data ?? '');
-  }
-
-  Future callAPI() async {
-    // var urltech = 'http://147.46.206.95:7890/SNFD';
-    // var urlanthracnose = 'http://147.46.206.95:7897/Anthracnose';
+  Future apiRequestIOT() async {
     var urliot = 'http://iot.rda.go.kr/api';
     var apikey = serviceKey[ppfarm];
 
-    // iot portal test
+    // IOT portal data update
     var now = DateTime.now();
-    var nowtosave = now;
     lastDatetime = sensorList[0].customDt.toString();
     lastDatetime = "${lastDatetime.substring(0, 11)}0000";
 
-    // Json data load
-    // readJsonAsString();
     difference = int.parse(
         now.difference(DateTime.parse(lastDatetime)).inHours.toString());
     print('Difference: $difference');
@@ -304,15 +355,6 @@ class MyAppState extends ChangeNotifier {
     deltaT = 24;
     if (deltaT < 12) deltaT = deltaT + deltaT12;
 
-    ///print(deltaT+deltaT12);
-    ///print('$formatDate');
-    ///print('$formatTime');
-    ///temperature.clear();
-    ///customdt.clear();
-
-    // prefsLoad();
-
-// 데이터 저장해놓고 마지막 데이터만 호출하는 것으로 수정할 것
     // print('before for loop');
     for (int i = 0; i < difference; i++) {
       String formatDate = DateFormat('yyyyMMdd').format(now);
@@ -320,17 +362,16 @@ class MyAppState extends ChangeNotifier {
       urliotString = "$urliot/$apikey/$formatDate/$formatTime";
 
       ///print(urliot2);
+
+      HttpClient().idleTimeout = const Duration(seconds: 10);
+
       uriiot = Uri.parse(urliotString);
       http.Response response = await http.get(uriiot);
       now = now.subtract(Duration(hours: 1));
       // print(response.body);
-      r = response.statusCode;
-      // print(r);
-      //    Map<String, dynamic> usem = jsonDecode(response.body);
+      statusCode = response.statusCode;
 
       var jsonObj = jsonDecode(response.body);
-
-      //print(response.body);
       var custom_dt = jsonObj['datas'][0]['custom_dt'].toString();
       custom_dt = DateFormat('yyyyMMdd HH00').format(DateTime.parse(custom_dt));
 
@@ -350,65 +391,148 @@ class MyAppState extends ChangeNotifier {
       // sensorList.insert(0, nsensor);
       sensorList.insert(i, nsensor);
       print('$i----${nsensor.customDt}');
+      var progress = ((i + 1) / difference) * 100;
+      user_msg = "${progress.toStringAsFixed(0)}%";
+      notifyListeners();
     }
     // print('after for loop');
+    // print(statusCode);
+    user_msg = "$statusCode";
+    notifyListeners();
+    return statusCode;
+  }
 
-    ///print(customdt);
-    ///print(temperature);
-/*
+  Future apiRequestPEST() async {
+    var encoder = ZipFileEncoder();
+    final dir = await getApplicationDocumentsDirectory();
+
+    var k = 0;
+    for (k = 0; k < 24; k++) {
+      var v1 = sensorList[k].customDt.toString();
+      var d1 = DateTime.parse(v1);
+      String formatTime = DateFormat('HH').format(d1);
+      if (formatTime == '12') break;
+    }
+    var weatherString = 'datetime,temperature,humidity,leafwet\n';
+    for (int j = (k + 336); j >= 0; j--) {
+      var v1 = sensorList[j].customDt.toString();
+      var v2 = sensorList[j].temperature.toString();
+      var v3 = sensorList[j].humidity.toString();
+      var v4 = sensorList[j].leafwet.toString();
+      weatherString = "$weatherString$v1,$v2,$v3,$v4\n";
+    }
+    // print(weatherString);
+    (File('${dir.path}/weather.csv').writeAsString(weatherString))
+        .then((value) {
+      encoder.create('${dir.path}/input.zip');
+      encoder.addFile(File('${dir.path}/weather.csv'));
+      encoder.close();
+    });
+
+    // zip weather.csv
+    // base64 encoding
+    var z = await File('${dir.path}/input.zip').readAsBytes();
+    String token = base64.encode(z);
+
+    var body = jsonEncode({
+      'Input': token,
+      'type': "file",
+    });
+
+    // http request
+    var urlanthracnose = 'http://147.46.206.95:7897/Anthracnose';
+    var urlbotrytis = 'http://147.46.206.95:7898/Botrytis';
+
     http.Response response = await http.post(
       Uri.parse(urlanthracnose),
-
       headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
+        'Content-Type': 'application/json',
       },
-      body: jsonEncode({
-        'mPH': 5.4,
-        'mEC': 3.6,
-        'mNO3': 179,
-        'mPO4': 155,
-        'mEH': 370,
-        'mSO4': 250,
-        'mCL': 100,
-        'mCROP': "good"
-      }),
+      body: body,
     );
-    ///print(response.statusCode);
-    ///print(response.headers);
-    ///print(response.body);
-*/
-    // if (mounted) {
-    //   setState(() {
-    //     ///      temperature.add("changed");
-    //   });
-    // }
-    notifyListeners();
+
+    var r = response.body;
+    r = r.replaceAll("\\", "");
+    var i = r.indexOf('output');
+    var ii = r.indexOf("}}");
+    var rr = r.substring(i + 10, ii + 2);
+    final outputA = json.decode(rr);
+
+    http.Response response2 = await http.post(
+      Uri.parse(urlbotrytis),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+      },
+      body: body,
+    );
+
+    var r2 = response2.body;
+    r = r2.replaceAll("\\", "");
+    var i2 = r.indexOf('output');
+    var ii2 = r.indexOf("}}");
+    var rr2 = r.substring(i2 + 10, ii2 + 2);
+    final outputB = json.decode(rr2);
+
+    // print(output.runtimeType);
+
+    //////////////////////////////////////////////////////
+/////////////////////////////////////////////////////
+    int j = 14;
+    for (int i = 0; i < 14; i++) {
+      var custom_dt = outputA['$j']['date'].toString();
+
+      PINF npinf = PINF(
+        customDt: custom_dt,
+        anthracnose: outputA['$j']['PINF'],
+        botrytis: outputB['$j']['PINF'],
+        xlabel: DateFormat('MM/dd').format(
+          DateTime.parse(outputA['$j']['date']),
+        ),
+      );
+      j--;
+      pinfList.insert(i, npinf);
+
+      // print('$j: $custom_dt');
+    }
+
     return 0;
   }
 
-/////////////////////////////////////////////////////////////////////
-  ///
+  Future getAPI() async {
+    // current = WordPair.random();
+    // farmNoUpdate = farmNo;
+    await apiRequestIOT().then((value) {
+      notifyListeners();
+    });
+    return 0;
+  }
 
-  void prefsClear() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    // print('prefs clear $farmNo');
-    prefs.clear();
-    if (farmNo > 1) {
-      farmName.removeRange(1, farmNo);
-      facilityName.removeRange(1, farmNo);
-      serviceKey.removeRange(1, farmNo);
-    }
-    farmNo = 1;
-    ppfarm = 0;
-    final today = DateTime.now();
-    final twodaysago = today.subtract(const Duration(days: 2));
-    lastDatetime = DateFormat('yyyyMMdd HH00').format(twodaysago);
-    sensorList = List<Sensor>.filled(50, sensor, growable: true);
-    String jsonString = jsonEncode(sensorList);
-    await writeJsonAsString(jsonString);
-    print('prefs cleared: only $farmNo farm left');
+  Future<void> getSensorList() async {
+    // current = WordPair.random();
+    notifyListeners();
+  }
+
+  void getData() {
+    notifyListeners();
+  }
+
+  void getNext() {
+    // current = WordPair.random();
+    // farmNoUpdate = farmNo;
+    notifyListeners();
+  }
+
+  void toggleFavorite() {
+    // if (favorites.contains(current)) {
+    //   favorites.remove(current);
+    // } else {
+    //   favorites.add(current);
+    // }
+    notifyListeners();
   }
 }
+
+/////////////////////////////////////////////////////////////////////
 
 class MyHomePage extends StatefulWidget {
   @override
@@ -417,26 +541,6 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   var selectedIndex = 0;
-
-  Future readJsonAsString() async {
-    try {
-      final dir = await getApplicationDocumentsDirectory();
-      // Directory dir = Directory('/storage/emulated/0/Documents');
-      // print('${dir.path}/sensor.json');
-      print('read json file');
-      var routeFromJsonFile =
-          await File('${dir.path}/sensor.json').readAsString();
-      // print(routeFromJsonFile);
-      sensorList =
-          (SensorList.fromJson(routeFromJsonFile).sensors ?? <Sensor>[]);
-      // print(sensorList[0].customDt.toString());
-      // print(sensorList[5].customDt.toString());
-      // print(sensorList[10].customDt.toString());
-      // notifyListeners();
-    } catch (e) {
-      return 0;
-    }
-  }
 
   @override
   void initState() {
@@ -451,8 +555,6 @@ class _MyHomePageState extends State<MyHomePage> {
         });
       });
     });
-    // print(sensorList[0].customDt.toString());
-
     print('initState');
   }
 
@@ -565,14 +667,14 @@ class _StrawberryPageState extends State<StrawberryPage> {
     } else {
       icon = Icons.favorite_border;
     }
-    var now = DateTime.now();
-    String formatDate = DateFormat('yyyy년 MM월 dd일').format(now);
+    // var now = DateTime.now();
+    // String formatDate = DateFormat('yyyy년 MM월 dd일').format(now);
 
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          SizedBox(height: 40),
+          SizedBox(height: 30),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -591,14 +693,17 @@ class _StrawberryPageState extends State<StrawberryPage> {
 
                   // appState.callAPI();
 
-                  appState.callAPI().then((value) {
+                  await appState.getAPI().then((value) {
                     setState(() {
                       lastDatetime = sensorList[0].customDt.toString();
                       lastDatetime = "${lastDatetime.substring(0, 11)}0000";
                       print(lastDatetime);
                     });
                   });
+                  await appState.apiRequestPEST().then((value) {});
 
+                  // appState.getAPI().then((value) {
+                  // });
                   // Future.delayed(const Duration(milliseconds: 1000), () {
                   // if (mounted) {
                   setState(() {
@@ -613,8 +718,6 @@ class _StrawberryPageState extends State<StrawberryPage> {
               ),
             ],
           ),
-          SizedBox(height: 10),
-          Text(formatDate),
           SizedBox(height: 10),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -656,40 +759,53 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   foregroundColor: Colors.amber,
                   backgroundColor: Colors.blueGrey, // Text Color
                 ),
-                onPressed: () {
+                onPressed: () async {
                   pp = 0;
                   // appState.callAPI();
-                  appState.callAPI().then((value) {
-                    setState(() {
-                      lastDatetime = sensorList[0].customDt.toString();
-                      lastDatetime = "${lastDatetime.substring(0, 11)}0000";
-                      print(lastDatetime);
-                      if ((r == 200) && (difference > 0)) {
-                        String jsonString = jsonEncode(sensorList);
-                        appState.writeJsonAsString(jsonString);
+                  if (Platform.isAndroid) showToast("IOT포털에서 데이터를 가져옵니다");
 
-                        // SharedPreferences prefs = await SharedPreferences.getInstance();
-                        // lastDatetime = DateFormat('yyyy-MM-dd HH:mm:ss').format(nowtosave);
-
+                  await appState.getAPI().then((value) {
+                    if (Platform.isAndroid) showToast("병해충 발생위험도를 계산합니다");
+                    appState.apiRequestPEST().then((value) {
+                      // print(difference);
+                      // print(statusCode);
+                      // print(pp);
+                      setState(() {
                         lastDatetime = sensorList[0].customDt.toString();
                         lastDatetime = "${lastDatetime.substring(0, 11)}0000";
+                        print(lastDatetime);
 
-                        // await prefs.setString('lastDatetime', lastDatetime);
-                        // print("prefs Save lastDatetime $lastDatetime");
-                      }
+                        if ((difference >= 0)) {
+                          //(statusCode == 200) &&
+                          String jsonString = jsonEncode(sensorList);
+                          writeJsonAsString('sensor.json', jsonString);
+                          jsonString = jsonEncode(pinfList);
+                          writeJsonAsString('pinf.json', jsonString);
+                          if (Platform.isAndroid) showToast("파일에 데이터를 저장합니다");
+
+                          // SharedPreferences prefs = await SharedPreferences.getInstance();
+                          // lastDatetime = DateFormat('yyyy-MM-dd HH:mm:ss').format(nowtosave);
+
+                          lastDatetime = sensorList[0].customDt.toString();
+                          lastDatetime = "${lastDatetime.substring(0, 11)}0000";
+
+                          // await prefs.setString('lastDatetime', lastDatetime);
+                          // print("prefs Save lastDatetime $lastDatetime");
+                        }
+                      });
                     });
+                    // print('after data update procedure... ');
+                    // updateKey = DateTime.now().toString();
+
+                    // var temp = sensorList[0].temperature;
+                    // sensorList[0].temperature = temp;
+
+                    if (mounted) {
+                      setState(() {
+                        appState.getNext();
+                      });
+                    }
                   });
-                  // print('after data update procedure... ');
-                  // updateKey = DateTime.now().toString();
-
-                  // var temp = sensorList[0].temperature;
-                  // sensorList[0].temperature = temp;
-
-                  if (mounted) {
-                    setState(() {
-                      appState.getNext();
-                    });
-                  }
                 },
                 child: Text('이번주'),
               ),
@@ -697,103 +813,18 @@ class _StrawberryPageState extends State<StrawberryPage> {
               ElevatedButton(
                 onPressed: () async {
                   pp = 0;
-                  // lastDatetime = "2023-06-04 02:07:11";
-                  // appState.readJsonAsString();
-                  // appState.getSensorList();
-
-                  // print('getSensorList====================');
-                  // print(sensorList[0].customDt);
-                  // print(sensorList[0].customDt);
-                  // print(sensorList[0].customDt);
-
-                  // String jsonString = jsonEncode(sensorList);
-                  // print(jsonString);
-                  // writeJsonAsString(jsonString);
-
-                  // Zip a directory to out.zip using the zipDirectory convenience method
-
-                  var encoder = ZipFileEncoder();
-
-                  final dir = await getApplicationDocumentsDirectory();
-
-                  var k = 0;
-                  for (k = 0; k < 96; k++) {
-                    var v1 = sensorList[k].customDt.toString();
-                    var d1 = DateTime.parse(v1);
-                    String formatTime = DateFormat('HH').format(d1);
-                    if (formatTime == '12') break;
-                  }
-                  var weatherString = 'datetime,temperature,humidity,leafwet\n';
-                  for (int j = k + 96; j >= 0; j--) {
-                    var v1 = sensorList[j].customDt.toString();
-                    var v2 = sensorList[j].temperature.toString();
-                    var v3 = sensorList[j].humidity.toString();
-                    var v4 = sensorList[j].leafwet.toString();
-                    weatherString = "$weatherString$v1,$v2,$v3,$v4\n";
-                  }
-                  // print(weatherString);
-                  (File('${dir.path}/weather.csv')
-                          .writeAsString(weatherString ?? ''))
-                      .then((value) {
-                    encoder.create('${dir.path}/input.zip');
-                    encoder.addFile(File('${dir.path}/weather.csv'));
-                    encoder.close();
-                  });
-
-                  // zip weather.csv
-
-                  //base64 encoding
-                  var z = await File('${dir.path}/input.zip').readAsBytes();
-                  String token = base64.encode(z);
-
-                  var body = jsonEncode({
-                    'Input': token,
-                    'type': "file",
-                  });
-
-                  // http request
-                  var urlanthracnose = 'http://147.46.206.95:7897/Anthracnose';
-
-                  http.Response response = await http.post(
-                    Uri.parse(urlanthracnose),
-                    headers: <String, String>{
-                      'Content-Type': 'application/json',
-                    },
-                    body: body,
-                  );
-                  // print(response.statusCode);
-                  // print(response.headers);
-                  // print(response.body);
-                  var r = response.body;
-                  r = r.replaceAll("\\", "");
-                  var i = r.indexOf('output');
-                  var ii = r.indexOf("\}\}");
-
-                  var rr = r.substring(i + 10, ii + 2);
-
-                  final output = json.decode(rr);
-                  print(output.runtimeType);
-                  for (int i = 0; i < 3; i++) {
-                    print(output['$i']['date']);
-                    print(output['$i']['type']);
-                    print(output['$i']['PINF']);
-                    print("");
-                  }
-
-                  // if (mounted) {
-                  //   setState(() {
-                  //     ///      temperature.add("changed");
-                  //   });
-                  // }
-
+                  // await apiRequestPEST().then((value) {
                   if (mounted) {
                     setState(() {
                       appState.getNext();
                     });
                   }
+                  // });
                 },
                 child: Text('다음주'),
               ),
+              SizedBox(width: 10),
+              Text(appState.user_msg),
             ],
           ),
           SizedBox(height: 20),
@@ -939,19 +970,18 @@ class _MyBarChartState extends State<MyBarChart> {
   void initState() {
     super.initState();
     print('Bar Chart initState 호출');
-    updateKey = DateTime.now().toString();
   }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(30),
+      padding: const EdgeInsets.all(20),
       // implement the bar chart
       child: BarChart(
         // key: ValueKey(sensorList[0].customDt),
         // key: ValueKey(updateKey),
         BarChartData(
-          maxY: 50,
+          maxY: 1,
           borderData: FlBorderData(
               border: const Border(
             top: BorderSide.none,
@@ -964,71 +994,71 @@ class _MyBarChartState extends State<MyBarChart> {
           barGroups: [
             BarChartGroupData(x: 1, barRods: [
               BarChartRodData(
-                  toY: double.parse(sensorList[pp + 6].temperature.toString()),
+                  toY: double.parse(pinfList[pp + 6].anthracnose.toString()),
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(sensorList[pp + 6].humidity.toString()) / 2,
+                  toY: double.parse(pinfList[pp + 6].botrytis.toString()),
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 2, barRods: [
               BarChartRodData(
-                  toY: double.parse(sensorList[pp + 5].temperature.toString()),
+                  toY: double.parse(pinfList[pp + 5].anthracnose.toString()),
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(sensorList[pp + 5].humidity.toString()) / 2,
+                  toY: double.parse(pinfList[pp + 5].botrytis.toString()),
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 3, barRods: [
               BarChartRodData(
-                  toY: double.parse(sensorList[pp + 4].temperature.toString()),
+                  toY: double.parse(pinfList[pp + 4].anthracnose.toString()),
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(sensorList[pp + 4].humidity.toString()) / 2,
+                  toY: double.parse(pinfList[pp + 4].botrytis.toString()),
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 4, barRods: [
               BarChartRodData(
-                  toY: double.parse(sensorList[pp + 3].temperature.toString()),
+                  toY: double.parse(pinfList[pp + 3].anthracnose.toString()),
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(sensorList[pp + 3].humidity.toString()) / 2,
+                  toY: double.parse(pinfList[pp + 3].botrytis.toString()),
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 5, barRods: [
               BarChartRodData(
-                  toY: double.parse(sensorList[pp + 2].temperature.toString()),
+                  toY: double.parse(pinfList[pp + 2].anthracnose.toString()),
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(sensorList[pp + 2].humidity.toString()) / 2,
+                  toY: double.parse(pinfList[pp + 2].botrytis.toString()),
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 6, barRods: [
               BarChartRodData(
-                  toY: double.parse(sensorList[pp + 1].temperature.toString()),
+                  toY: double.parse(pinfList[pp + 1].anthracnose.toString()),
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(sensorList[pp + 1].humidity.toString()) / 2,
+                  toY: double.parse(pinfList[pp + 1].botrytis.toString()),
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 7, barRods: [
               BarChartRodData(
-                  toY: double.parse(sensorList[pp + 0].temperature.toString()),
+                  toY: double.parse(pinfList[pp + 0].anthracnose.toString()),
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(sensorList[pp + 0].humidity.toString()) / 2,
+                  toY: double.parse(pinfList[pp + 0].botrytis.toString()),
                   width: 5,
                   color: Colors.indigo),
             ]),
@@ -1062,7 +1092,7 @@ class _MyBarChartState extends State<MyBarChart> {
                     ),
                   );
                 },
-                reservedSize: 57,
+                reservedSize: 47,
                 // interval: 12,
               ),
             ),
@@ -1083,28 +1113,28 @@ class _MyBarChartState extends State<MyBarChart> {
     String text;
     switch (value.toInt()) {
       case 0:
-        text = sensorList[pp + 7].xlabel.toString();
+        text = pinfList[pp + 7].xlabel.toString();
         break;
       case 1:
-        text = sensorList[pp + 6].xlabel.toString();
+        text = pinfList[pp + 6].xlabel.toString();
         break;
       case 2:
-        text = sensorList[pp + 5].xlabel.toString();
+        text = pinfList[pp + 5].xlabel.toString();
         break;
       case 3:
-        text = sensorList[pp + 4].xlabel.toString();
+        text = pinfList[pp + 4].xlabel.toString();
         break;
       case 4:
-        text = sensorList[pp + 3].xlabel.toString();
+        text = pinfList[pp + 3].xlabel.toString();
         break;
       case 5:
-        text = sensorList[pp + 2].xlabel.toString();
+        text = pinfList[pp + 2].xlabel.toString();
         break;
       case 6:
-        text = sensorList[pp + 1].xlabel.toString();
+        text = pinfList[pp + 1].xlabel.toString();
         break;
       case 7:
-        text = sensorList[pp + 0].xlabel.toString();
+        text = pinfList[pp + 0].xlabel.toString();
         break;
       default:
         text = '';
@@ -1313,55 +1343,6 @@ class _MyLineChartState extends State<MyLineChart> {
     );
     String text;
     text = sensorList[pp + (MAXX - value.toInt() - 1)].xlabel.toString();
-/*
-    switch (value.toInt()) {
-      case 0:
-        text = xlabel[pp + 13]
-        break;
-      case 1:
-        text = xlabel[pp + 12];
-        break;
-      case 2:
-        text = xlabel[pp + 11];
-        break;
-      case 3:
-        text = xlabel[pp + 10];
-        break;
-      case 4:
-        text = xlabel[pp + 9];
-        break;
-      case 5:
-        text = xlabel[pp + 8];
-        break;
-      case 6:
-        text = xlabel[pp + 7];
-        break;
-      case 7:
-        text = xlabel[pp + 6];
-        break;
-      case 8:
-        text = xlabel[pp + 5];
-        break;
-      case 9:
-        text = xlabel[pp + 4];
-        break;
-      case 10:
-        text = xlabel[pp + 3];
-        break;
-      case 11:
-        text = xlabel[pp + 2];
-        break;
-      case 12:
-        text = xlabel[pp + 1];
-        break;
-      case 13:
-        text = xlabel[pp + 0];
-        break;
-      default:
-        text = '';
-        break;
-    }
-    */
     return SideTitleWidget(
       axisSide: meta.axisSide,
       space: 4,
@@ -1449,7 +1430,8 @@ class _MySettingState extends State<MySetting> {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         toolbarHeight: 50,
-        backgroundColor: Colors.blue,
+        backgroundColor: Colors.indigo,
+        foregroundColor: Colors.white,
         title: const Text('농장정보 입력'),
       ),
       body: Center(
@@ -1566,7 +1548,7 @@ class _MySettingState extends State<MySetting> {
                 ),
                 Padding(
                   padding: const EdgeInsets.all(5),
-                  child: Text('총 ${farmNo}농가가 등록되었습니다!!!'),
+                  child: Text('총 $farmNo농가가 등록되었습니다!!!'),
                 ),
                 Text('선택농가: ${ppfarm + 1} - 이름: ${farmName[ppfarm]}'),
                 SizedBox(
@@ -1615,25 +1597,11 @@ class _MySettingState extends State<MySetting> {
                           farmName[ppfarm] = inputController1.text;
                           facilityName[ppfarm] = inputController2.text;
                           serviceKey[ppfarm] = inputController3.text;
-
-                          SharedPreferences prefs =
-                              await SharedPreferences.getInstance();
-                          await prefs.setInt('farmNumber', farmNo);
-
-                          for (int i = 0; i < farmNo; i++) {
-                            await prefs.setString('farmName$i', farmName[i]);
-                            await prefs.setString(
-                                'facilityName$i', facilityName[i]);
-                            await prefs.setString(
-                                'serviceKey$i', serviceKey[i]);
-                          }
                           // go to the next farm
                           ppfarm = (ppfarm + 1) % farmNo;
 
-                          // SharedPreferences prefs =
-                          // await SharedPreferences.getInstance();
-                          await prefs.setInt('myFarm', ppfarm);
-                          print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
+                          prefsSave();
+
                           if (mounted) {
                             setState(() {
                               // _printLatestValue();
@@ -1654,7 +1622,7 @@ class _MySettingState extends State<MySetting> {
                           if (mounted) {
                             setState(() {
                               // _printLatestValue();
-                              appState.prefsClear();
+                              prefsClear();
                             });
                           }
                         },
