@@ -372,29 +372,28 @@ class MyAppState extends ChangeNotifier {
   var user_msg = '';
 
   Future apiRequestIOT() async {
+    var urliot = 'http://iot.rda.go.kr/api';
+    var apikey = serviceKey[ppfarm];
+
+    // IOT portal data update
+    var now = DateTime.now();
+    lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+    lastDatetime = "${lastDatetime.substring(0, 11)}00";
+
+    difference = int.parse(
+        now.difference(DateTime.parse(lastDatetime)).inHours.toString());
+    print('Difference: $difference');
+    String formatDate = DateFormat('yyyyMMdd').format(now);
+    String formatTime = DateFormat('HH').format(now);
+
+    var urliotString = "$urliot/$apikey/$formatDate/$formatTime";
+    var uriiot = Uri.parse(urliotString);
+
+    var deltaT = int.parse(formatTime);
+    var deltaT12 = deltaT % 12;
+    deltaT = 24;
+    if (deltaT < 12) deltaT = deltaT + deltaT12;
     try {
-      var urliot = 'http://iot.rda.go.kr/api';
-      var apikey = serviceKey[ppfarm];
-
-      // IOT portal data update
-      var now = DateTime.now();
-      lastDatetime = sensorLists[ppfarm][0].customDt.toString();
-      lastDatetime = "${lastDatetime.substring(0, 11)}00";
-
-      difference = int.parse(
-          now.difference(DateTime.parse(lastDatetime)).inHours.toString());
-      print('Difference: $difference');
-      String formatDate = DateFormat('yyyyMMdd').format(now);
-      String formatTime = DateFormat('HH').format(now);
-
-      var urliotString = "$urliot/$apikey/$formatDate/$formatTime";
-      var uriiot = Uri.parse(urliotString);
-
-      var deltaT = int.parse(formatTime);
-      var deltaT12 = deltaT % 12;
-      deltaT = 24;
-      if (deltaT < 12) deltaT = deltaT + deltaT12;
-
       // print('before for loop');
       for (int i = 0; i < difference; i++) {
         String formatDate = DateFormat('yyyyMMdd').format(now);
@@ -418,8 +417,9 @@ class MyAppState extends ChangeNotifier {
         }
         var jsonObj = jsonDecode(response.body);
         if (jsonObj['datas'].length <= 0) {
-          if (Platform.isAndroid) showToast("데이터가 최신상태입니다", Colors.blueAccent);
-          print('데이터가 최신상태입니다');
+          if (Platform.isAndroid)
+            showToast("새로 가져올 데이터가 없습니다", Colors.blueAccent);
+          print('새로 가져올 데이터가 없습니다');
           return 0;
         }
         var custom_dt = jsonObj['datas'][0]['custom_dt'].toString();
@@ -445,63 +445,63 @@ class MyAppState extends ChangeNotifier {
         user_msg = "${progress.toStringAsFixed(0)}%";
         notifyListeners();
       }
-      sensorLists[ppfarm] = sensorList;
-
-      // print('after for loop');
-      // print(statusCode);
-      user_msg = "";
-      notifyListeners();
-      return statusCode;
     } catch (e) {
       if (Platform.isAndroid) showToast("네트워크 상태를 확인해주세요", Colors.redAccent);
       print("네트워크 상태를 확인해주세요");
       return 0;
     }
+
+    sensorLists[ppfarm] = sensorList;
+
+    // print('after for loop');
+    // print(statusCode);
+    user_msg = "";
+    notifyListeners();
+    return statusCode;
   }
 
   Future apiRequestPEST() async {
+    var encoder = ZipFileEncoder();
+    final dir = await getApplicationDocumentsDirectory();
+    // Directory dir = Directory('/storage/emulated/0/Documents');
+
+    var k = 0;
+    for (k = 0; k < (SOMEDAYS - 1) * 24; k++) {
+      var v1 = sensorLists[ppfarm][k].customDt.toString();
+      var d1 = DateTime.parse(v1);
+      String formatTime = DateFormat('HH').format(d1);
+      if (formatTime == '12') break;
+    }
+    var weatherString = 'datetime,temperature,humidity,leafwet\n';
+    for (int j = (k + (SOMEDAYS - 1) * 24); j >= 0; j--) {
+      var v1 = sensorLists[ppfarm][j].customDt.toString();
+      var v2 = sensorLists[ppfarm][j].temperature.toString();
+      var v3 = sensorLists[ppfarm][j].humidity.toString();
+      var v4 = sensorLists[ppfarm][j].leafwet.toString();
+      weatherString = "$weatherString$v1,$v2,$v3,$v4\n";
+    }
+    // print(weatherString);
+    (File('${dir.path}/weather.csv').writeAsString(weatherString))
+        .then((value) {
+      encoder.create('${dir.path}/input.zip');
+      encoder.addFile(File('${dir.path}/weather.csv'));
+      encoder.close();
+    });
+
+    // zip weather.csv
+    // base64 encoding
+    var z = await File('${dir.path}/input.zip').readAsBytes();
+    String token = base64.encode(z);
+
+    var body = jsonEncode({
+      'Input': token,
+      'type': "file",
+    });
+
+    // http request
+    var urlanthracnose = 'http://147.46.206.95:7897/Anthracnose';
+    var urlbotrytis = 'http://147.46.206.95:7898/Botrytis';
     try {
-      var encoder = ZipFileEncoder();
-      final dir = await getApplicationDocumentsDirectory();
-      // Directory dir = Directory('/storage/emulated/0/Documents');
-
-      var k = 0;
-      for (k = 0; k < (SOMEDAYS - 1) * 24; k++) {
-        var v1 = sensorLists[ppfarm][k].customDt.toString();
-        var d1 = DateTime.parse(v1);
-        String formatTime = DateFormat('HH').format(d1);
-        if (formatTime == '12') break;
-      }
-      var weatherString = 'datetime,temperature,humidity,leafwet\n';
-      for (int j = (k + (SOMEDAYS - 1) * 24); j >= 0; j--) {
-        var v1 = sensorLists[ppfarm][j].customDt.toString();
-        var v2 = sensorLists[ppfarm][j].temperature.toString();
-        var v3 = sensorLists[ppfarm][j].humidity.toString();
-        var v4 = sensorLists[ppfarm][j].leafwet.toString();
-        weatherString = "$weatherString$v1,$v2,$v3,$v4\n";
-      }
-      // print(weatherString);
-      (File('${dir.path}/weather.csv').writeAsString(weatherString))
-          .then((value) {
-        encoder.create('${dir.path}/input.zip');
-        encoder.addFile(File('${dir.path}/weather.csv'));
-        encoder.close();
-      });
-
-      // zip weather.csv
-      // base64 encoding
-      var z = await File('${dir.path}/input.zip').readAsBytes();
-      String token = base64.encode(z);
-
-      var body = jsonEncode({
-        'Input': token,
-        'type': "file",
-      });
-
-      // http request
-      var urlanthracnose = 'http://147.46.206.95:7897/Anthracnose';
-      var urlbotrytis = 'http://147.46.206.95:7898/Botrytis';
-
       http.Response response = await http.post(
         Uri.parse(urlanthracnose),
         headers: <String, String>{
@@ -511,6 +511,7 @@ class MyAppState extends ChangeNotifier {
       );
 
       var r = response.body;
+
       r = r.replaceAll("\\", "");
       var i = r.indexOf('output');
       var ii = r.indexOf("}}");
@@ -560,13 +561,13 @@ class MyAppState extends ChangeNotifier {
 
         // print('$j: $custom_dt');
       }
-
-      return 0;
     } catch (e) {
       if (Platform.isAndroid) showToast("네트워크 상태를 확인해주세요", Colors.redAccent);
       print("네트워크 상태를 확인해주세요");
       return 0;
     }
+
+    return 0;
   }
 
   void getData() {
