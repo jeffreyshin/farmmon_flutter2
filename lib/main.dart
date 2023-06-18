@@ -29,7 +29,6 @@ var pp = 0;
 var ppfarm = 0;
 var farmNo = 1;
 var lastDatetime = '';
-var updateKey = '';
 var MAXX = 72;
 var SOMEDAYS = 16;
 var difference = 0;
@@ -104,7 +103,6 @@ class SensorList {
 
 ///////////////////////////////////////////////////////////
 
-/////////////////////////////////////////////
 class PINF {
   String? customDt;
   double? anthracnose;
@@ -167,6 +165,8 @@ Sensor sensor = Sensor(
 );
 
 var sensorList = List<Sensor>.filled(50, sensor, growable: true);
+
+var sensorLists = List<List<Sensor>>.filled(10, sensorList, growable: true);
 /////////////////////////////////////////////////////////////
 final somedaysagoString2 = DateFormat('yyyy-MM-dd').format(somedaysago);
 
@@ -178,39 +178,32 @@ PINF pinf = PINF(
 );
 
 var pinfList = List<PINF>.filled(50, pinf, growable: true);
+var pinfLists = List<List<PINF>>.filled(10, pinfList, growable: true);
 
 /////////////////////////////////////////////////////////
 
 class AppStorage {
   Future readJsonAsString() async {
     try {
-      // final dir = await getExternalStorageDirectory();
-      // Directory dir = Directory('/storage/emulated/0/Documents');
-      // print('${dir.path}/sensor.json');
-      print('read json file');
+      for (int i = 0; i < farmNo; i++) {
+        // final dir = await getExternalStorageDirectory();
+        // Directory dir = Directory('/storage/emulated/0/Documents');
+        // print('${dir.path}/sensor.json');
+        print('read json file $i');
 
-      final file = await _localFileSensor;
-      final file2 = await _localFilePINF;
+        final path = await _localPath;
+        final file = File('$path/sensor$ppfarm.json');
+        final file2 = File('$path/pinf$ppfarm.json');
 
-      var routeFromJsonFile = await file.readAsString();
-      sensorList =
-          (SensorList.fromJson(routeFromJsonFile).sensors ?? <Sensor>[]);
-
-      routeFromJsonFile = await file2.readAsString();
-      pinfList = (PINFList.fromJson(routeFromJsonFile).pinfs ?? <PINF>[]);
-    } catch (e) {
-      return 0;
-    }
-  }
-
-  Future<int> readCounter() async {
-    try {
-      final file = await _localFileSensor;
-
-      // Read the file
-      final contents = await file.readAsString();
-
-      return int.parse(contents);
+        // Read the file
+        var routeFromJsonFile = await file.readAsString();
+        sensorList =
+            (SensorList.fromJson(routeFromJsonFile).sensors ?? <Sensor>[]);
+        sensorLists[i] = sensorList;
+        routeFromJsonFile = await file2.readAsString();
+        pinfList = (PINFList.fromJson(routeFromJsonFile).pinfs ?? <PINF>[]);
+        pinfLists[i] = pinfList;
+      }
     } catch (e) {
       // If encountering an error, return 0
       return 0;
@@ -223,7 +216,7 @@ class AppStorage {
     // Directory dir = Directory('/storage/emulated/0/Documents');
     // print('${dir.path}/sensor.json');
     print('writing json file: $file');
-    if (Platform.isAndroid) showToast("파일을 저장했습니다");
+    if (Platform.isAndroid) showToast("파일을 저장했습니다", Colors.blueAccent);
     // notifyListeners();
     return File('${dir.path}/$file').writeAsString(data ?? '');
     // return file.writeAsString(data ?? '');
@@ -237,19 +230,12 @@ class AppStorage {
 
   Future<File> get _localFileSensor async {
     final path = await _localPath;
-    return File('$path/sensor.json');
+    return File('$path/sensor$ppfarm.json');
   }
 
   Future<File> get _localFilePINF async {
     final path = await _localPath;
-    return File('$path/pinf.json');
-  }
-
-  Future<File> writeCounter(int counter) async {
-    final file = await _localFileSensor;
-
-    // Write the file
-    return file.writeAsString('$counter');
+    return File('$path/pinf$ppfarm.json');
   }
 }
 
@@ -308,32 +294,35 @@ void prefsClear() async {
     facilityName.removeRange(1, farmNo);
     serviceKey.removeRange(1, farmNo);
   }
-  farmNo = 1;
-  ppfarm = 0;
   final today = DateTime.now();
   final somedaysago = today.subtract(Duration(days: SOMEDAYS));
   lastDatetime = DateFormat('yyyyMMdd HH00').format(somedaysago);
   print('prefs cleared: only $farmNo farm left');
-  sensorList = List<Sensor>.filled(50, sensor, growable: true);
-  String jsonString = jsonEncode(sensorList);
-  await storage.writeJsonAsString('sensor.json', jsonString);
 
-  pinfList = List<PINF>.filled(50, pinf, growable: true);
-  jsonString = jsonEncode(pinfList);
-  await storage.writeJsonAsString('pinf.json', jsonString);
+  for (int i = 0; i < 5; i++) {
+    sensorList = List<Sensor>.filled(50, sensor, growable: true);
+    String jsonString = jsonEncode(sensorList);
+    await storage.writeJsonAsString('sensor$i.json', jsonString);
 
-  if (Platform.isAndroid) showToast("초기화 완료");
+    pinfList = List<PINF>.filled(50, pinf, growable: true);
+    jsonString = jsonEncode(pinfList);
+    await storage.writeJsonAsString('pinf$i.json', jsonString);
+  }
+  farmNo = 1;
+  ppfarm = 0;
+
+  if (Platform.isAndroid) showToast("초기화 완료", Colors.blueAccent);
 }
 
 /////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////
 
-showToast(String message) {
+showToast(String message, Color colar) {
   return Fluttertoast.showToast(
     msg: message,
     gravity: ToastGravity.BOTTOM,
-    backgroundColor: Colors.blueAccent,
+    backgroundColor: colar,
     fontSize: 20,
     textColor: Colors.white,
     toastLength: Toast.LENGTH_SHORT,
@@ -381,182 +370,203 @@ class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
   var favorites = <WordPair>[];
   var user_msg = '';
-  // var farmNoUpdate = farmNo;
 
   Future apiRequestIOT() async {
-    var urliot = 'http://iot.rda.go.kr/api';
-    var apikey = serviceKey[ppfarm];
+    try {
+      var urliot = 'http://iot.rda.go.kr/api';
+      var apikey = serviceKey[ppfarm];
 
-    // IOT portal data update
-    var now = DateTime.now();
-    lastDatetime = sensorList[0].customDt.toString();
-    lastDatetime = "${lastDatetime.substring(0, 11)}00";
+      // IOT portal data update
+      var now = DateTime.now();
+      lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+      lastDatetime = "${lastDatetime.substring(0, 11)}00";
 
-    difference = int.parse(
-        now.difference(DateTime.parse(lastDatetime)).inHours.toString());
-    print('Difference: $difference');
-    String formatDate = DateFormat('yyyyMMdd').format(now);
-    String formatTime = DateFormat('HH').format(now);
-
-    var urliotString = "$urliot/$apikey/$formatDate/$formatTime";
-    var uriiot = Uri.parse(urliotString);
-
-    var deltaT = int.parse(formatTime);
-    var deltaT12 = deltaT % 12;
-    deltaT = 24;
-    if (deltaT < 12) deltaT = deltaT + deltaT12;
-
-    // print('before for loop');
-    for (int i = 0; i < difference; i++) {
+      difference = int.parse(
+          now.difference(DateTime.parse(lastDatetime)).inHours.toString());
+      print('Difference: $difference');
       String formatDate = DateFormat('yyyyMMdd').format(now);
       String formatTime = DateFormat('HH').format(now);
-      urliotString = "$urliot/$apikey/$formatDate/$formatTime";
 
-      ///print(urliot2);
+      var urliotString = "$urliot/$apikey/$formatDate/$formatTime";
+      var uriiot = Uri.parse(urliotString);
 
-      HttpClient().idleTimeout = const Duration(seconds: 60);
+      var deltaT = int.parse(formatTime);
+      var deltaT12 = deltaT % 12;
+      deltaT = 24;
+      if (deltaT < 12) deltaT = deltaT + deltaT12;
 
-      uriiot = Uri.parse(urliotString);
-      http.Response response = await http.get(uriiot);
-      now = now.subtract(Duration(hours: 1));
-      // print(response.body);
-      statusCode = response.statusCode;
+      // print('before for loop');
+      for (int i = 0; i < difference; i++) {
+        String formatDate = DateFormat('yyyyMMdd').format(now);
+        String formatTime = DateFormat('HH').format(now);
+        urliotString = "$urliot/$apikey/$formatDate/$formatTime";
 
-      var jsonObj = jsonDecode(response.body);
-      if (jsonObj['datas'].length <= 0) {
-        if (Platform.isAndroid) showToast("데이터가 최신상태입니다");
-        print('데이터가 최신상태입니다');
-        return 0;
+        ///print(urliot2);
+
+        HttpClient().idleTimeout = const Duration(seconds: 60);
+
+        uriiot = Uri.parse(urliotString);
+        http.Response response = await http.get(uriiot);
+        now = now.subtract(Duration(hours: 1));
+        // print(response.body);
+        statusCode = response.statusCode;
+        if (response.statusCode != 200) {
+          if (Platform.isAndroid)
+            showToast("네트워크 상태를 확인해주세요", Colors.redAccent);
+          print("네트워크 상태를 확인해주세요");
+          return 0;
+        }
+        var jsonObj = jsonDecode(response.body);
+        if (jsonObj['datas'].length <= 0) {
+          if (Platform.isAndroid) showToast("데이터가 최신상태입니다", Colors.blueAccent);
+          print('데이터가 최신상태입니다');
+          return 0;
+        }
+        var custom_dt = jsonObj['datas'][0]['custom_dt'].toString();
+        custom_dt =
+            DateFormat('yyyyMMdd HH00').format(DateTime.parse(custom_dt));
+        Sensor nsensor = Sensor(
+          customDt: custom_dt,
+          temperature: double.parse(jsonObj['datas'][0]['temperature']),
+          humidity: double.parse(jsonObj['datas'][0]['humidity']),
+          cotwo: double.parse(jsonObj['datas'][0]['cotwo']),
+          leafwet: double.parse(jsonObj['datas'][0]['leafwet']),
+          gtemperature: double.parse(jsonObj['datas'][0]['gtemperature']),
+          quantum: double.parse(jsonObj['datas'][0]['quantum']),
+          xlabel: DateFormat('MM/dd HH').format(
+            DateTime.parse(jsonObj['datas'][0]['custom_dt']),
+          ),
+        );
+
+        // sensorList.insert(0, nsensor);
+        sensorList.insert(i, nsensor);
+        // print('$i----${nsensor.customDt}');
+        var progress = ((i + 1) / difference) * 100;
+        user_msg = "${progress.toStringAsFixed(0)}%";
+        notifyListeners();
       }
-      var custom_dt = jsonObj['datas'][0]['custom_dt'].toString();
-      custom_dt = DateFormat('yyyyMMdd HH00').format(DateTime.parse(custom_dt));
-      Sensor nsensor = Sensor(
-        customDt: custom_dt,
-        temperature: double.parse(jsonObj['datas'][0]['temperature']),
-        humidity: double.parse(jsonObj['datas'][0]['humidity']),
-        cotwo: double.parse(jsonObj['datas'][0]['cotwo']),
-        leafwet: double.parse(jsonObj['datas'][0]['leafwet']),
-        gtemperature: double.parse(jsonObj['datas'][0]['gtemperature']),
-        quantum: double.parse(jsonObj['datas'][0]['quantum']),
-        xlabel: DateFormat('MM/dd HH').format(
-          DateTime.parse(jsonObj['datas'][0]['custom_dt']),
-        ),
-      );
+      sensorLists[ppfarm] = sensorList;
 
-      // sensorList.insert(0, nsensor);
-      sensorList.insert(i, nsensor);
-      // print('$i----${nsensor.customDt}');
-      var progress = ((i + 1) / difference) * 100;
-      user_msg = "${progress.toStringAsFixed(0)}%";
+      // print('after for loop');
+      // print(statusCode);
+      user_msg = "";
       notifyListeners();
+      return statusCode;
+    } catch (e) {
+      if (Platform.isAndroid) showToast("네트워크 상태를 확인해주세요", Colors.redAccent);
+      print("네트워크 상태를 확인해주세요");
+      return 0;
     }
-    // print('after for loop');
-    // print(statusCode);
-    user_msg = "";
-    notifyListeners();
-    return statusCode;
   }
 
   Future apiRequestPEST() async {
-    var encoder = ZipFileEncoder();
-    final dir = await getApplicationDocumentsDirectory();
-    // Directory dir = Directory('/storage/emulated/0/Documents');
+    try {
+      var encoder = ZipFileEncoder();
+      final dir = await getApplicationDocumentsDirectory();
+      // Directory dir = Directory('/storage/emulated/0/Documents');
 
-    var k = 0;
-    for (k = 0; k < (SOMEDAYS - 1) * 24; k++) {
-      var v1 = sensorList[k].customDt.toString();
-      var d1 = DateTime.parse(v1);
-      String formatTime = DateFormat('HH').format(d1);
-      if (formatTime == '12') break;
-    }
-    var weatherString = 'datetime,temperature,humidity,leafwet\n';
-    for (int j = (k + (SOMEDAYS - 1) * 24); j >= 0; j--) {
-      var v1 = sensorList[j].customDt.toString();
-      var v2 = sensorList[j].temperature.toString();
-      var v3 = sensorList[j].humidity.toString();
-      var v4 = sensorList[j].leafwet.toString();
-      weatherString = "$weatherString$v1,$v2,$v3,$v4\n";
-    }
-    // print(weatherString);
-    (File('${dir.path}/weather.csv').writeAsString(weatherString))
-        .then((value) {
-      encoder.create('${dir.path}/input.zip');
-      encoder.addFile(File('${dir.path}/weather.csv'));
-      encoder.close();
-    });
+      var k = 0;
+      for (k = 0; k < (SOMEDAYS - 1) * 24; k++) {
+        var v1 = sensorLists[ppfarm][k].customDt.toString();
+        var d1 = DateTime.parse(v1);
+        String formatTime = DateFormat('HH').format(d1);
+        if (formatTime == '12') break;
+      }
+      var weatherString = 'datetime,temperature,humidity,leafwet\n';
+      for (int j = (k + (SOMEDAYS - 1) * 24); j >= 0; j--) {
+        var v1 = sensorLists[ppfarm][j].customDt.toString();
+        var v2 = sensorLists[ppfarm][j].temperature.toString();
+        var v3 = sensorLists[ppfarm][j].humidity.toString();
+        var v4 = sensorLists[ppfarm][j].leafwet.toString();
+        weatherString = "$weatherString$v1,$v2,$v3,$v4\n";
+      }
+      // print(weatherString);
+      (File('${dir.path}/weather.csv').writeAsString(weatherString))
+          .then((value) {
+        encoder.create('${dir.path}/input.zip');
+        encoder.addFile(File('${dir.path}/weather.csv'));
+        encoder.close();
+      });
 
-    // zip weather.csv
-    // base64 encoding
-    var z = await File('${dir.path}/input.zip').readAsBytes();
-    String token = base64.encode(z);
+      // zip weather.csv
+      // base64 encoding
+      var z = await File('${dir.path}/input.zip').readAsBytes();
+      String token = base64.encode(z);
 
-    var body = jsonEncode({
-      'Input': token,
-      'type': "file",
-    });
+      var body = jsonEncode({
+        'Input': token,
+        'type': "file",
+      });
 
-    // http request
-    var urlanthracnose = 'http://147.46.206.95:7897/Anthracnose';
-    var urlbotrytis = 'http://147.46.206.95:7898/Botrytis';
+      // http request
+      var urlanthracnose = 'http://147.46.206.95:7897/Anthracnose';
+      var urlbotrytis = 'http://147.46.206.95:7898/Botrytis';
 
-    http.Response response = await http.post(
-      Uri.parse(urlanthracnose),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-      },
-      body: body,
-    );
+      http.Response response = await http.post(
+        Uri.parse(urlanthracnose),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+        },
+        body: body,
+      );
 
-    var r = response.body;
-    r = r.replaceAll("\\", "");
-    var i = r.indexOf('output');
-    var ii = r.indexOf("}}");
-    if (ii < 0) {
-      if (Platform.isAndroid) showToast("기상데이터는 12시부터 시작해야합니다");
-      print("기상데이터는 12시부터 시작해야합니다");
-      return 0;
-    }
-    var rr = r.substring(i + 10, ii + 2);
-    final outputA = json.decode(rr);
+      var r = response.body;
+      r = r.replaceAll("\\", "");
+      var i = r.indexOf('output');
+      var ii = r.indexOf("}}");
+      if (ii < 0) {
+        if (Platform.isAndroid) {
+          showToast("기상데이터는 12시부터 시작해야합니다", Colors.redAccent);
+        }
+        print("기상데이터는 12시부터 시작해야합니다");
+        return 0;
+      }
+      var rr = r.substring(i + 10, ii + 2);
+      final outputA = json.decode(rr);
 
-    http.Response response2 = await http.post(
-      Uri.parse(urlbotrytis),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-      },
-      body: body,
-    );
+      http.Response response2 = await http.post(
+        Uri.parse(urlbotrytis),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+        },
+        body: body,
+      );
 
-    var r2 = response2.body;
-    r = r2.replaceAll("\\", "");
-    var i2 = r.indexOf('output');
-    var ii2 = r.indexOf("}}");
-    var rr2 = r.substring(i2 + 10, ii2 + 2);
-    final outputB = json.decode(rr2);
+      var r2 = response2.body;
+      r = r2.replaceAll("\\", "");
+      var i2 = r.indexOf('output');
+      var ii2 = r.indexOf("}}");
+      var rr2 = r.substring(i2 + 10, ii2 + 2);
+      final outputB = json.decode(rr2);
 
-    // print(output.runtimeType);
+      // print(output.runtimeType);
 
 /////////////////////////////////////////////////////
-    int j = SOMEDAYS - 1;
-    for (int i = 0; i < SOMEDAYS - 1; i++) {
-      var custom_dt = outputA['$j']['date'].toString();
+      int j = SOMEDAYS - 1;
+      for (int i = 0; i < SOMEDAYS - 1; i++) {
+        var custom_dt = outputA['$j']['date'].toString();
 
-      PINF npinf = PINF(
-        customDt: custom_dt,
-        anthracnose: outputA['$j']['PINF'],
-        botrytis: outputB['$j']['PINF'],
-        xlabel: DateFormat('MM/dd').format(
-          DateTime.parse(outputA['$j']['date']),
-        ),
-      );
-      j--;
-      // pinfList.insert(i, npinf);
-      pinfList[i] = npinf;
+        PINF npinf = PINF(
+          customDt: custom_dt,
+          anthracnose: outputA['$j']['PINF'],
+          botrytis: outputB['$j']['PINF'],
+          xlabel: DateFormat('MM/dd').format(
+            DateTime.parse(outputA['$j']['date']),
+          ),
+        );
+        j--;
+        // pinfList.insert(i, npinf);
+        pinfLists[ppfarm][i] = npinf;
 
-      // print('$j: $custom_dt');
+        // print('$j: $custom_dt');
+      }
+
+      return 0;
+    } catch (e) {
+      if (Platform.isAndroid) showToast("네트워크 상태를 확인해주세요", Colors.redAccent);
+      print("네트워크 상태를 확인해주세요");
+      return 0;
     }
-
-    return 0;
   }
 
   void getData() {
@@ -565,7 +575,6 @@ class MyAppState extends ChangeNotifier {
 
   void getNext() {
     // current = WordPair.random();
-    // farmNoUpdate = farmNo;
     notifyListeners();
   }
 
@@ -595,7 +604,7 @@ class _MyHomePageState extends State<MyHomePage> {
     prefsLoad().then((value) {
       storage.readJsonAsString().then((value) {
         setState(() {
-          lastDatetime = sensorList[0].customDt.toString();
+          lastDatetime = sensorLists[ppfarm][0].customDt.toString();
           lastDatetime = "${lastDatetime.substring(0, 11)}00";
           print(lastDatetime);
           print('farmNo at initState: $farmNo');
@@ -611,8 +620,6 @@ class _MyHomePageState extends State<MyHomePage> {
     Widget page;
     switch (selectedIndex) {
       case 0:
-        // appState.farmNoUpdate = farmNo;
-        // print('farmNo update:  ${appState.farmNoUpdate}');
         page = StrawberryPage();
         break;
       case 1:
@@ -625,8 +632,6 @@ class _MyHomePageState extends State<MyHomePage> {
         page = MyLineChartPage();
         break;
       case 4:
-        // appState.farmNoUpdate = farmNo;
-        // print('farmNo update:  ${appState.farmNoUpdate}');
         page = MySetting();
         break;
 
@@ -699,7 +704,6 @@ class _StrawberryPageState extends State<StrawberryPage> {
   // @override
   // void didChangeDependencies() {
   //   print('didChangeDependencies 호출');
-  //   updateKey = DateTime.now().toString();
   // }
 
   @override
@@ -809,11 +813,13 @@ class _StrawberryPageState extends State<StrawberryPage> {
                 onPressed: () async {
                   pp = 0;
                   // appState.callAPI();
-                  if (Platform.isAndroid) showToast("IOT포털에서 데이터를 가져옵니다");
+                  if (Platform.isAndroid)
+                    showToast("IOT포털에서 데이터를 가져옵니다", Colors.blueAccent);
                   print('IOT포털에서 데이터를 가져옵니다');
 
                   await appState.apiRequestIOT().then((value) async {
-                    if (Platform.isAndroid) showToast("병해충 발생위험도를 계산합니다");
+                    if (Platform.isAndroid)
+                      showToast("병해충 발생위험도를 계산합니다", Colors.blueAccent);
                     print('병해충 발생위험도를 계산합니다');
 
                     await appState.apiRequestPEST().then((value) {
@@ -821,25 +827,31 @@ class _StrawberryPageState extends State<StrawberryPage> {
                       // print(statusCode);
                       // print(pp);
                       appState.user_msg = value.toString();
-                      if (Platform.isAndroid) showToast("데이터 가져오기 성공");
+                      if (Platform.isAndroid)
+                        showToast("데이터 가져오기 성공", Colors.blueAccent);
                       print('데이터 가져오기 성공');
 
                       setState(() {
-                        lastDatetime = sensorList[0].customDt.toString();
+                        lastDatetime =
+                            sensorLists[ppfarm][0].customDt.toString();
                         lastDatetime = "${lastDatetime.substring(0, 11)}00";
                         print(lastDatetime);
                         if ((difference >= 0)) {
                           //(statusCode == 200) &&
                           String jsonString = jsonEncode(sensorList);
-                          storage.writeJsonAsString('sensor.json', jsonString);
+                          storage.writeJsonAsString(
+                              'sensor$ppfarm.json', jsonString);
                           jsonString = jsonEncode(pinfList);
-                          storage.writeJsonAsString('pinf.json', jsonString);
-                          if (Platform.isAndroid) showToast("파일에 데이터를 저장합니다");
+                          storage.writeJsonAsString(
+                              'pinf$ppfarm.json', jsonString);
+                          if (Platform.isAndroid)
+                            showToast("파일에 데이터를 저장합니다", Colors.blueAccent);
 
                           // SharedPreferences prefs = await SharedPreferences.getInstance();
                           // lastDatetime = DateFormat('yyyy-MM-dd HH:mm:ss').format(nowtosave);
 
-                          lastDatetime = sensorList[0].customDt.toString();
+                          lastDatetime =
+                              sensorLists[ppfarm][0].customDt.toString();
                           lastDatetime = "${lastDatetime.substring(0, 11)}00";
 
                           // await prefs.setString('lastDatetime', lastDatetime);
@@ -848,7 +860,6 @@ class _StrawberryPageState extends State<StrawberryPage> {
                       });
                     });
                     // print('after data update procedure... ');
-                    // updateKey = DateTime.now().toString();
 
                     // var temp = sensorList[0].temperature;
                     // sensorList[0].temperature = temp;
@@ -869,6 +880,8 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   // await apiRequestPEST().then((value) {
                   if (mounted) {
                     setState(() {
+                      lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+                      // appState.user_msg = lastDatetime;
                       appState.getNext();
                     });
                   }
@@ -1032,9 +1045,8 @@ class _MyBarChartState extends State<MyBarChart> {
       // implement the bar chart
       child: BarChart(
         // key: ValueKey(sensorList[0].customDt),
-        // key: ValueKey(updateKey),
         BarChartData(
-          maxY: 1,
+          maxY: 100,
           borderData: FlBorderData(
               border: const Border(
             top: BorderSide.none,
@@ -1047,71 +1059,99 @@ class _MyBarChartState extends State<MyBarChart> {
           barGroups: [
             BarChartGroupData(x: 1, barRods: [
               BarChartRodData(
-                  toY: double.parse(pinfList[pp + 6].anthracnose.toString()),
+                  toY: double.parse(
+                          pinfLists[ppfarm][pp + 6].anthracnose.toString()) *
+                      100,
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(pinfList[pp + 6].botrytis.toString()),
+                  toY: double.parse(
+                          pinfLists[ppfarm][pp + 6].botrytis.toString()) *
+                      100,
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 2, barRods: [
               BarChartRodData(
-                  toY: double.parse(pinfList[pp + 5].anthracnose.toString()),
+                  toY: double.parse(
+                          pinfLists[ppfarm][pp + 5].anthracnose.toString()) *
+                      100,
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(pinfList[pp + 5].botrytis.toString()),
+                  toY: double.parse(
+                          pinfLists[ppfarm][pp + 5].botrytis.toString()) *
+                      100,
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 3, barRods: [
               BarChartRodData(
-                  toY: double.parse(pinfList[pp + 4].anthracnose.toString()),
+                  toY: double.parse(
+                          pinfLists[ppfarm][pp + 4].anthracnose.toString()) *
+                      100,
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(pinfList[pp + 4].botrytis.toString()),
+                  toY: double.parse(
+                          pinfLists[ppfarm][pp + 4].botrytis.toString()) *
+                      100,
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 4, barRods: [
               BarChartRodData(
-                  toY: double.parse(pinfList[pp + 3].anthracnose.toString()),
+                  toY: double.parse(
+                          pinfLists[ppfarm][pp + 3].anthracnose.toString()) *
+                      100,
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(pinfList[pp + 3].botrytis.toString()),
+                  toY: double.parse(
+                          pinfLists[ppfarm][pp + 3].botrytis.toString()) *
+                      100,
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 5, barRods: [
               BarChartRodData(
-                  toY: double.parse(pinfList[pp + 2].anthracnose.toString()),
+                  toY: double.parse(
+                          pinfLists[ppfarm][pp + 2].anthracnose.toString()) *
+                      100,
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(pinfList[pp + 2].botrytis.toString()),
+                  toY: double.parse(
+                          pinfLists[ppfarm][pp + 2].botrytis.toString()) *
+                      100,
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 6, barRods: [
               BarChartRodData(
-                  toY: double.parse(pinfList[pp + 1].anthracnose.toString()),
+                  toY: double.parse(
+                          pinfLists[ppfarm][pp + 1].anthracnose.toString()) *
+                      100,
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(pinfList[pp + 1].botrytis.toString()),
+                  toY: double.parse(
+                          pinfLists[ppfarm][pp + 1].botrytis.toString()) *
+                      100,
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 7, barRods: [
               BarChartRodData(
-                  toY: double.parse(pinfList[pp + 0].anthracnose.toString()),
+                  toY: double.parse(
+                          pinfLists[ppfarm][pp + 0].anthracnose.toString()) *
+                      100,
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(pinfList[pp + 0].botrytis.toString()),
+                  toY: double.parse(
+                          pinfLists[ppfarm][pp + 0].botrytis.toString()) *
+                      100,
                   width: 5,
                   color: Colors.indigo),
             ]),
@@ -1166,28 +1206,28 @@ class _MyBarChartState extends State<MyBarChart> {
     String text;
     switch (value.toInt()) {
       case 0:
-        text = pinfList[pp + 7].xlabel.toString();
+        text = pinfLists[ppfarm][pp + 7].xlabel.toString();
         break;
       case 1:
-        text = pinfList[pp + 6].xlabel.toString();
+        text = pinfLists[ppfarm][pp + 6].xlabel.toString();
         break;
       case 2:
-        text = pinfList[pp + 5].xlabel.toString();
+        text = pinfLists[ppfarm][pp + 5].xlabel.toString();
         break;
       case 3:
-        text = pinfList[pp + 4].xlabel.toString();
+        text = pinfLists[ppfarm][pp + 4].xlabel.toString();
         break;
       case 4:
-        text = pinfList[pp + 3].xlabel.toString();
+        text = pinfLists[ppfarm][pp + 3].xlabel.toString();
         break;
       case 5:
-        text = pinfList[pp + 2].xlabel.toString();
+        text = pinfLists[ppfarm][pp + 2].xlabel.toString();
         break;
       case 6:
-        text = pinfList[pp + 1].xlabel.toString();
+        text = pinfLists[ppfarm][pp + 1].xlabel.toString();
         break;
       case 7:
-        text = pinfList[pp + 0].xlabel.toString();
+        text = pinfLists[ppfarm][pp + 0].xlabel.toString();
         break;
       default:
         text = '';
@@ -1271,7 +1311,8 @@ class _MyLineChartState extends State<MyLineChart> {
                       for (int i = 0; i < MAXX; i++)
                         FlSpot(
                             i.toDouble(),
-                            double.parse(sensorList[pp + (MAXX - i - 1)]
+                            double.parse(sensorLists[ppfarm]
+                                        [pp + (MAXX - i - 1)]
                                     .temperature
                                     .toString()) *
                                 2)
@@ -1291,7 +1332,8 @@ class _MyLineChartState extends State<MyLineChart> {
                       for (int i = 0; i < MAXX; i++)
                         FlSpot(
                             i.toDouble(),
-                            double.parse(sensorList[pp + (MAXX - i - 1)]
+                            double.parse(sensorLists[ppfarm]
+                                    [pp + (MAXX - i - 1)]
                                 .humidity
                                 .toString()))
                     ],
@@ -1309,7 +1351,8 @@ class _MyLineChartState extends State<MyLineChart> {
                       for (int i = 0; i < MAXX; i++)
                         FlSpot(
                             i.toDouble(),
-                            double.parse(sensorList[pp + (MAXX - i - 1)]
+                            double.parse(sensorLists[ppfarm]
+                                        [pp + (MAXX - i - 1)]
                                     .cotwo
                                     .toString()) /
                                 10)
@@ -1395,7 +1438,8 @@ class _MyLineChartState extends State<MyLineChart> {
       fontSize: 12,
     );
     String text;
-    text = sensorList[pp + (MAXX - value.toInt() - 1)].xlabel.toString();
+    text =
+        sensorLists[ppfarm][pp + (MAXX - value.toInt() - 1)].xlabel.toString();
     return SideTitleWidget(
       axisSide: meta.axisSide,
       space: 4,
@@ -1478,7 +1522,6 @@ class _MySettingState extends State<MySetting> {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
-    // appState.farmNoUpdate = farmNo;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
