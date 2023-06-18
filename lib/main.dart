@@ -228,15 +228,15 @@ class AppStorage {
     return directory.path;
   }
 
-  Future<File> get _localFileSensor async {
-    final path = await _localPath;
-    return File('$path/sensor$ppfarm.json');
-  }
+  // Future<File> get _localFileSensor async {
+  //   final path = await _localPath;
+  //   return File('$path/sensor$ppfarm.json');
+  // }
 
-  Future<File> get _localFilePINF async {
-    final path = await _localPath;
-    return File('$path/pinf$ppfarm.json');
-  }
+  // Future<File> get _localFilePINF async {
+  //   final path = await _localPath;
+  //   return File('$path/pinf$ppfarm.json');
+  // }
 }
 
 final AppStorage storage = AppStorage();
@@ -371,6 +371,70 @@ class MyAppState extends ChangeNotifier {
   var favorites = <WordPair>[];
   var user_msg = '';
 
+  void prefsClear() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    // print('prefs clear $farmNo');
+    prefs.clear();
+    if (farmNo > 1) {
+      farmName.removeRange(1, farmNo);
+      facilityName.removeRange(1, farmNo);
+      serviceKey.removeRange(1, farmNo);
+    }
+    final today = DateTime.now();
+    final somedaysago = today.subtract(Duration(days: SOMEDAYS));
+    lastDatetime = DateFormat('yyyyMMdd HH00').format(somedaysago);
+    print('prefs cleared: only $farmNo farm left');
+
+    for (int i = 0; i < 5; i++) {
+      sensorList = List<Sensor>.filled(50, sensor, growable: true);
+      String jsonString = jsonEncode(sensorList);
+      await storage.writeJsonAsString('sensor$i.json', jsonString);
+
+      pinfList = List<PINF>.filled(50, pinf, growable: true);
+      jsonString = jsonEncode(pinfList);
+      await storage.writeJsonAsString('pinf$i.json', jsonString);
+    }
+    farmNo = 1;
+    ppfarm = 0;
+    prefsLoad().then((value) {
+      storage.readJsonAsString().then((value) {
+        lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+        lastDatetime = "${lastDatetime.substring(0, 11)}00";
+        print(lastDatetime);
+        print('ReLoad the data');
+      });
+    });
+    if (Platform.isAndroid) showToast("초기화 완료", Colors.blueAccent);
+    notifyListeners();
+  }
+
+  void removeData() async {
+    final today = DateTime.now();
+    final somedaysago = today.subtract(Duration(days: SOMEDAYS));
+    lastDatetime = DateFormat('yyyyMMdd HH00').format(somedaysago);
+    print('prefs cleared: only $farmNo farm left');
+
+    sensorList = List<Sensor>.filled(50, sensor, growable: true);
+    String jsonString = jsonEncode(sensorList);
+    await storage.writeJsonAsString('sensor$ppfarm.json', jsonString);
+
+    pinfList = List<PINF>.filled(50, pinf, growable: true);
+    jsonString = jsonEncode(pinfList);
+    await storage.writeJsonAsString('pinf$ppfarm.json', jsonString);
+
+    prefsLoad().then((value) {
+      storage.readJsonAsString().then((value) {
+        lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+        lastDatetime = "${lastDatetime.substring(0, 11)}00";
+        print(lastDatetime);
+        print('ReLoad the data');
+      });
+    });
+    if (Platform.isAndroid) showToast("현재 농가 데이터를 삭제했습니다", Colors.blueAccent);
+    print("현재 농가데이터를 삭제했습니다");
+    notifyListeners();
+  }
+
   Future apiRequestIOT() async {
     var urliot = 'http://iot.rda.go.kr/api';
     var apikey = serviceKey[ppfarm];
@@ -402,7 +466,7 @@ class MyAppState extends ChangeNotifier {
 
         ///print(urliot2);
 
-        HttpClient().idleTimeout = const Duration(seconds: 60);
+        HttpClient().idleTimeout = const Duration(seconds: 10);
 
         uriiot = Uri.parse(urliotString);
         http.Response response = await http.get(uriiot);
@@ -440,7 +504,7 @@ class MyAppState extends ChangeNotifier {
 
         // sensorList.insert(0, nsensor);
         sensorList.insert(i, nsensor);
-        // print('$i----${nsensor.customDt}');
+        print('$i----${nsensor.customDt}');
         var progress = ((i + 1) / difference) * 100;
         user_msg = "${progress.toStringAsFixed(0)}%";
         notifyListeners();
@@ -562,9 +626,9 @@ class MyAppState extends ChangeNotifier {
         // print('$j: $custom_dt');
       }
     } catch (e) {
-      if (Platform.isAndroid) showToast("네트워크 상태를 확인해주세요", Colors.redAccent);
-      print("네트워크 상태를 확인해주세요");
-      return 0;
+      if (Platform.isAndroid) showToast("다시한번 시도해주세요", Colors.redAccent);
+      print("다시한번 시도해주세요");
+      return -1;
     }
 
     return 0;
@@ -743,28 +807,52 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   await prefs.setInt('myFarm', ppfarm);
                   // print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
 
-                  // appState.callAPI();
+                  // pp = 0;
+                  // if (Platform.isAndroid)
+                  //   showToast("IOT포털에서 데이터를 가져옵니다", Colors.blueAccent);
+                  // print('IOT포털에서 데이터를 가져옵니다');
 
-                  // await appState.apiRequestIOT().then((value) {
-                  //   setState(() {
-                  //     lastDatetime = sensorList[0].customDt.toString();
-                  //     lastDatetime = "${lastDatetime.substring(0, 11)}00";
-                  //     print(lastDatetime);
+                  // await appState.apiRequestIOT().then((value) async {
+                  //   if (Platform.isAndroid)
+                  //     showToast("병해충 발생위험도를 계산합니다", Colors.blueAccent);
+                  //   print('병해충 발생위험도를 계산합니다');
+
+                  //   await appState.apiRequestPEST().then((value) {
+                  //     appState.user_msg = value.toString();
+                  //     if (Platform.isAndroid)
+                  //       showToast("데이터 가져오기 성공", Colors.blueAccent);
+                  //     print('데이터 가져오기 성공');
+
+                  //     setState(() {
+                  //       lastDatetime =
+                  //           sensorLists[ppfarm][0].customDt.toString();
+                  //       lastDatetime =
+                  //           "Farm$ppfarm : ${lastDatetime.substring(0, 11)}00";
+                  //       print(lastDatetime);
+                  //       if ((difference >= 0)) {
+                  //         //(statusCode == 200) &&
+                  //         String jsonString = jsonEncode(sensorLists[ppfarm]);
+                  //         storage.writeJsonAsString(
+                  //             'sensor$ppfarm.json', jsonString);
+                  //         jsonString = jsonEncode(pinfLists[ppfarm]);
+                  //         storage.writeJsonAsString(
+                  //             'pinf$ppfarm.json', jsonString);
+                  //         if (Platform.isAndroid)
+                  //           showToast("파일에 데이터를 저장합니다", Colors.blueAccent);
+
+                  //         lastDatetime =
+                  //             sensorLists[ppfarm][0].customDt.toString();
+                  //         lastDatetime = "${lastDatetime.substring(0, 11)}00";
+                  //       }
+                  //     });
                   //   });
-                  // });
-                  // await appState.apiRequestPEST().then((value) {});
 
-                  // appState.getAPI().then((value) {
+                  if (mounted) {
+                    setState(() {
+                      appState.getNext();
+                    });
+                  }
                   // });
-                  // Future.delayed(const Duration(milliseconds: 1000), () {
-                  // if (mounted) {
-                  setState(() {
-                    pp = 0;
-                    appState.getNext();
-                    // print('after 1000 milliseconds');
-                    // });
-                    // }
-                  });
                 },
                 child: Text('다음'),
               ),
@@ -826,7 +914,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
                     await appState.apiRequestPEST().then((value) {
                       // print(difference);
                       // print(statusCode);
-                      // print(pp);
+                      // // print(pp);
                       appState.user_msg = value.toString();
                       if (Platform.isAndroid)
                         showToast("데이터 가져오기 성공", Colors.blueAccent);
@@ -839,10 +927,10 @@ class _StrawberryPageState extends State<StrawberryPage> {
                         print(lastDatetime);
                         if ((difference >= 0)) {
                           //(statusCode == 200) &&
-                          String jsonString = jsonEncode(sensorList);
+                          String jsonString = jsonEncode(sensorLists[ppfarm]);
                           storage.writeJsonAsString(
                               'sensor$ppfarm.json', jsonString);
-                          jsonString = jsonEncode(pinfList);
+                          jsonString = jsonEncode(pinfLists[ppfarm]);
                           storage.writeJsonAsString(
                               'pinf$ppfarm.json', jsonString);
                           if (Platform.isAndroid)
@@ -926,6 +1014,8 @@ class _MyLineChartPageState extends State<MyLineChartPage>
 
   @override
   Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -945,13 +1035,14 @@ class _MyLineChartPageState extends State<MyLineChartPage>
                   SharedPreferences prefs =
                       await SharedPreferences.getInstance();
                   await prefs.setInt('myFarm', ppfarm);
-                  // print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
+                  print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
 
-                  if (mounted) {
-                    setState(() {
-                      pp = 0;
-                    });
-                  }
+                  // if (mounted) {
+                  setState(() {
+                    pp = 0;
+                    appState.getNext();
+                  });
+                  // }
                 },
                 child: Text('다음'),
               ),
@@ -1257,6 +1348,8 @@ class _MyLineChartState extends State<MyLineChart> {
 
   @override
   Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+
     return Padding(
       padding: const EdgeInsets.all(10),
       // implement the bar chart
@@ -1719,11 +1812,25 @@ class _MySettingState extends State<MySetting> {
                           if (mounted) {
                             setState(() {
                               // _printLatestValue();
-                              prefsClear();
+                              appState.removeData();
                             });
                           }
                         },
                         child: const Text('리셋'),
+                      ),
+                    ),
+                    SizedBox(width: 10),
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          if (mounted) {
+                            setState(() {
+                              // _printLatestValue();
+                              appState.prefsClear();
+                            });
+                          }
+                        },
+                        child: const Text('전체리셋'),
                       ),
                     ),
                   ],
