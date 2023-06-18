@@ -13,8 +13,8 @@ import 'package:farmmon_flutter/presentation/resources/app_resources.dart';
 import 'package:farmmon_flutter/icons/custom_icons_icons.dart';
 import 'package:archive/archive_io.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:flutter/foundation.dart';
 
+// import 'package:flutter/foundation.dart';
 // import 'package:flutter/foundation.dart';
 // import 'package:flutter/services.dart';
 // import 'dart:ffi';
@@ -31,6 +31,7 @@ var farmNo = 1;
 var lastDatetime = '';
 var updateKey = '';
 var MAXX = 72;
+var SOMEDAYS = 16;
 var difference = 0;
 var statusCode = 0;
 
@@ -151,7 +152,7 @@ class PINFList {
 
 ///////////////////////////////////////////////////////////
 final today = DateTime.now();
-final somedaysago = today.subtract(const Duration(days: 15));
+final somedaysago = today.subtract(Duration(days: SOMEDAYS));
 final somedaysagoString = DateFormat('yyyyMMdd HH00').format(somedaysago);
 
 Sensor sensor = Sensor(
@@ -178,6 +179,82 @@ PINF pinf = PINF(
 
 var pinfList = List<PINF>.filled(50, pinf, growable: true);
 
+/////////////////////////////////////////////////////////
+
+class AppStorage {
+  Future readJsonAsString() async {
+    try {
+      // final dir = await getExternalStorageDirectory();
+      // Directory dir = Directory('/storage/emulated/0/Documents');
+      // print('${dir.path}/sensor.json');
+      print('read json file');
+
+      final file = await _localFileSensor;
+      final file2 = await _localFilePINF;
+
+      var routeFromJsonFile = await file.readAsString();
+      sensorList =
+          (SensorList.fromJson(routeFromJsonFile).sensors ?? <Sensor>[]);
+
+      routeFromJsonFile = await file2.readAsString();
+      pinfList = (PINFList.fromJson(routeFromJsonFile).pinfs ?? <PINF>[]);
+    } catch (e) {
+      return 0;
+    }
+  }
+
+  Future<int> readCounter() async {
+    try {
+      final file = await _localFileSensor;
+
+      // Read the file
+      final contents = await file.readAsString();
+
+      return int.parse(contents);
+    } catch (e) {
+      // If encountering an error, return 0
+      return 0;
+    }
+  }
+
+  Future<File> writeJsonAsString(String? file, String? data) async {
+    // final file = File('json/sensor.json');
+    final dir = await getApplicationDocumentsDirectory();
+    // Directory dir = Directory('/storage/emulated/0/Documents');
+    // print('${dir.path}/sensor.json');
+    print('writing json file: $file');
+    if (Platform.isAndroid) showToast("파일을 저장했습니다");
+    // notifyListeners();
+    return File('${dir.path}/$file').writeAsString(data ?? '');
+    // return file.writeAsString(data ?? '');
+  }
+
+  Future<String> get _localPath async {
+    final directory = await getApplicationDocumentsDirectory();
+
+    return directory.path;
+  }
+
+  Future<File> get _localFileSensor async {
+    final path = await _localPath;
+    return File('$path/sensor.json');
+  }
+
+  Future<File> get _localFilePINF async {
+    final path = await _localPath;
+    return File('$path/pinf.json');
+  }
+
+  Future<File> writeCounter(int counter) async {
+    final file = await _localFileSensor;
+
+    // Write the file
+    return file.writeAsString('$counter');
+  }
+}
+
+final AppStorage storage = AppStorage();
+
 /////////////////////////////////////////////////////////////
 
 Future prefsLoad() async {
@@ -186,7 +263,7 @@ Future prefsLoad() async {
   ppfarm = (prefs.getInt('myFarm') ?? 0);
 
   final today = DateTime.now();
-  final somedaysago = today.subtract(const Duration(days: 15));
+  final somedaysago = today.subtract(Duration(days: SOMEDAYS));
   final somedaysagoString = DateFormat('yyyyMMdd HH00').format(somedaysago);
   lastDatetime = (prefs.getString('lastDatetime') ?? somedaysagoString);
 
@@ -234,47 +311,21 @@ void prefsClear() async {
   farmNo = 1;
   ppfarm = 0;
   final today = DateTime.now();
-  final somedaysago = today.subtract(const Duration(days: 15));
+  final somedaysago = today.subtract(Duration(days: SOMEDAYS));
   lastDatetime = DateFormat('yyyyMMdd HH00').format(somedaysago);
+  print('prefs cleared: only $farmNo farm left');
   sensorList = List<Sensor>.filled(50, sensor, growable: true);
   String jsonString = jsonEncode(sensorList);
-  await writeJsonAsString('sensor.json', jsonString);
+  await storage.writeJsonAsString('sensor.json', jsonString);
 
   pinfList = List<PINF>.filled(50, pinf, growable: true);
   jsonString = jsonEncode(pinfList);
-  await writeJsonAsString('pinf.json', jsonString);
+  await storage.writeJsonAsString('pinf.json', jsonString);
 
-  print('prefs cleared: only $farmNo farm left');
+  if (Platform.isAndroid) showToast("초기화 완료");
 }
 
 /////////////////////////////////////////////////////////////////////
-Future readJsonAsString() async {
-  try {
-    final dir = await getApplicationDocumentsDirectory();
-    // Directory dir = Directory('/storage/emulated/0/Documents');
-    // print('${dir.path}/sensor.json');
-    print('read json file');
-    var routeFromJsonFile =
-        await File('${dir.path}/sensor.json').readAsString();
-    sensorList = (SensorList.fromJson(routeFromJsonFile).sensors ?? <Sensor>[]);
-    routeFromJsonFile = await File('${dir.path}/pinf.json').readAsString();
-    pinfList = (PINFList.fromJson(routeFromJsonFile).pinfs ?? <PINF>[]);
-  } catch (e) {
-    return 0;
-  }
-}
-
-Future<File> writeJsonAsString(String? file, String? data) async {
-  // final file = File('json/sensor.json');
-  final dir = await getApplicationDocumentsDirectory();
-  // Directory dir = Directory('/storage/emulated/0/Documents');
-  // print('${dir.path}/sensor.json');
-  print('writing json file: $file');
-  if (Platform.isAndroid) showToast("파일을 저장했습니다");
-  // notifyListeners();
-  return File('${dir.path}/$file').writeAsString(data ?? '');
-  // return file.writeAsString(data ?? '');
-}
 
 /////////////////////////////////////////////////////////////
 
@@ -339,7 +390,7 @@ class MyAppState extends ChangeNotifier {
     // IOT portal data update
     var now = DateTime.now();
     lastDatetime = sensorList[0].customDt.toString();
-    lastDatetime = "${lastDatetime.substring(0, 11)}0000";
+    lastDatetime = "${lastDatetime.substring(0, 11)}00";
 
     difference = int.parse(
         now.difference(DateTime.parse(lastDatetime)).inHours.toString());
@@ -363,7 +414,7 @@ class MyAppState extends ChangeNotifier {
 
       ///print(urliot2);
 
-      HttpClient().idleTimeout = const Duration(seconds: 10);
+      HttpClient().idleTimeout = const Duration(seconds: 60);
 
       uriiot = Uri.parse(urliotString);
       http.Response response = await http.get(uriiot);
@@ -372,6 +423,11 @@ class MyAppState extends ChangeNotifier {
       statusCode = response.statusCode;
 
       var jsonObj = jsonDecode(response.body);
+      if (jsonObj['datas'].length <= 0) {
+        if (Platform.isAndroid) showToast("데이터가 최신상태입니다");
+        print('데이터가 최신상태입니다');
+        return 0;
+      }
       var custom_dt = jsonObj['datas'][0]['custom_dt'].toString();
       custom_dt = DateFormat('yyyyMMdd HH00').format(DateTime.parse(custom_dt));
       Sensor nsensor = Sensor(
@@ -396,7 +452,7 @@ class MyAppState extends ChangeNotifier {
     }
     // print('after for loop');
     // print(statusCode);
-    user_msg = "$statusCode";
+    user_msg = "";
     notifyListeners();
     return statusCode;
   }
@@ -404,16 +460,17 @@ class MyAppState extends ChangeNotifier {
   Future apiRequestPEST() async {
     var encoder = ZipFileEncoder();
     final dir = await getApplicationDocumentsDirectory();
+    // Directory dir = Directory('/storage/emulated/0/Documents');
 
     var k = 0;
-    for (k = 0; k < 24; k++) {
+    for (k = 0; k < (SOMEDAYS - 1) * 24; k++) {
       var v1 = sensorList[k].customDt.toString();
       var d1 = DateTime.parse(v1);
       String formatTime = DateFormat('HH').format(d1);
       if (formatTime == '12') break;
     }
     var weatherString = 'datetime,temperature,humidity,leafwet\n';
-    for (int j = (k + 336); j >= 0; j--) {
+    for (int j = (k + (SOMEDAYS - 1) * 24); j >= 0; j--) {
       var v1 = sensorList[j].customDt.toString();
       var v2 = sensorList[j].temperature.toString();
       var v3 = sensorList[j].humidity.toString();
@@ -454,6 +511,11 @@ class MyAppState extends ChangeNotifier {
     r = r.replaceAll("\\", "");
     var i = r.indexOf('output');
     var ii = r.indexOf("}}");
+    if (ii < 0) {
+      if (Platform.isAndroid) showToast("기상데이터는 12시부터 시작해야합니다");
+      print("기상데이터는 12시부터 시작해야합니다");
+      return 0;
+    }
     var rr = r.substring(i + 10, ii + 2);
     final outputA = json.decode(rr);
 
@@ -474,10 +536,9 @@ class MyAppState extends ChangeNotifier {
 
     // print(output.runtimeType);
 
-    //////////////////////////////////////////////////////
 /////////////////////////////////////////////////////
-    int j = 14;
-    for (int i = 0; i < 14; i++) {
+    int j = SOMEDAYS - 1;
+    for (int i = 0; i < SOMEDAYS - 1; i++) {
       var custom_dt = outputA['$j']['date'].toString();
 
       PINF npinf = PINF(
@@ -489,26 +550,13 @@ class MyAppState extends ChangeNotifier {
         ),
       );
       j--;
-      pinfList.insert(i, npinf);
+      // pinfList.insert(i, npinf);
+      pinfList[i] = npinf;
 
       // print('$j: $custom_dt');
     }
 
     return 0;
-  }
-
-  Future getAPI() async {
-    // current = WordPair.random();
-    // farmNoUpdate = farmNo;
-    await apiRequestIOT().then((value) {
-      notifyListeners();
-    });
-    return 0;
-  }
-
-  Future<void> getSensorList() async {
-    // current = WordPair.random();
-    notifyListeners();
   }
 
   void getData() {
@@ -545,10 +593,10 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     prefsLoad().then((value) {
-      readJsonAsString().then((value) {
+      storage.readJsonAsString().then((value) {
         setState(() {
           lastDatetime = sensorList[0].customDt.toString();
-          lastDatetime = "${lastDatetime.substring(0, 11)}0000";
+          lastDatetime = "${lastDatetime.substring(0, 11)}00";
           print(lastDatetime);
           print('farmNo at initState: $farmNo');
         });
@@ -692,14 +740,14 @@ class _StrawberryPageState extends State<StrawberryPage> {
 
                   // appState.callAPI();
 
-                  await appState.getAPI().then((value) {
-                    setState(() {
-                      lastDatetime = sensorList[0].customDt.toString();
-                      lastDatetime = "${lastDatetime.substring(0, 11)}0000";
-                      print(lastDatetime);
-                    });
-                  });
-                  await appState.apiRequestPEST().then((value) {});
+                  // await appState.apiRequestIOT().then((value) {
+                  //   setState(() {
+                  //     lastDatetime = sensorList[0].customDt.toString();
+                  //     lastDatetime = "${lastDatetime.substring(0, 11)}00";
+                  //     print(lastDatetime);
+                  //   });
+                  // });
+                  // await appState.apiRequestPEST().then((value) {});
 
                   // appState.getAPI().then((value) {
                   // });
@@ -762,31 +810,37 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   pp = 0;
                   // appState.callAPI();
                   if (Platform.isAndroid) showToast("IOT포털에서 데이터를 가져옵니다");
+                  print('IOT포털에서 데이터를 가져옵니다');
 
-                  await appState.getAPI().then((value) {
+                  await appState.apiRequestIOT().then((value) async {
                     if (Platform.isAndroid) showToast("병해충 발생위험도를 계산합니다");
-                    appState.apiRequestPEST().then((value) {
+                    print('병해충 발생위험도를 계산합니다');
+
+                    await appState.apiRequestPEST().then((value) {
                       // print(difference);
                       // print(statusCode);
                       // print(pp);
+                      appState.user_msg = value.toString();
+                      if (Platform.isAndroid) showToast("데이터 가져오기 성공");
+                      print('데이터 가져오기 성공');
+
                       setState(() {
                         lastDatetime = sensorList[0].customDt.toString();
-                        lastDatetime = "${lastDatetime.substring(0, 11)}0000";
+                        lastDatetime = "${lastDatetime.substring(0, 11)}00";
                         print(lastDatetime);
-
                         if ((difference >= 0)) {
                           //(statusCode == 200) &&
                           String jsonString = jsonEncode(sensorList);
-                          writeJsonAsString('sensor.json', jsonString);
+                          storage.writeJsonAsString('sensor.json', jsonString);
                           jsonString = jsonEncode(pinfList);
-                          writeJsonAsString('pinf.json', jsonString);
+                          storage.writeJsonAsString('pinf.json', jsonString);
                           if (Platform.isAndroid) showToast("파일에 데이터를 저장합니다");
 
                           // SharedPreferences prefs = await SharedPreferences.getInstance();
                           // lastDatetime = DateFormat('yyyy-MM-dd HH:mm:ss').format(nowtosave);
 
                           lastDatetime = sensorList[0].customDt.toString();
-                          lastDatetime = "${lastDatetime.substring(0, 11)}0000";
+                          lastDatetime = "${lastDatetime.substring(0, 11)}00";
 
                           // await prefs.setString('lastDatetime', lastDatetime);
                           // print("prefs Save lastDatetime $lastDatetime");
