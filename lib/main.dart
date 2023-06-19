@@ -639,8 +639,8 @@ class MyAppState extends ChangeNotifier {
 
         PINF npinf = PINF(
           customDt: custom_dt,
-          anthracnose: outputA['$j']['PINF'],
-          botrytis: outputB['$j']['PINF'],
+          anthracnose: double.parse((outputA['$j']['PINF']).toStringAsFixed(1)),
+          botrytis: double.parse((outputB['$j']['PINF']).toStringAsFixed(1)),
           xlabel: DateFormat('MM/dd').format(
             DateTime.parse(outputA['$j']['date']),
           ),
@@ -946,9 +946,8 @@ class _StrawberryPageState extends State<StrawberryPage> {
               SizedBox(width: 10),
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  foregroundColor: Colors.amber,
-                  backgroundColor: Colors.blueGrey, // Text Color
-                ),
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.indigoAccent),
                 onPressed: () async {
                   //just for check the state
                   var now = DateTime.now();
