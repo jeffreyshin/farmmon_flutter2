@@ -245,7 +245,7 @@ final AppStorage storage = AppStorage();
 /////////////////////////////////////////////////////////////
 
 Future prefsLoad() async {
-  farmName.insert(1, '추가농가2');
+  farmName.insert(1, '농장2');
   facilityName.insert(1, '1번온실');
   serviceKey.insert(1, 'r64f2ea0960a74f4f8c48a0b3a6953973');
 
@@ -380,13 +380,20 @@ class MyAppState extends ChangeNotifier {
   var user_msg = '';
 
   void prefsClear() async {
+    farmName[0] = '기본농장';
+    farmName[1] = '농장2';
+    facilityName[0] = '1번온실';
+    facilityName[1] = '1번온실';
+    serviceKey[0] = 'r34df5d2d566049e2a809c41da915adc6';
+    serviceKey[1] = 'r64f2ea0960a74f4f8c48a0b3a6953973';
+
     SharedPreferences prefs = await SharedPreferences.getInstance();
     // print('prefs clear $farmNo');
     prefs.clear();
-    if (farmNo > 1) {
-      farmName.removeRange(1, farmNo);
-      facilityName.removeRange(1, farmNo);
-      serviceKey.removeRange(1, farmNo);
+    if (farmNo > 2) {
+      farmName.removeRange(2, farmNo);
+      facilityName.removeRange(2, farmNo);
+      serviceKey.removeRange(2, farmNo);
     }
     final today = DateTime.now();
     final somedaysago = today.subtract(Duration(days: SOMEDAYS));
@@ -433,6 +440,7 @@ class MyAppState extends ChangeNotifier {
     pinfLists[ppfarm] = pinfList;
     jsonString = jsonEncode(pinfList);
     await storage.writeJsonAsString('pinf$ppfarm.json', jsonString);
+    //pinfList.removeAt(ppfarm);
 
     // prefsLoad().then((value) {
     //   storage.readJsonAsString().then((value) {
@@ -443,8 +451,8 @@ class MyAppState extends ChangeNotifier {
     //   });
     // });
     if (Platform.isAndroid)
-      showToast("$ppfarm번 농가 데이터를 삭제했습니다", Colors.blueAccent);
-    print("$ppfarm번 농가데이터를 삭제했습니다");
+      showToast("$ppfarm번 농장 데이터를 삭제했습니다", Colors.blueAccent);
+    print("$ppfarm번 농장 데이터를 삭제했습니다");
     notifyListeners();
   }
 
@@ -1026,6 +1034,8 @@ class _StrawberryPageState extends State<StrawberryPage> {
               ElevatedButton(
                 onPressed: () async {
                   appState.pp = 0;
+                  if (Platform.isAndroid)
+                    showToast("개발중입니다", Colors.greenAccent);
                   // await apiRequestPEST().then((value) {
                   if (mounted) {
                     setState(() {
@@ -1732,7 +1742,7 @@ class _MySettingState extends State<MySetting> {
                     controller: inputController1,
                     validator: (value) {
                       if (value!.trim().isEmpty) {
-                        return '농가를 입력하세요';
+                        return '농장명을 입력하세요';
                       }
                       return null;
                     },
@@ -1743,7 +1753,7 @@ class _MySettingState extends State<MySetting> {
                     },
                     decoration: InputDecoration(
                       labelText: farmName[ppfarm],
-                      hintText: '농가를 입력해주세요',
+                      hintText: '농장명을 입력해주세요',
                       labelStyle: TextStyle(color: Colors.grey),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(10.0)),
@@ -1834,7 +1844,7 @@ class _MySettingState extends State<MySetting> {
                 ),
                 Padding(
                   padding: const EdgeInsets.all(5),
-                  child: Text('총 $farmNo농가가 등록되었습니다!!!'),
+                  child: Text('총 $farmNo농장이 등록되었습니다!!!'),
                 ),
                 Text('선택농가: ${ppfarm + 1} - 이름: ${farmName[ppfarm]}'),
                 SizedBox(
@@ -1850,7 +1860,7 @@ class _MySettingState extends State<MySetting> {
                           farmNo++;
                           print('$ppfarm / $farmNo');
 
-                          farmName.add('추가농가$farmNo');
+                          farmName.add('농장$farmNo');
                           facilityName.add('');
                           serviceKey.add('');
 
@@ -1861,7 +1871,7 @@ class _MySettingState extends State<MySetting> {
                               // for (int i = 0; i < farmNo; i++) {
                               // print(farmName[i]);
                               // }
-                              inputController1.text = '추가농가$farmNo';
+                              inputController1.text = '농장$farmNo';
                               inputController2.text = '';
                               inputController3.text = '';
                             });
@@ -1871,7 +1881,7 @@ class _MySettingState extends State<MySetting> {
                           await prefs.setInt('farmNumber', farmNo);
                           await prefs.setInt('myFarm', ppfarm);
                         },
-                        child: const Text('농장추가'),
+                        child: const Text('신규'),
                       ),
                     ),
                     SizedBox(width: 10),
@@ -1912,7 +1922,7 @@ class _MySettingState extends State<MySetting> {
                             });
                           }
                         },
-                        child: const Text('리셋'),
+                        child: const Text('삭제'),
                       ),
                     ),
                     SizedBox(width: 10),
@@ -1926,11 +1936,22 @@ class _MySettingState extends State<MySetting> {
                             });
                           }
                         },
-                        child: const Text('전체리셋'),
+                        child: const Text('초기화'),
                       ),
                     ),
                   ],
                 ),
+                SizedBox(height: 20),
+                Text("""Contributors
+앱개발_농촌진흥청 신재훈
+모델러_충청남도농업기술원 남명현(탄저병, 잿빛곰팡이병)
+외부API_농촌진흥청 IOT포털, 서울대학교 병해충API
+일러스트_스마트팜 농부 rawpixel.com, 출처 Freepik""",
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 10,
+                    )),
               ],
             ),
           ),
