@@ -245,8 +245,12 @@ final AppStorage storage = AppStorage();
 /////////////////////////////////////////////////////////////
 
 Future prefsLoad() async {
+  farmName.insert(1, '추가농가2');
+  facilityName.insert(1, '1번온실');
+  serviceKey.insert(1, 'r64f2ea0960a74f4f8c48a0b3a6953973');
+
   SharedPreferences prefs = await SharedPreferences.getInstance();
-  farmNo = (prefs.getInt('farmNumber') ?? 1);
+  farmNo = (prefs.getInt('farmNumber') ?? 2);
   ppfarm = (prefs.getInt('myFarm') ?? 0);
 
   final today = DateTime.now();
@@ -400,7 +404,7 @@ class MyAppState extends ChangeNotifier {
       jsonString = jsonEncode(pinfList);
       await storage.writeJsonAsString('pinf$i.json', jsonString);
     }
-    farmNo = 1;
+    farmNo = 2;
     ppfarm = 0;
     // prefsLoad().then((value) {
     //   storage.readJsonAsString().then((value) {
@@ -522,6 +526,7 @@ class MyAppState extends ChangeNotifier {
     } catch (e) {
       if (Platform.isAndroid) showToast("네트워크 상태를 확인해주세요", Colors.redAccent);
       print("네트워크 상태를 확인해주세요");
+      notifyListeners();
       return -1;
     }
 
@@ -537,10 +542,10 @@ class MyAppState extends ChangeNotifier {
   Future apiRequestPEST() async {
     var encoder = ZipFileEncoder();
     final dir = await getApplicationDocumentsDirectory();
-    // Directory dir = Directory('/storage/emulated/0/Documents');
+    // Directory dir = Directory('/storage/emulated/0/Documents ');
 
     var k = 0;
-    for (k = 0; k < (SOMEDAYS - 1) * 24; k++) {
+    for (k = 0; k < MAXX; k++) {
       var v1 = sensorLists[ppfarm][k].customDt.toString();
       var d1 = DateTime.parse(v1);
       String formatTime = DateFormat('HH').format(d1);
@@ -643,6 +648,7 @@ class MyAppState extends ChangeNotifier {
     } catch (e) {
       if (Platform.isAndroid) showToast("다시한번 시도해주세요", Colors.redAccent);
       print("다시한번 시도해주세요");
+      notifyListeners();
       return -1;
     }
 
@@ -827,18 +833,23 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   lastDatetime = "${lastDatetime.substring(0, 11)}00";
                   print("ppfarm: $ppfarm - lastDateTime: $lastDatetime");
                   print("prefsLoad and readJsonAsString");
-
-                  storage.readJsonAsString().then((value) {
-                    lastDatetime = sensorLists[ppfarm][0].customDt.toString();
-                    lastDatetime = "${lastDatetime.substring(0, 11)}00";
-                    print("ppfarm: $ppfarm - $lastDatetime");
-                    print('ReLoad the data');
-                    if (mounted) {
-                      setState(() {
-                        appState.getNext();
-                      });
-                    }
-                  });
+                  try {
+                    storage.readJsonAsString().then((value) {
+                      lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+                      lastDatetime = "${lastDatetime.substring(0, 11)}00";
+                      print("ppfarm: $ppfarm - $lastDatetime");
+                      print('ReLoad the data');
+                      if (mounted) {
+                        setState(() {
+                          appState.getNext();
+                        });
+                      }
+                    });
+                  } catch (e) {
+                    if (Platform.isAndroid)
+                      showToast("다시한번 시도해주세요", Colors.redAccent);
+                    print('다시한번 시도해주세요');
+                  }
 
                   ///redundunt but, check it out
 
@@ -866,7 +877,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   //       lastDatetime =
                   //           "Farm$ppfarm : ${lastDatetime.substring(0, 11)}00";
                   //       print(lastDatetime);
-                  //       if ((difference >= 0)) {
+                  //       if ((difference > 0)) {
                   //         //(statusCode == 200) &&
                   //         String jsonString = jsonEncode(sensorLists[ppfarm]);
                   //         storage.writeJsonAsString(
@@ -883,7 +894,6 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   //       }
                   //     });
                   //   });
-
                   // });
                 },
                 child: Text('다음'),
@@ -953,15 +963,13 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   appState.pp = 0;
 
                   if (Platform.isAndroid)
-                    showToast("IOT포털에서 데이터를 가져옵니다 - ppfarm: $ppfarm",
-                        Colors.blueAccent);
+                    showToast("IOT포털에서 데이터를 가져옵니다", Colors.blueAccent);
                   print('IOT포털에서 데이터를 가져옵니다');
 
                   await appState.apiRequestIOT().then((value) async {
                     if (Platform.isAndroid)
-                      showToast("병해충 발생위험도를 계산합니다 - ppfarm: $ppfarm",
-                          Colors.blueAccent);
-                    print('병해충 발생위험도를 계산합니다 - ppfarm: $ppfarm');
+                      showToast("병해충 발생위험도를 계산합니다", Colors.blueAccent);
+                    print('병해충 발생위험도를 계산합니다');
 
                     await appState.apiRequestPEST().then((value) {
                       // print(difference);
@@ -969,9 +977,8 @@ class _StrawberryPageState extends State<StrawberryPage> {
                       // // print(pp);
                       appState.user_msg = value.toString();
                       if (Platform.isAndroid)
-                        showToast(
-                            "데이터 가져오기 성공 - ppfarm: $ppfarm", Colors.blueAccent);
-                      print('데이터 가져오기 성공 - ppfarm: $ppfarm');
+                        showToast("데이터 가져오기 성공", Colors.blueAccent);
+                      print('데이터 가져오기 성공');
 
                       setState(() {
                         lastDatetime =
