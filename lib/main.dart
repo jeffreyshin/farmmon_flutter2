@@ -25,7 +25,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 // import 'package:dio/dio.dart';
 // import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-var pp = 0;
+// var pp = 0;
 var ppfarm = 0;
 var farmNo = 1;
 var lastDatetime = '';
@@ -164,8 +164,7 @@ Sensor sensor = Sensor(
   xlabel: " ",
 );
 
-var sensorList = List<Sensor>.filled(50, sensor, growable: true);
-
+var sensorList = List<Sensor>.filled(MAXX, sensor, growable: true);
 var sensorLists = List<List<Sensor>>.filled(10, sensorList, growable: true);
 /////////////////////////////////////////////////////////////
 final somedaysagoString2 = DateFormat('yyyy-MM-dd').format(somedaysago);
@@ -196,16 +195,18 @@ class AppStorage {
         final file2 = File('$path/pinf$ppfarm.json');
 
         // Read the file
-        var routeFromJsonFile = await file.readAsString();
+        final routeFromJsonFile = await file.readAsString();
+
         sensorList =
             (SensorList.fromJson(routeFromJsonFile).sensors ?? <Sensor>[]);
         sensorLists[i] = sensorList;
-        routeFromJsonFile = await file2.readAsString();
-        pinfList = (PINFList.fromJson(routeFromJsonFile).pinfs ?? <PINF>[]);
+        final routeFromJsonFile2 = await file2.readAsString();
+        pinfList = (PINFList.fromJson(routeFromJsonFile2).pinfs ?? <PINF>[]);
         pinfLists[i] = pinfList;
       }
     } catch (e) {
       // If encountering an error, return 0
+      print("읽기오류입니다");
       return 0;
     }
   }
@@ -300,11 +301,13 @@ void prefsClear() async {
   print('prefs cleared: only $farmNo farm left');
 
   for (int i = 0; i < 5; i++) {
-    sensorList = List<Sensor>.filled(50, sensor, growable: true);
+    sensorList = List<Sensor>.filled(MAXX, sensor, growable: true);
+    sensorLists = List<List<Sensor>>.filled(10, sensorList, growable: true);
     String jsonString = jsonEncode(sensorList);
     await storage.writeJsonAsString('sensor$i.json', jsonString);
 
     pinfList = List<PINF>.filled(50, pinf, growable: true);
+    pinfLists = List<List<PINF>>.filled(10, pinfList, growable: true);
     jsonString = jsonEncode(pinfList);
     await storage.writeJsonAsString('pinf$i.json', jsonString);
   }
@@ -369,6 +372,7 @@ class MyApp extends StatelessWidget {
 class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
   var favorites = <WordPair>[];
+  var pp = 0;
   var user_msg = '';
 
   void prefsClear() async {
@@ -386,24 +390,26 @@ class MyAppState extends ChangeNotifier {
     print('prefs cleared: only $farmNo farm left');
 
     for (int i = 0; i < 5; i++) {
-      sensorList = List<Sensor>.filled(50, sensor, growable: true);
+      sensorList = List<Sensor>.filled(MAXX, sensor, growable: true);
+      sensorLists = List<List<Sensor>>.filled(10, sensorList, growable: true);
       String jsonString = jsonEncode(sensorList);
       await storage.writeJsonAsString('sensor$i.json', jsonString);
 
       pinfList = List<PINF>.filled(50, pinf, growable: true);
+      pinfLists[i] = pinfList;
       jsonString = jsonEncode(pinfList);
       await storage.writeJsonAsString('pinf$i.json', jsonString);
     }
     farmNo = 1;
     ppfarm = 0;
-    prefsLoad().then((value) {
-      storage.readJsonAsString().then((value) {
-        lastDatetime = sensorLists[ppfarm][0].customDt.toString();
-        lastDatetime = "${lastDatetime.substring(0, 11)}00";
-        print(lastDatetime);
-        print('ReLoad the data');
-      });
-    });
+    // prefsLoad().then((value) {
+    //   storage.readJsonAsString().then((value) {
+    //     lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+    //     lastDatetime = "${lastDatetime.substring(0, 11)}00";
+    //     print(lastDatetime);
+    //     print('ReLoad the data');
+    //   });
+    // });
     if (Platform.isAndroid) showToast("초기화 완료", Colors.blueAccent);
     notifyListeners();
   }
@@ -414,24 +420,27 @@ class MyAppState extends ChangeNotifier {
     lastDatetime = DateFormat('yyyyMMdd HH00').format(somedaysago);
     print('prefs cleared: only $farmNo farm left');
 
-    sensorList = List<Sensor>.filled(50, sensor, growable: true);
+    sensorList = List<Sensor>.filled(MAXX, sensor, growable: true);
+    sensorLists = List<List<Sensor>>.filled(10, sensorList, growable: true);
     String jsonString = jsonEncode(sensorList);
     await storage.writeJsonAsString('sensor$ppfarm.json', jsonString);
 
     pinfList = List<PINF>.filled(50, pinf, growable: true);
+    pinfLists[ppfarm] = pinfList;
     jsonString = jsonEncode(pinfList);
     await storage.writeJsonAsString('pinf$ppfarm.json', jsonString);
 
-    prefsLoad().then((value) {
-      storage.readJsonAsString().then((value) {
-        lastDatetime = sensorLists[ppfarm][0].customDt.toString();
-        lastDatetime = "${lastDatetime.substring(0, 11)}00";
-        print(lastDatetime);
-        print('ReLoad the data');
-      });
-    });
-    if (Platform.isAndroid) showToast("현재 농가 데이터를 삭제했습니다", Colors.blueAccent);
-    print("현재 농가데이터를 삭제했습니다");
+    // prefsLoad().then((value) {
+    //   storage.readJsonAsString().then((value) {
+    //     lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+    //     lastDatetime = "${lastDatetime.substring(0, 11)}00";
+    //     print(lastDatetime);
+    //     print('ReLoad the data');
+    //   });
+    // });
+    if (Platform.isAndroid)
+      showToast("$ppfarm번 농가 데이터를 삭제했습니다", Colors.blueAccent);
+    print("$ppfarm번 농가데이터를 삭제했습니다");
     notifyListeners();
   }
 
@@ -443,10 +452,11 @@ class MyAppState extends ChangeNotifier {
     var now = DateTime.now();
     lastDatetime = sensorLists[ppfarm][0].customDt.toString();
     lastDatetime = "${lastDatetime.substring(0, 11)}00";
+    print("ppfarm: $ppfarm - lastDateTime: $lastDatetime");
 
     difference = int.parse(
         now.difference(DateTime.parse(lastDatetime)).inHours.toString());
-    print('Difference: $difference');
+    print('ppfarm: $ppfarm - Difference: $difference');
     String formatDate = DateFormat('yyyyMMdd').format(now);
     String formatTime = DateFormat('HH').format(now);
 
@@ -477,7 +487,7 @@ class MyAppState extends ChangeNotifier {
           if (Platform.isAndroid)
             showToast("네트워크 상태를 확인해주세요", Colors.redAccent);
           print("네트워크 상태를 확인해주세요");
-          return 0;
+          return -1;
         }
         var jsonObj = jsonDecode(response.body);
         if (jsonObj['datas'].length <= 0) {
@@ -503,7 +513,7 @@ class MyAppState extends ChangeNotifier {
         );
 
         // sensorList.insert(0, nsensor);
-        sensorList.insert(i, nsensor);
+        sensorLists[ppfarm].insert(i, nsensor);
         print('$i----${nsensor.customDt}');
         var progress = ((i + 1) / difference) * 100;
         user_msg = "${progress.toStringAsFixed(0)}%";
@@ -512,10 +522,10 @@ class MyAppState extends ChangeNotifier {
     } catch (e) {
       if (Platform.isAndroid) showToast("네트워크 상태를 확인해주세요", Colors.redAccent);
       print("네트워크 상태를 확인해주세요");
-      return 0;
+      return -1;
     }
 
-    sensorLists[ppfarm] = sensorList;
+    // sensorLists[ppfarm] = sensorList;
 
     // print('after for loop');
     // print(statusCode);
@@ -639,7 +649,7 @@ class MyAppState extends ChangeNotifier {
   }
 
   void getNext() {
-    // current = WordPair.random();
+    current = WordPair.random();
     notifyListeners();
   }
 
@@ -805,9 +815,31 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   SharedPreferences prefs =
                       await SharedPreferences.getInstance();
                   await prefs.setInt('myFarm', ppfarm);
+
+                  //just for check the state
+                  var now = DateTime.now();
+                  lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+                  lastDatetime = "${lastDatetime.substring(0, 11)}00";
+                  print("ppfarm: $ppfarm - lastDateTime: $lastDatetime");
+                  print("prefsLoad and readJsonAsString");
+
+                  storage.readJsonAsString().then((value) {
+                    lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+                    lastDatetime = "${lastDatetime.substring(0, 11)}00";
+                    print("ppfarm: $ppfarm - $lastDatetime");
+                    print('ReLoad the data');
+                    if (mounted) {
+                      setState(() {
+                        appState.getNext();
+                      });
+                    }
+                  });
+
+                  ///redundunt but, check it out
+
                   // print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
 
-                  // pp = 0;
+                  // appState.pp = 0;
                   // if (Platform.isAndroid)
                   //   showToast("IOT포털에서 데이터를 가져옵니다", Colors.blueAccent);
                   // print('IOT포털에서 데이터를 가져옵니다');
@@ -847,11 +879,6 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   //     });
                   //   });
 
-                  if (mounted) {
-                    setState(() {
-                      appState.getNext();
-                    });
-                  }
                   // });
                 },
                 child: Text('다음'),
@@ -888,7 +915,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
             children: [
               ElevatedButton(
                 onPressed: () {
-                  pp = 7;
+                  appState.pp = 7;
                   appState.toggleFavorite();
                 },
                 child: Text('지난주'),
@@ -900,16 +927,36 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   backgroundColor: Colors.blueGrey, // Text Color
                 ),
                 onPressed: () async {
-                  pp = 0;
-                  // appState.callAPI();
+                  //just for check the state
+                  var now = DateTime.now();
+                  lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+                  lastDatetime = "${lastDatetime.substring(0, 11)}00";
+                  print("ppfarm: $ppfarm - lastDateTime: $lastDatetime");
+                  print("prefsLoad and readJsonAsString");
+
+                  prefsLoad().then((value) {
+                    storage.readJsonAsString().then((value) {
+                      lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+                      lastDatetime = "${lastDatetime.substring(0, 11)}00";
+                      print("ppfarm: $ppfarm - $lastDatetime");
+                      print('ReLoad the data');
+                    });
+                  });
+
+                  ///redundunt but, check it out
+
+                  appState.pp = 0;
+
                   if (Platform.isAndroid)
-                    showToast("IOT포털에서 데이터를 가져옵니다", Colors.blueAccent);
+                    showToast("IOT포털에서 데이터를 가져옵니다 - ppfarm: $ppfarm",
+                        Colors.blueAccent);
                   print('IOT포털에서 데이터를 가져옵니다');
 
                   await appState.apiRequestIOT().then((value) async {
                     if (Platform.isAndroid)
-                      showToast("병해충 발생위험도를 계산합니다", Colors.blueAccent);
-                    print('병해충 발생위험도를 계산합니다');
+                      showToast("병해충 발생위험도를 계산합니다 - ppfarm: $ppfarm",
+                          Colors.blueAccent);
+                    print('병해충 발생위험도를 계산합니다 - ppfarm: $ppfarm');
 
                     await appState.apiRequestPEST().then((value) {
                       // print(difference);
@@ -917,8 +964,9 @@ class _StrawberryPageState extends State<StrawberryPage> {
                       // // print(pp);
                       appState.user_msg = value.toString();
                       if (Platform.isAndroid)
-                        showToast("데이터 가져오기 성공", Colors.blueAccent);
-                      print('데이터 가져오기 성공');
+                        showToast(
+                            "데이터 가져오기 성공 - ppfarm: $ppfarm", Colors.blueAccent);
+                      print('데이터 가져오기 성공 - ppfarm: $ppfarm');
 
                       setState(() {
                         lastDatetime =
@@ -965,7 +1013,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
               SizedBox(width: 10),
               ElevatedButton(
                 onPressed: () async {
-                  pp = 0;
+                  appState.pp = 0;
                   // await apiRequestPEST().then((value) {
                   if (mounted) {
                     setState(() {
@@ -1037,12 +1085,27 @@ class _MyLineChartPageState extends State<MyLineChartPage>
                   await prefs.setInt('myFarm', ppfarm);
                   print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
 
-                  // if (mounted) {
-                  setState(() {
-                    pp = 0;
-                    appState.getNext();
+                  //just for check the state
+                  var now = DateTime.now();
+                  lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+                  lastDatetime = "${lastDatetime.substring(0, 11)}00";
+                  print("ppfarm: $ppfarm - lastDateTime: $lastDatetime");
+                  print("prefsLoad and readJsonAsString");
+
+                  storage.readJsonAsString().then((value) {
+                    lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+                    lastDatetime = "${lastDatetime.substring(0, 11)}00";
+                    print("ppfarm: $ppfarm - $lastDatetime");
+                    print('ReLoad the data');
+                    if (mounted) {
+                      setState(() {
+                        appState.pp = 0;
+                        appState.getNext();
+                      });
+                    }
                   });
-                  // }
+
+                  ///redundunt but, check it out
                 },
                 child: Text('다음'),
               ),
@@ -1132,6 +1195,8 @@ class _MyBarChartState extends State<MyBarChart> {
 
   @override
   Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+
     return Padding(
       padding: const EdgeInsets.all(20),
       // implement the bar chart
@@ -1151,98 +1216,112 @@ class _MyBarChartState extends State<MyBarChart> {
           barGroups: [
             BarChartGroupData(x: 1, barRods: [
               BarChartRodData(
-                  toY: double.parse(
-                          pinfLists[ppfarm][pp + 6].anthracnose.toString()) *
+                  toY: double.parse(pinfLists[ppfarm][appState.pp + 6]
+                          .anthracnose
+                          .toString()) *
                       100,
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(
-                          pinfLists[ppfarm][pp + 6].botrytis.toString()) *
+                  toY: double.parse(pinfLists[ppfarm][appState.pp + 6]
+                          .botrytis
+                          .toString()) *
                       100,
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 2, barRods: [
               BarChartRodData(
-                  toY: double.parse(
-                          pinfLists[ppfarm][pp + 5].anthracnose.toString()) *
+                  toY: double.parse(pinfLists[ppfarm][appState.pp + 5]
+                          .anthracnose
+                          .toString()) *
                       100,
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(
-                          pinfLists[ppfarm][pp + 5].botrytis.toString()) *
+                  toY: double.parse(pinfLists[ppfarm][appState.pp + 5]
+                          .botrytis
+                          .toString()) *
                       100,
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 3, barRods: [
               BarChartRodData(
-                  toY: double.parse(
-                          pinfLists[ppfarm][pp + 4].anthracnose.toString()) *
+                  toY: double.parse(pinfLists[ppfarm][appState.pp + 4]
+                          .anthracnose
+                          .toString()) *
                       100,
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(
-                          pinfLists[ppfarm][pp + 4].botrytis.toString()) *
+                  toY: double.parse(pinfLists[ppfarm][appState.pp + 4]
+                          .botrytis
+                          .toString()) *
                       100,
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 4, barRods: [
               BarChartRodData(
-                  toY: double.parse(
-                          pinfLists[ppfarm][pp + 3].anthracnose.toString()) *
+                  toY: double.parse(pinfLists[ppfarm][appState.pp + 3]
+                          .anthracnose
+                          .toString()) *
                       100,
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(
-                          pinfLists[ppfarm][pp + 3].botrytis.toString()) *
+                  toY: double.parse(pinfLists[ppfarm][appState.pp + 3]
+                          .botrytis
+                          .toString()) *
                       100,
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 5, barRods: [
               BarChartRodData(
-                  toY: double.parse(
-                          pinfLists[ppfarm][pp + 2].anthracnose.toString()) *
+                  toY: double.parse(pinfLists[ppfarm][appState.pp + 2]
+                          .anthracnose
+                          .toString()) *
                       100,
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(
-                          pinfLists[ppfarm][pp + 2].botrytis.toString()) *
+                  toY: double.parse(pinfLists[ppfarm][appState.pp + 2]
+                          .botrytis
+                          .toString()) *
                       100,
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 6, barRods: [
               BarChartRodData(
-                  toY: double.parse(
-                          pinfLists[ppfarm][pp + 1].anthracnose.toString()) *
+                  toY: double.parse(pinfLists[ppfarm][appState.pp + 1]
+                          .anthracnose
+                          .toString()) *
                       100,
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(
-                          pinfLists[ppfarm][pp + 1].botrytis.toString()) *
+                  toY: double.parse(pinfLists[ppfarm][appState.pp + 1]
+                          .botrytis
+                          .toString()) *
                       100,
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 7, barRods: [
               BarChartRodData(
-                  toY: double.parse(
-                          pinfLists[ppfarm][pp + 0].anthracnose.toString()) *
+                  toY: double.parse(pinfLists[ppfarm][appState.pp + 0]
+                          .anthracnose
+                          .toString()) *
                       100,
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(
-                          pinfLists[ppfarm][pp + 0].botrytis.toString()) *
+                  toY: double.parse(pinfLists[ppfarm][appState.pp + 0]
+                          .botrytis
+                          .toString()) *
                       100,
                   width: 5,
                   color: Colors.indigo),
@@ -1290,6 +1369,8 @@ class _MyBarChartState extends State<MyBarChart> {
   }
 
   Widget getTitles(double value, TitleMeta meta) {
+    var appState = context.watch<MyAppState>();
+
     final style = TextStyle(
       ///      color: AppColors.contentColorBlue.darken(20),
       fontWeight: FontWeight.bold,
@@ -1298,28 +1379,28 @@ class _MyBarChartState extends State<MyBarChart> {
     String text;
     switch (value.toInt()) {
       case 0:
-        text = pinfLists[ppfarm][pp + 7].xlabel.toString();
+        text = pinfLists[ppfarm][appState.pp + 7].xlabel.toString();
         break;
       case 1:
-        text = pinfLists[ppfarm][pp + 6].xlabel.toString();
+        text = pinfLists[ppfarm][appState.pp + 6].xlabel.toString();
         break;
       case 2:
-        text = pinfLists[ppfarm][pp + 5].xlabel.toString();
+        text = pinfLists[ppfarm][appState.pp + 5].xlabel.toString();
         break;
       case 3:
-        text = pinfLists[ppfarm][pp + 4].xlabel.toString();
+        text = pinfLists[ppfarm][appState.pp + 4].xlabel.toString();
         break;
       case 4:
-        text = pinfLists[ppfarm][pp + 3].xlabel.toString();
+        text = pinfLists[ppfarm][appState.pp + 3].xlabel.toString();
         break;
       case 5:
-        text = pinfLists[ppfarm][pp + 2].xlabel.toString();
+        text = pinfLists[ppfarm][appState.pp + 2].xlabel.toString();
         break;
       case 6:
-        text = pinfLists[ppfarm][pp + 1].xlabel.toString();
+        text = pinfLists[ppfarm][appState.pp + 1].xlabel.toString();
         break;
       case 7:
-        text = pinfLists[ppfarm][pp + 0].xlabel.toString();
+        text = pinfLists[ppfarm][appState.pp + 0].xlabel.toString();
         break;
       default:
         text = '';
@@ -1406,7 +1487,7 @@ class _MyLineChartState extends State<MyLineChart> {
                         FlSpot(
                             i.toDouble(),
                             double.parse(sensorLists[ppfarm]
-                                        [pp + (MAXX - i - 1)]
+                                        [appState.pp + (MAXX - i - 1)]
                                     .temperature
                                     .toString()) *
                                 2)
@@ -1427,7 +1508,7 @@ class _MyLineChartState extends State<MyLineChart> {
                         FlSpot(
                             i.toDouble(),
                             double.parse(sensorLists[ppfarm]
-                                    [pp + (MAXX - i - 1)]
+                                    [appState.pp + (MAXX - i - 1)]
                                 .humidity
                                 .toString()))
                     ],
@@ -1446,7 +1527,7 @@ class _MyLineChartState extends State<MyLineChart> {
                         FlSpot(
                             i.toDouble(),
                             double.parse(sensorLists[ppfarm]
-                                        [pp + (MAXX - i - 1)]
+                                        [appState.pp + (MAXX - i - 1)]
                                     .cotwo
                                     .toString()) /
                                 10)
@@ -1526,14 +1607,17 @@ class _MyLineChartState extends State<MyLineChart> {
   }
 
   Widget getTitles(double value, TitleMeta meta) {
+    var appState = context.watch<MyAppState>();
+
     final style = TextStyle(
       // color: Colors.black,
       fontWeight: FontWeight.bold,
       fontSize: 12,
     );
     String text;
-    text =
-        sensorLists[ppfarm][pp + (MAXX - value.toInt() - 1)].xlabel.toString();
+    text = sensorLists[ppfarm][appState.pp + (MAXX - value.toInt() - 1)]
+        .xlabel
+        .toString();
     return SideTitleWidget(
       axisSide: meta.axisSide,
       space: 4,
