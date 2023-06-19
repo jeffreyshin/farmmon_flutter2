@@ -617,6 +617,9 @@ class MyAppState extends ChangeNotifier {
       // print(output.runtimeType);
 
 /////////////////////////////////////////////////////
+      //pinf update
+      pinfList = List<PINF>.filled(50, pinf, growable: true);
+      pinfLists[ppfarm] = pinfList;
       int j = SOMEDAYS - 1;
       for (int i = 0; i < SOMEDAYS - 1; i++) {
         var custom_dt = outputA['$j']['date'].toString();
@@ -631,8 +634,10 @@ class MyAppState extends ChangeNotifier {
         );
         j--;
         // pinfList.insert(i, npinf);
-        pinfLists[ppfarm][i] = npinf;
+        pinfLists[ppfarm].insert(i, npinf);
+        print("pinfList update, ppfarm: $ppfarm");
 
+        notifyListeners();
         // print('$j: $custom_dt');
       }
     } catch (e) {
