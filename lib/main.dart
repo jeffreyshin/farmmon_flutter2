@@ -595,8 +595,10 @@ class MyAppState extends ChangeNotifier {
 
         PINF npinf = PINF(
           customDt: custom_dt,
-          anthracnose: double.parse((outputA['$j']['PINF']).toStringAsFixed(1)),
-          botrytis: double.parse((outputB['$j']['PINF']).toStringAsFixed(1)),
+          anthracnose:
+              double.parse((outputA['$j']['PINF'] * 100).toStringAsFixed(1)),
+          botrytis:
+              double.parse((outputB['$j']['PINF'] * 100).toStringAsFixed(1)),
           xlabel: DateFormat('MM/dd').format(
             DateTime.parse(outputA['$j']['date']),
           ),
@@ -898,7 +900,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
                             sensorLists[ppfarm][0].customDt.toString();
                         lastDatetime = "${lastDatetime.substring(0, 11)}00";
                         print(lastDatetime);
-                        if ((difference > 0)) {
+                        if ((difference >= 0)) {
                           //(statusCode == 200) &&
                           String jsonString = jsonEncode(sensorLists[ppfarm]);
                           storage.writeJsonAsString(
@@ -1123,6 +1125,7 @@ class _MyBarChartState extends State<MyBarChart> {
         // key: ValueKey(sensorList[0].customDt),
         BarChartData(
           maxY: 100,
+
           borderData: FlBorderData(
               border: const Border(
             top: BorderSide.none,
@@ -1132,116 +1135,100 @@ class _MyBarChartState extends State<MyBarChart> {
           )),
           groupsSpace: 10,
           // add bars
+          barTouchData: BarTouchData(
+              touchTooltipData: BarTouchTooltipData(
+            maxContentWidth: 100,
+            tooltipBgColor: Colors.black,
+          )),
           barGroups: [
             BarChartGroupData(x: 1, barRods: [
               BarChartRodData(
                   toY: double.parse(pinfLists[ppfarm][appState.pp + 6]
-                          .anthracnose
-                          .toString()) *
-                      100,
+                      .anthracnose
+                      .toString()),
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(pinfLists[ppfarm][appState.pp + 6]
-                          .botrytis
-                          .toString()) *
-                      100,
+                  toY: double.parse(
+                      pinfLists[ppfarm][appState.pp + 6].botrytis.toString()),
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 2, barRods: [
               BarChartRodData(
                   toY: double.parse(pinfLists[ppfarm][appState.pp + 5]
-                          .anthracnose
-                          .toString()) *
-                      100,
+                      .anthracnose
+                      .toString()),
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(pinfLists[ppfarm][appState.pp + 5]
-                          .botrytis
-                          .toString()) *
-                      100,
+                  toY: double.parse(
+                      pinfLists[ppfarm][appState.pp + 5].botrytis.toString()),
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 3, barRods: [
               BarChartRodData(
                   toY: double.parse(pinfLists[ppfarm][appState.pp + 4]
-                          .anthracnose
-                          .toString()) *
-                      100,
+                      .anthracnose
+                      .toString()),
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(pinfLists[ppfarm][appState.pp + 4]
-                          .botrytis
-                          .toString()) *
-                      100,
+                  toY: double.parse(
+                      pinfLists[ppfarm][appState.pp + 4].botrytis.toString()),
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 4, barRods: [
               BarChartRodData(
                   toY: double.parse(pinfLists[ppfarm][appState.pp + 3]
-                          .anthracnose
-                          .toString()) *
-                      100,
+                      .anthracnose
+                      .toString()),
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(pinfLists[ppfarm][appState.pp + 3]
-                          .botrytis
-                          .toString()) *
-                      100,
+                  toY: double.parse(
+                      pinfLists[ppfarm][appState.pp + 3].botrytis.toString()),
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 5, barRods: [
               BarChartRodData(
                   toY: double.parse(pinfLists[ppfarm][appState.pp + 2]
-                          .anthracnose
-                          .toString()) *
-                      100,
+                      .anthracnose
+                      .toString()),
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(pinfLists[ppfarm][appState.pp + 2]
-                          .botrytis
-                          .toString()) *
-                      100,
+                  toY: double.parse(
+                      pinfLists[ppfarm][appState.pp + 2].botrytis.toString()),
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 6, barRods: [
               BarChartRodData(
                   toY: double.parse(pinfLists[ppfarm][appState.pp + 1]
-                          .anthracnose
-                          .toString()) *
-                      100,
+                      .anthracnose
+                      .toString()),
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(pinfLists[ppfarm][appState.pp + 1]
-                          .botrytis
-                          .toString()) *
-                      100,
+                  toY: double.parse(
+                      pinfLists[ppfarm][appState.pp + 1].botrytis.toString()),
                   width: 5,
                   color: Colors.indigo),
             ]),
             BarChartGroupData(x: 7, barRods: [
               BarChartRodData(
                   toY: double.parse(pinfLists[ppfarm][appState.pp + 0]
-                          .anthracnose
-                          .toString()) *
-                      100,
+                      .anthracnose
+                      .toString()),
                   width: 5,
                   color: Colors.amber),
               BarChartRodData(
-                  toY: double.parse(pinfLists[ppfarm][appState.pp + 0]
-                          .botrytis
-                          .toString()) *
-                      100,
+                  toY: double.parse(
+                      pinfLists[ppfarm][appState.pp + 0].botrytis.toString()),
                   width: 5,
                   color: Colors.indigo),
             ]),
