@@ -15,7 +15,6 @@ import 'package:archive/archive_io.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 // import 'package:flutter/foundation.dart';
-// import 'package:flutter/foundation.dart';
 // import 'package:flutter/services.dart';
 // import 'dart:ffi';
 // import 'package:flutter/cupertino.dart';
@@ -228,16 +227,6 @@ class AppStorage {
 
     return directory.path;
   }
-
-  // Future<File> get _localFileSensor async {
-  //   final path = await _localPath;
-  //   return File('$path/sensor$ppfarm.json');
-  // }
-
-  // Future<File> get _localFilePINF async {
-  //   final path = await _localPath;
-  //   return File('$path/pinf$ppfarm.json');
-  // }
 }
 
 final AppStorage storage = AppStorage();
@@ -289,39 +278,6 @@ Future prefsSave() async {
   await prefs.setInt('myFarm', ppfarm);
   print('prefs Save: ${(ppfarm + 1)} / $farmNo');
 }
-
-void prefsClear() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  // print('prefs clear $farmNo');
-  prefs.clear();
-  if (farmNo > 1) {
-    farmName.removeRange(1, farmNo);
-    facilityName.removeRange(1, farmNo);
-    serviceKey.removeRange(1, farmNo);
-  }
-  final today = DateTime.now();
-  final somedaysago = today.subtract(Duration(days: SOMEDAYS));
-  lastDatetime = DateFormat('yyyyMMdd HH00').format(somedaysago);
-  print('prefs cleared: only $farmNo farm left');
-
-  for (int i = 0; i < 5; i++) {
-    sensorList = List<Sensor>.filled(MAXX, sensor, growable: true);
-    sensorLists = List<List<Sensor>>.filled(10, sensorList, growable: true);
-    String jsonString = jsonEncode(sensorList);
-    await storage.writeJsonAsString('sensor$i.json', jsonString);
-
-    pinfList = List<PINF>.filled(50, pinf, growable: true);
-    pinfLists = List<List<PINF>>.filled(10, pinfList, growable: true);
-    jsonString = jsonEncode(pinfList);
-    await storage.writeJsonAsString('pinf$i.json', jsonString);
-  }
-  farmNo = 1;
-  ppfarm = 0;
-
-  if (Platform.isAndroid) showToast("초기화 완료", Colors.blueAccent);
-}
-
-/////////////////////////////////////////////////////////////////////
 
 /////////////////////////////////////////////////////////////
 
@@ -858,51 +814,6 @@ class _StrawberryPageState extends State<StrawberryPage> {
                       showToast("다시한번 시도해주세요", Colors.redAccent);
                     print('다시한번 시도해주세요');
                   }
-
-                  ///redundunt but, check it out
-
-                  // print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
-
-                  // appState.pp = 0;
-                  // if (Platform.isAndroid)
-                  //   showToast("IOT포털에서 데이터를 가져옵니다", Colors.blueAccent);
-                  // print('IOT포털에서 데이터를 가져옵니다');
-
-                  // await appState.apiRequestIOT().then((value) async {
-                  //   if (Platform.isAndroid)
-                  //     showToast("병해충 발생위험도를 계산합니다", Colors.blueAccent);
-                  //   print('병해충 발생위험도를 계산합니다');
-
-                  //   await appState.apiRequestPEST().then((value) {
-                  //     appState.user_msg = value.toString();
-                  //     if (Platform.isAndroid)
-                  //       showToast("데이터 가져오기 성공", Colors.blueAccent);
-                  //     print('데이터 가져오기 성공');
-
-                  //     setState(() {
-                  //       lastDatetime =
-                  //           sensorLists[ppfarm][0].customDt.toString();
-                  //       lastDatetime =
-                  //           "Farm$ppfarm : ${lastDatetime.substring(0, 11)}00";
-                  //       print(lastDatetime);
-                  //       if ((difference > 0)) {
-                  //         //(statusCode == 200) &&
-                  //         String jsonString = jsonEncode(sensorLists[ppfarm]);
-                  //         storage.writeJsonAsString(
-                  //             'sensor$ppfarm.json', jsonString);
-                  //         jsonString = jsonEncode(pinfLists[ppfarm]);
-                  //         storage.writeJsonAsString(
-                  //             'pinf$ppfarm.json', jsonString);
-                  //         if (Platform.isAndroid)
-                  //           showToast("파일에 데이터를 저장합니다", Colors.blueAccent);
-
-                  //         lastDatetime =
-                  //             sensorLists[ppfarm][0].customDt.toString();
-                  //         lastDatetime = "${lastDatetime.substring(0, 11)}00";
-                  //       }
-                  //     });
-                  //   });
-                  // });
                 },
                 child: Text('다음'),
               ),
@@ -950,7 +861,6 @@ class _StrawberryPageState extends State<StrawberryPage> {
                     backgroundColor: Colors.indigoAccent),
                 onPressed: () async {
                   //just for check the state
-                  var now = DateTime.now();
                   lastDatetime = sensorLists[ppfarm][0].customDt.toString();
                   lastDatetime = "${lastDatetime.substring(0, 11)}00";
                   print("ppfarm: $ppfarm - lastDateTime: $lastDatetime");
@@ -975,24 +885,20 @@ class _StrawberryPageState extends State<StrawberryPage> {
 
                   await appState.apiRequestIOT().then((value) async {
                     if (Platform.isAndroid)
-                      showToast("병해충 발생위험도를 계산합니다", Colors.blueAccent);
-                    print('병해충 발생위험도를 계산합니다');
+                      showToast("병해충예측모델을 실행합니다", Colors.blueAccent);
+                    print('병해충예측모델을 실행합니다');
 
                     await appState.apiRequestPEST().then((value) {
                       // print(difference);
                       // print(statusCode);
                       // // print(pp);
                       appState.user_msg = value.toString();
-                      if (Platform.isAndroid)
-                        showToast("데이터 가져오기 성공", Colors.blueAccent);
-                      print('데이터 가져오기 성공');
-
                       setState(() {
                         lastDatetime =
                             sensorLists[ppfarm][0].customDt.toString();
                         lastDatetime = "${lastDatetime.substring(0, 11)}00";
                         print(lastDatetime);
-                        if ((difference >= 0)) {
+                        if ((difference > 0)) {
                           //(statusCode == 200) &&
                           String jsonString = jsonEncode(sensorLists[ppfarm]);
                           storage.writeJsonAsString(
@@ -1001,24 +907,16 @@ class _StrawberryPageState extends State<StrawberryPage> {
                           storage.writeJsonAsString(
                               'pinf$ppfarm.json', jsonString);
                           if (Platform.isAndroid)
-                            showToast("파일에 데이터를 저장합니다", Colors.blueAccent);
-
-                          // SharedPreferences prefs = await SharedPreferences.getInstance();
-                          // lastDatetime = DateFormat('yyyy-MM-dd HH:mm:ss').format(nowtosave);
+                            showToast("데이터를 저장합니다", Colors.blueAccent);
+                          print("데이터를 저장합니다");
 
                           lastDatetime =
                               sensorLists[ppfarm][0].customDt.toString();
                           lastDatetime = "${lastDatetime.substring(0, 11)}00";
-
-                          // await prefs.setString('lastDatetime', lastDatetime);
-                          // print("prefs Save lastDatetime $lastDatetime");
                         }
                       });
                     });
                     // print('after data update procedure... ');
-
-                    // var temp = sensorList[0].temperature;
-                    // sensorList[0].temperature = temp;
 
                     if (mounted) {
                       setState(() {
@@ -1821,7 +1719,7 @@ class _MySettingState extends State<MySetting> {
                     },
                     decoration: InputDecoration(
                       labelText: serviceKey[ppfarm],
-                      hintText: '데이터저장소 인증키를 입력해주세요',
+                      hintText: '데이터저장소(IOT포털) 인증키를 입력해주세요',
                       labelStyle: TextStyle(color: Colors.grey),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.all(Radius.circular(10.0)),
