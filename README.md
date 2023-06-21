@@ -9,7 +9,8 @@
 4. HTTP API post방식을 사용. multi-part data가 잘 안되서 json 전송방식으로 변경(기상데이터를 압축한 문자열을 json value값으로 전달)
 5. 농가 등록메뉴 구성함(사용자편이 무시하고 기능만 구현: 농가명_필수, 장치명_선택, iot포털serviceKey_필수)
 6. 시간별 환경데이터 갱신된 데이터만 받아오도록 수정
-7. 복수의 농가에 대해 적용되도록 수정필요함
+7. 복수의 농장에 대해 적용되도록 수정함
+8. 농장 삭제메뉴 만들것
 
 ## Getting Started
 
@@ -24,9 +25,9 @@ For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 
-<img src="https://github.com/jeffreyshin/farmmon_flutter/assets/6800894/f624db8e-674a-4577-9589-29605d7f01b3.jpg"  width="300" height="600">
-<img src="https://github.com/jeffreyshin/farmmon_flutter/assets/6800894/7276478e-0d71-4a80-a8cb-e31aa42e66a3.jpg"  width="300" height="600">
+<img src="https://github.com/jeffreyshin/farmmon_flutter/assets/6800894/e1f3cb5c-2a90-40a4-b9d6-f70769159edf.jpg"  width="300" height="600">
+<img src="https://github.com/jeffreyshin/farmmon_flutter/assets/6800894/255d3d6d-474c-460b-93e6-5282f58791da.jpg"  width="300" height="600">
+<img src="https://github.com/jeffreyshin/farmmon_flutter/assets/6800894/c53b9030-3ff8-4add-9c8d-a05234117d5f.jpg"  width="300" height="600">
 
-                  
                   
                 
