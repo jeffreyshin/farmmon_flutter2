@@ -28,15 +28,30 @@ import 'package:fluttertoast/fluttertoast.dart';
 var ppfarm = 0;
 var farmNo = 1;
 var lastDatetime = '';
-var MAXX = 72;
-var SOMEDAYS = 16;
+var wMaxX = 72;
+var someDAYS = 16;
 var difference = 0;
 var statusCode = 0;
 
-var farmName = List<String>.filled(1, '기본농장', growable: true);
-var facilityName = List<String>.filled(1, '1번온실', growable: true);
-var serviceKey =
-    List<String>.filled(1, 'r34df5d2d566049e2a809c41da915adc6', growable: true);
+var farmName = List<String>.filled(10, '기본농장', growable: true);
+var facilityName = List<String>.filled(10, '1번온실', growable: true);
+var serviceKey = List<String>.filled(10, 'r34df5d2d566049e2a809c41da915adc6',
+    growable: true);
+
+Map farm1 = {
+  'farmName': '기본농장',
+  'facilityName': '1번온실',
+  'serviceKey': 'r34df5d2d566049e2a809c41da915adc6',
+};
+Map farm2 = {
+  'farmName': '농장2',
+  'facilityName': '1번온실',
+  'serviceKey': 'r64f2ea0960a74f4f8c48a0b3a6953973',
+};
+
+// var farmList = List<Map>.filled(1, farm1, growable: true);
+
+var farmList = [farm1, farm2, farm2, farm2, farm2];
 
 /////////////////////////////////////////////
 class Sensor {
@@ -72,7 +87,7 @@ class Sensor {
       );
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['custom_dt'] = customDt;
     data['temperature'] = temperature;
     data['humidity'] = humidity;
@@ -123,7 +138,7 @@ class PINF {
       );
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
+    final Map<String, dynamic> data = <String, dynamic>{};
     data['custom_dt'] = customDt;
     data['anthracnose'] = anthracnose;
     data['botrytis'] = botrytis;
@@ -149,7 +164,7 @@ class PINFList {
 
 ///////////////////////////////////////////////////////////
 final today = DateTime.now();
-final somedaysago = today.subtract(Duration(days: SOMEDAYS));
+final somedaysago = today.subtract(Duration(days: someDAYS));
 final somedaysagoString = DateFormat('yyyyMMdd HH00').format(somedaysago);
 
 Sensor sensor = Sensor(
@@ -163,7 +178,7 @@ Sensor sensor = Sensor(
   xlabel: " ",
 );
 
-var sensorList = List<Sensor>.filled(MAXX, sensor, growable: true);
+var sensorList = List<Sensor>.filled(wMaxX, sensor, growable: true);
 var sensorLists = List<List<Sensor>>.filled(10, sensorList, growable: true);
 /////////////////////////////////////////////////////////////
 final somedaysagoString2 = DateFormat('yyyy-MM-dd').format(somedaysago);
@@ -210,6 +225,34 @@ class AppStorage {
     }
   }
 
+  Future readJsonAsString2() async {
+    try {
+      // final dir = await getExternalStorageDirectory();
+      // Directory dir = Directory('/storage/emulated/0/Documents');
+      // print('${dir.path}/sensor.json');
+      print('read json file $ppfarm  we are at readJsonAsString2');
+
+      final path = await _localPath;
+      final file = File('$path/sensor$ppfarm.json');
+      final file2 = File('$path/pinf$ppfarm.json');
+
+      // Read the file
+      final routeFromJsonFile = await file.readAsString();
+
+      sensorList =
+          (SensorList.fromJson(routeFromJsonFile).sensors ?? <Sensor>[]);
+      sensorLists[ppfarm] = sensorList;
+      final routeFromJsonFile2 = await file2.readAsString();
+      pinfList = (PINFList.fromJson(routeFromJsonFile2).pinfs ?? <PINF>[]);
+      pinfLists[ppfarm] = pinfList;
+      print('read json file $ppfarm  we are at readJsonAsString2');
+    } catch (e) {
+      // If encountering an error, return 0
+      print("읽기오류입니다");
+      return 0;
+    }
+  }
+
   Future<File> writeJsonAsString(String? file, String? data) async {
     // final file = File('json/sensor.json');
     final dir = await getApplicationDocumentsDirectory();
@@ -234,16 +277,16 @@ final AppStorage storage = AppStorage();
 /////////////////////////////////////////////////////////////
 
 Future prefsLoad() async {
-  farmName.insert(1, '농장2');
-  facilityName.insert(1, '1번온실');
-  serviceKey.insert(1, 'r64f2ea0960a74f4f8c48a0b3a6953973');
+  // farmName[2] = '농장2';
+  // facilityName[2] = '1번온실';
+  // serviceKey[2] = 'r64f2ea0960a74f4f8c48a0b3a6953973';
 
   SharedPreferences prefs = await SharedPreferences.getInstance();
   farmNo = (prefs.getInt('farmNumber') ?? 2);
   ppfarm = (prefs.getInt('myFarm') ?? 0);
 
   final today = DateTime.now();
-  final somedaysago = today.subtract(Duration(days: SOMEDAYS));
+  final somedaysago = today.subtract(Duration(days: someDAYS));
   final somedaysagoString = DateFormat('yyyyMMdd HH00').format(somedaysago);
   lastDatetime = (prefs.getString('lastDatetime') ?? somedaysagoString);
 
@@ -254,14 +297,34 @@ Future prefsLoad() async {
 
   print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
 
-  farmName[0] = (prefs.getString('farmName0') ?? farmName[0]);
-  facilityName[0] = (prefs.getString('facilityName0') ?? facilityName[0]);
-  serviceKey[0] = (prefs.getString('serviceKey0') ?? serviceKey[0]);
+  // farmName[0] = (prefs.getString('farmName0') ?? farmName[0]);
+  // facilityName[0] = (prefs.getString('facilityName0') ?? facilityName[0]);
+  // serviceKey[0] = (prefs.getString('serviceKey0') ?? serviceKey[0]);
 
+  farmList[0]['farmName'] =
+      (prefs.getString('farmName0') ?? farmList[0]['farmName']);
+  farmList[0]['facilityName'] =
+      (prefs.getString('facilityName0') ?? farmList[0]['facilityName']);
+  farmList[0]['serviceKey'] =
+      (prefs.getString('serviceKey0') ?? farmList[0]['serviceKey']);
+
+  Map farm = {};
   for (int i = 1; i < farmNo; i++) {
-    farmName.add(prefs.getString('farmName$i') ?? farmName[0]);
-    facilityName.add(prefs.getString('facilityName$i') ?? facilityName[0]);
-    serviceKey.add(prefs.getString('serviceKey$i') ?? serviceKey[0]);
+    // farmName[i] = (prefs.getString('farmName$i') ?? farmName[0]);
+    // facilityName[i] = (prefs.getString('facilityName$i') ?? facilityName[0]);
+    // serviceKey[i] = (prefs.getString('serviceKey$i') ?? serviceKey[0]);
+
+    // print(farmName[i]);
+    // print(facilityName[i]);
+    // print(serviceKey[i]);
+
+    farm['farmName'] =
+        (prefs.getString('farmName$i') ?? farmList[0]['farmName']);
+    farm['facilityName'] =
+        (prefs.getString('facilityName$i') ?? farmList[0]['facilityName']);
+    farm['serviceKey'] =
+        (prefs.getString('serviceKey$i') ?? farmList[0]['serviceKey']);
+    farmList[i] = farm;
   }
   return 0;
 }
@@ -271,12 +334,17 @@ Future prefsSave() async {
   await prefs.setInt('farmNumber', farmNo);
 
   for (int i = 0; i < farmNo; i++) {
-    await prefs.setString('farmName$i', farmName[i]);
-    await prefs.setString('facilityName$i', facilityName[i]);
-    await prefs.setString('serviceKey$i', serviceKey[i]);
+    // await prefs.setString('farmName$i', farmName[i]);
+    // await prefs.setString('facilityName$i', facilityName[i]);
+    // await prefs.setString('serviceKey$i', serviceKey[i]);
+    // var f = farmName[i];
+    // print('prefs Save: ${(ppfarm + 1)} / $farmNo - $f');
+
+    await prefs.setString('farmName$i', farmList[i]['farmName']);
+    await prefs.setString('facilityName$i', farmList[i]['facilityName']);
+    await prefs.setString('serviceKey$i', farmList[i]['serviceKey']);
   }
   await prefs.setInt('myFarm', ppfarm);
-  print('prefs Save: ${(ppfarm + 1)} / $farmNo');
 }
 
 /////////////////////////////////////////////////////////////
@@ -333,7 +401,9 @@ class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
   var favorites = <WordPair>[];
   var pp = 0;
-  var user_msg = '';
+  // var ppfarm = 0;
+
+  var userMsg = '';
 
   void prefsClear() async {
     farmName[0] = '기본농장';
@@ -342,6 +412,9 @@ class MyAppState extends ChangeNotifier {
     facilityName[1] = '1번온실';
     serviceKey[0] = 'r34df5d2d566049e2a809c41da915adc6';
     serviceKey[1] = 'r64f2ea0960a74f4f8c48a0b3a6953973';
+
+    farmList[0] = farm1;
+    farmList[1] = farm2;
 
     SharedPreferences prefs = await SharedPreferences.getInstance();
     // print('prefs clear $farmNo');
@@ -352,12 +425,12 @@ class MyAppState extends ChangeNotifier {
       serviceKey.removeRange(2, farmNo);
     }
     final today = DateTime.now();
-    final somedaysago = today.subtract(Duration(days: SOMEDAYS));
+    final somedaysago = today.subtract(Duration(days: someDAYS));
     lastDatetime = DateFormat('yyyyMMdd HH00').format(somedaysago);
     print('prefs cleared: only $farmNo farm left');
 
     for (int i = 0; i < 5; i++) {
-      sensorList = List<Sensor>.filled(MAXX, sensor, growable: true);
+      sensorList = List<Sensor>.filled(wMaxX, sensor, growable: true);
       sensorLists = List<List<Sensor>>.filled(10, sensorList, growable: true);
       String jsonString = jsonEncode(sensorList);
       await storage.writeJsonAsString('sensor$i.json', jsonString);
@@ -383,21 +456,31 @@ class MyAppState extends ChangeNotifier {
 
   void removeData() async {
     final today = DateTime.now();
-    final somedaysago = today.subtract(Duration(days: SOMEDAYS));
+    final somedaysago = today.subtract(Duration(days: someDAYS));
     lastDatetime = DateFormat('yyyyMMdd HH00').format(somedaysago);
     print('prefs cleared: only $farmNo farm left');
 
-    sensorList = List<Sensor>.filled(MAXX, sensor, growable: true);
-    sensorLists = List<List<Sensor>>.filled(10, sensorList, growable: true);
+    // sensorList = List<Sensor>.filled(wMaxX, sensor, growable: true);
+    // sensorLists = List<List<Sensor>>.filled(10, sensorList, growable: true);
+    // sensorLists[ppfarm] = sensorList;
+    sensorLists.removeAt(ppfarm);
     String jsonString = jsonEncode(sensorList);
     await storage.writeJsonAsString('sensor$ppfarm.json', jsonString);
 
-    pinfList = List<PINF>.filled(50, pinf, growable: true);
-    pinfLists[ppfarm] = pinfList;
+    // pinfList = List<PINF>.filled(50, pinf, growable: true);
+    // pinfLists[ppfarm] = pinfList;
+    pinfLists.removeAt(ppfarm);
     jsonString = jsonEncode(pinfList);
     await storage.writeJsonAsString('pinf$ppfarm.json', jsonString);
-    //pinfList.removeAt(ppfarm);
-
+    if (ppfarm > 1) {
+      farmList.removeAt(ppfarm);
+      print("$ppfarm 삭제");
+      ppfarm--;
+      farmNo = farmNo - 1;
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('farmNumber', farmNo);
+      await prefs.setInt('ppfarm', ppfarm);
+    }
     // prefsLoad().then((value) {
     //   storage.readJsonAsString().then((value) {
     //     lastDatetime = sensorLists[ppfarm][0].customDt.toString();
@@ -406,9 +489,10 @@ class MyAppState extends ChangeNotifier {
     //     print('ReLoad the data');
     //   });
     // });
-    if (Platform.isAndroid)
-      showToast("$ppfarm번 농장 데이터를 삭제했습니다", Colors.blueAccent);
-    print("$ppfarm번 농장 데이터를 삭제했습니다");
+    if (Platform.isAndroid) {
+      showToast("ppfarm ${ppfarm + 1}번 농장 데이터를 삭제했습니다", Colors.blueAccent);
+    }
+    print("ppfarm ${ppfarm + 1} 농장 데이터를 삭제했습니다");
     notifyListeners();
   }
 
@@ -420,7 +504,7 @@ class MyAppState extends ChangeNotifier {
     var now = DateTime.now();
     lastDatetime = sensorLists[ppfarm][0].customDt.toString();
     lastDatetime = "${lastDatetime.substring(0, 11)}00";
-    print("ppfarm: $ppfarm - lastDateTime: $lastDatetime");
+    print("ppfarm: $ppfarm - lastDateTime: $lastDatetime now we are at IOT()");
 
     difference = int.parse(
         now.difference(DateTime.parse(lastDatetime)).inHours.toString());
@@ -452,23 +536,24 @@ class MyAppState extends ChangeNotifier {
         // print(response.body);
         statusCode = response.statusCode;
         if (response.statusCode != 200) {
-          if (Platform.isAndroid)
+          if (Platform.isAndroid) {
             showToast("네트워크 상태를 확인해주세요", Colors.redAccent);
+          }
           print("네트워크 상태를 확인해주세요");
           return -1;
         }
         var jsonObj = jsonDecode(response.body);
         if (jsonObj['datas'].length <= 0) {
-          if (Platform.isAndroid)
+          if (Platform.isAndroid) {
             showToast("새로 가져올 데이터가 없습니다", Colors.blueAccent);
+          }
           print('새로 가져올 데이터가 없습니다');
           return 0;
         }
-        var custom_dt = jsonObj['datas'][0]['custom_dt'].toString();
-        custom_dt =
-            DateFormat('yyyyMMdd HH00').format(DateTime.parse(custom_dt));
+        var customDT = jsonObj['datas'][0]['custom_dt'].toString();
+        customDT = DateFormat('yyyyMMdd HH00').format(DateTime.parse(customDT));
         Sensor nsensor = Sensor(
-          customDt: custom_dt,
+          customDt: customDT,
           temperature: double.parse(jsonObj['datas'][0]['temperature']),
           humidity: double.parse(jsonObj['datas'][0]['humidity']),
           cotwo: double.parse(jsonObj['datas'][0]['cotwo']),
@@ -484,7 +569,7 @@ class MyAppState extends ChangeNotifier {
         sensorLists[ppfarm].insert(i, nsensor);
         print('$i----${nsensor.customDt}');
         var progress = ((i + 1) / difference) * 100;
-        user_msg = "${progress.toStringAsFixed(0)}%";
+        userMsg = "${progress.toStringAsFixed(0)}%";
         notifyListeners();
       }
     } catch (e) {
@@ -498,7 +583,7 @@ class MyAppState extends ChangeNotifier {
 
     // print('after for loop');
     // print(statusCode);
-    user_msg = "";
+    userMsg = "";
     notifyListeners();
     return statusCode;
   }
@@ -509,14 +594,14 @@ class MyAppState extends ChangeNotifier {
     // Directory dir = Directory('/storage/emulated/0/Documents ');
 
     var k = 0;
-    for (k = 0; k < MAXX; k++) {
+    for (k = 0; k < wMaxX; k++) {
       var v1 = sensorLists[ppfarm][k].customDt.toString();
       var d1 = DateTime.parse(v1);
       String formatTime = DateFormat('HH').format(d1);
       if (formatTime == '12') break;
     }
     var weatherString = 'datetime,temperature,humidity,leafwet\n';
-    for (int j = (k + (SOMEDAYS - 1) * 24); j >= 0; j--) {
+    for (int j = (k + (someDAYS - 1) * 24); j >= 0; j--) {
       var v1 = sensorLists[ppfarm][j].customDt.toString();
       var v2 = sensorLists[ppfarm][j].temperature.toString();
       var v3 = sensorLists[ppfarm][j].humidity.toString();
@@ -589,12 +674,12 @@ class MyAppState extends ChangeNotifier {
       //pinf update
       pinfList = List<PINF>.filled(50, pinf, growable: true);
       pinfLists[ppfarm] = pinfList;
-      int j = SOMEDAYS - 1;
-      for (int i = 0; i < SOMEDAYS - 1; i++) {
-        var custom_dt = outputA['$j']['date'].toString();
+      int j = someDAYS - 1;
+      for (int i = 0; i < someDAYS - 1; i++) {
+        var customDT = outputA['$j']['date'].toString();
 
         PINF npinf = PINF(
-          customDt: custom_dt,
+          customDt: customDT,
           anthracnose:
               double.parse((outputA['$j']['PINF'] * 100).toStringAsFixed(1)),
           botrytis:
@@ -654,7 +739,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     prefsLoad().then((value) {
-      storage.readJsonAsString().then((value) {
+      storage.readJsonAsString2().then((value) {
         setState(() {
           lastDatetime = sensorLists[ppfarm][0].customDt.toString();
           lastDatetime = "${lastDatetime.substring(0, 11)}00";
@@ -668,7 +753,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
+    // var appState = context.watch<MyAppState>();
     Widget page;
     switch (selectedIndex) {
       case 0:
@@ -761,15 +846,15 @@ class _StrawberryPageState extends State<StrawberryPage> {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
-    var pair = appState.current;
-    // callAPI();
+    // var pair = appState.current;
 
-    IconData icon;
-    if (appState.favorites.contains(pair)) {
-      icon = Icons.favorite;
-    } else {
-      icon = Icons.favorite_border;
-    }
+    // IconData icon;
+    // if (appState.favorites.contains(pair)) {
+    //   icon = Icons.favorite;
+    // } else {
+    //   icon = Icons.favorite_border;
+    // }
+
     // var now = DateTime.now();
     // String formatDate = DateFormat('yyyy년 MM월 dd일').format(now);
 
@@ -782,7 +867,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                farmName[ppfarm],
+                farmList[ppfarm]['farmName'],
                 style: TextStyle(fontSize: 25),
               ),
               SizedBox(width: 20),
@@ -794,17 +879,18 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   await prefs.setInt('myFarm', ppfarm);
 
                   //just for check the state
-                  var now = DateTime.now();
-                  lastDatetime = sensorLists[ppfarm][0].customDt.toString();
-                  lastDatetime = "${lastDatetime.substring(0, 11)}00";
-                  print("ppfarm: $ppfarm - lastDateTime: $lastDatetime");
-                  print("prefsLoad and readJsonAsString");
+                  // var now = DateTime.now();
+                  // lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+                  // lastDatetime = "${lastDatetime.substring(0, 11)}00";
+                  // print("ppfarm: $ppfarm - lastDateTime: $lastDatetime");
+                  // print("prefsLoad and readJsonAsString");
+                  appState.pp = 0;
                   try {
-                    storage.readJsonAsString().then((value) {
-                      lastDatetime = sensorLists[ppfarm][0].customDt.toString();
-                      lastDatetime = "${lastDatetime.substring(0, 11)}00";
-                      print("ppfarm: $ppfarm - $lastDatetime");
-                      print('ReLoad the data');
+                    storage.readJsonAsString2().then((value) {
+                      //   lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+                      //   lastDatetime = "${lastDatetime.substring(0, 11)}00";
+                      // print("ppfarm: $ppfarm - $lastDatetime");
+                      // print('ReLoad the data');
                       if (mounted) {
                         setState(() {
                           appState.getNext();
@@ -812,8 +898,9 @@ class _StrawberryPageState extends State<StrawberryPage> {
                       }
                     });
                   } catch (e) {
-                    if (Platform.isAndroid)
+                    if (Platform.isAndroid) {
                       showToast("다시한번 시도해주세요", Colors.redAccent);
+                    }
                     print('다시한번 시도해주세요');
                   }
                 },
@@ -866,35 +953,43 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   lastDatetime = sensorLists[ppfarm][0].customDt.toString();
                   lastDatetime = "${lastDatetime.substring(0, 11)}00";
                   print("ppfarm: $ppfarm - lastDateTime: $lastDatetime");
-                  print("prefsLoad and readJsonAsString");
+                  // print("prefsLoad and readJsonAsString");
 
-                  prefsLoad().then((value) {
-                    storage.readJsonAsString().then((value) {
-                      lastDatetime = sensorLists[ppfarm][0].customDt.toString();
-                      lastDatetime = "${lastDatetime.substring(0, 11)}00";
-                      print("ppfarm: $ppfarm - $lastDatetime");
-                      print('ReLoad the data');
-                    });
+                  // prefsLoad().then((value) {
+                  storage.readJsonAsString2().then((value) {
+                    // lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+                    // lastDatetime = "${lastDatetime.substring(0, 11)}00";
+                    print("ppfarm: $ppfarm - $lastDatetime");
+                    // print('ReLoad the data');
+
+                    if (mounted) {
+                      setState(() {
+                        appState.getNext();
+                      });
+                    }
                   });
+                  // });
 
                   ///redundunt but, check it out
 
                   appState.pp = 0;
 
-                  if (Platform.isAndroid)
-                    showToast("IOT포털에서 데이터를 가져옵니다", Colors.blueAccent);
-                  print('IOT포털에서 데이터를 가져옵니다');
+                  if (Platform.isAndroid) {
+                    showToast("IOT포털에서 데이터를 가져옵니다 $ppfarm", Colors.blueAccent);
+                  }
+                  print('IOT포털에서 데이터를 가져옵니다 $ppfarm');
 
                   await appState.apiRequestIOT().then((value) async {
-                    if (Platform.isAndroid)
-                      showToast("병해충예측모델을 실행합니다", Colors.blueAccent);
-                    print('병해충예측모델을 실행합니다');
+                    if (Platform.isAndroid) {
+                      showToast("병해충예측모델을 실행합니다 $ppfarm", Colors.blueAccent);
+                    }
+                    print('병해충예측모델을 실행합니다 $ppfarm');
 
                     await appState.apiRequestPEST().then((value) {
                       // print(difference);
                       // print(statusCode);
                       // // print(pp);
-                      appState.user_msg = value.toString();
+                      appState.userMsg = value.toString();
                       setState(() {
                         lastDatetime =
                             sensorLists[ppfarm][0].customDt.toString();
@@ -908,13 +1003,16 @@ class _StrawberryPageState extends State<StrawberryPage> {
                           jsonString = jsonEncode(pinfLists[ppfarm]);
                           storage.writeJsonAsString(
                               'pinf$ppfarm.json', jsonString);
-                          if (Platform.isAndroid)
+                          if (Platform.isAndroid) {
                             showToast("데이터를 저장합니다", Colors.blueAccent);
+                          }
                           print("데이터를 저장합니다");
 
                           lastDatetime =
                               sensorLists[ppfarm][0].customDt.toString();
                           lastDatetime = "${lastDatetime.substring(0, 11)}00";
+                          print(lastDatetime);
+                          // appState.getNext();
                         }
                       });
                     });
@@ -933,13 +1031,14 @@ class _StrawberryPageState extends State<StrawberryPage> {
               ElevatedButton(
                 onPressed: () async {
                   appState.pp = 0;
-                  if (Platform.isAndroid)
+                  if (Platform.isAndroid) {
                     showToast("개발중입니다", Colors.greenAccent);
+                  }
                   // await apiRequestPEST().then((value) {
                   if (mounted) {
                     setState(() {
-                      lastDatetime = sensorLists[ppfarm][0].customDt.toString();
-                      // appState.user_msg = lastDatetime;
+                      // lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+                      // appState.userMsg = lastDatetime;
                       appState.getNext();
                     });
                   }
@@ -948,7 +1047,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
                 child: Text('다음주'),
               ),
               SizedBox(width: 10),
-              Text(appState.user_msg),
+              Text(appState.userMsg),
             ],
           ),
           SizedBox(height: 20),
@@ -994,7 +1093,7 @@ class _MyLineChartPageState extends State<MyLineChartPage>
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                farmName[ppfarm],
+                farmList[ppfarm]['farmName'],
                 style: TextStyle(fontSize: 25),
               ),
               SizedBox(width: 20),
@@ -1007,17 +1106,17 @@ class _MyLineChartPageState extends State<MyLineChartPage>
                   print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
 
                   //just for check the state
-                  var now = DateTime.now();
-                  lastDatetime = sensorLists[ppfarm][0].customDt.toString();
-                  lastDatetime = "${lastDatetime.substring(0, 11)}00";
-                  print("ppfarm: $ppfarm - lastDateTime: $lastDatetime");
-                  print("prefsLoad and readJsonAsString");
+                  // var now = DateTime.now();
+                  // lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+                  // lastDatetime = "${lastDatetime.substring(0, 11)}00";
+                  // print("ppfarm: $ppfarm - lastDateTime: $lastDatetime");
+                  // print("prefsLoad and readJsonAsString");
 
-                  storage.readJsonAsString().then((value) {
-                    lastDatetime = sensorLists[ppfarm][0].customDt.toString();
-                    lastDatetime = "${lastDatetime.substring(0, 11)}00";
-                    print("ppfarm: $ppfarm - $lastDatetime");
-                    print('ReLoad the data');
+                  storage.readJsonAsString2().then((value) {
+                    //   lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+                    //   lastDatetime = "${lastDatetime.substring(0, 11)}00";
+                    //   print("ppfarm: $ppfarm - $lastDatetime");
+                    //   print('ReLoad the data');
                     if (mounted) {
                       setState(() {
                         appState.pp = 0;
@@ -1122,7 +1221,7 @@ class _MyBarChartState extends State<MyBarChart> {
       padding: const EdgeInsets.all(20),
       // implement the bar chart
       child: BarChart(
-        // key: ValueKey(sensorList[0].customDt),
+        key: ValueKey(farmNo),
         BarChartData(
           maxY: 100,
 
@@ -1343,7 +1442,7 @@ class _MyLineChartState extends State<MyLineChart> {
       child: AspectRatio(
         aspectRatio: 16 / 9,
         child: ZoomableChart(
-          maxX: MAXX.toDouble() - 1,
+          maxX: wMaxX.toDouble() - 1,
           builder: (minX, maxX) {
             return LineChart(
               LineChartData(
@@ -1389,11 +1488,11 @@ class _MyLineChartState extends State<MyLineChart> {
                 lineBarsData: [
                   LineChartBarData(
                     spots: [
-                      for (int i = 0; i < MAXX; i++)
+                      for (int i = 0; i < wMaxX; i++)
                         FlSpot(
                             i.toDouble(),
                             double.parse(sensorLists[ppfarm]
-                                        [appState.pp + (MAXX - i - 1)]
+                                        [appState.pp + (wMaxX - i - 1)]
                                     .temperature
                                     .toString()) *
                                 2)
@@ -1410,11 +1509,11 @@ class _MyLineChartState extends State<MyLineChart> {
                   ),
                   LineChartBarData(
                     spots: [
-                      for (int i = 0; i < MAXX; i++)
+                      for (int i = 0; i < wMaxX; i++)
                         FlSpot(
                             i.toDouble(),
                             double.parse(sensorLists[ppfarm]
-                                    [appState.pp + (MAXX - i - 1)]
+                                    [appState.pp + (wMaxX - i - 1)]
                                 .humidity
                                 .toString()))
                     ],
@@ -1429,11 +1528,11 @@ class _MyLineChartState extends State<MyLineChart> {
                   ),
                   LineChartBarData(
                     spots: [
-                      for (int i = 0; i < MAXX; i++)
+                      for (int i = 0; i < wMaxX; i++)
                         FlSpot(
                             i.toDouble(),
                             double.parse(sensorLists[ppfarm]
-                                        [appState.pp + (MAXX - i - 1)]
+                                        [appState.pp + (wMaxX - i - 1)]
                                     .cotwo
                                     .toString()) /
                                 10)
@@ -1521,7 +1620,7 @@ class _MyLineChartState extends State<MyLineChart> {
       fontSize: 12,
     );
     String text;
-    text = sensorLists[ppfarm][appState.pp + (MAXX - value.toInt() - 1)]
+    text = sensorLists[ppfarm][appState.pp + (wMaxX - value.toInt() - 1)]
         .xlabel
         .toString();
     return SideTitleWidget(
@@ -1560,6 +1659,8 @@ class _MyLineChartState extends State<MyLineChart> {
   }
 }
 
+/////////////////////////////////////////////////////////////
+
 class MySetting extends StatefulWidget {
   const MySetting({Key? key}) : super(key: key);
 
@@ -1576,17 +1677,17 @@ class _MySettingState extends State<MySetting> {
 
   @override
   void initState() {
-    prefsLoad();
-    print('farmNo at initState: $farmNo');
     super.initState();
     // Start listening to changes.
     inputController1.addListener(_printLatestValue);
     inputController2.addListener(_printLatestValue);
     inputController3.addListener(_printLatestValue);
-
-    inputController1.text = farmName[ppfarm];
-    inputController2.text = facilityName[ppfarm];
-    inputController3.text = serviceKey[ppfarm];
+    prefsLoad().then((value) {
+      inputController1.text = farmList[ppfarm]['farmName'];
+      inputController2.text = farmList[ppfarm]['facilityName'];
+      inputController3.text = farmList[ppfarm]['serviceKey'];
+    });
+    print('farmNo at initState: $farmNo');
   }
 
   @override
@@ -1636,7 +1737,7 @@ class _MySettingState extends State<MySetting> {
                       // });
                     },
                     decoration: InputDecoration(
-                      labelText: farmName[ppfarm],
+                      labelText: farmList[ppfarm]['farmName'],
                       hintText: '농장명을 입력해주세요',
                       labelStyle: TextStyle(color: Colors.grey),
                       focusedBorder: OutlineInputBorder(
@@ -1670,7 +1771,7 @@ class _MySettingState extends State<MySetting> {
                       // });
                     },
                     decoration: InputDecoration(
-                      labelText: facilityName[ppfarm],
+                      labelText: farmList[ppfarm]['facilityName'],
                       hintText: '센서위치를 입력해주세요',
                       labelStyle: TextStyle(color: Colors.grey),
                       focusedBorder: OutlineInputBorder(
@@ -1691,7 +1792,7 @@ class _MySettingState extends State<MySetting> {
                 Padding(
                   padding: EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 10.0),
                   child: TextFormField(
-                    key: Key(farmName[ppfarm]),
+                    key: Key(farmList[ppfarm]['farmName']),
                     controller: inputController3,
                     validator: (value) {
                       if (value!.trim().isEmpty) {
@@ -1705,7 +1806,7 @@ class _MySettingState extends State<MySetting> {
                       // });
                     },
                     decoration: InputDecoration(
-                      labelText: serviceKey[ppfarm],
+                      labelText: farmList[ppfarm]['serviceKey'],
                       hintText: '데이터저장소(IOT포털) 인증키를 입력해주세요',
                       labelStyle: TextStyle(color: Colors.grey),
                       focusedBorder: OutlineInputBorder(
@@ -1730,7 +1831,8 @@ class _MySettingState extends State<MySetting> {
                   padding: const EdgeInsets.all(5),
                   child: Text('총 $farmNo농장이 등록되었습니다!!!'),
                 ),
-                Text('선택농가: ${ppfarm + 1} - 이름: ${farmName[ppfarm]}'),
+                Text(
+                    '선택농가: ${ppfarm + 1} - 이름: ${farmList[ppfarm]['farmName']}'),
                 SizedBox(
                   height: 20,
                 ),
@@ -1748,6 +1850,13 @@ class _MySettingState extends State<MySetting> {
                           facilityName.add('');
                           serviceKey.add('');
 
+                          Map farm = {
+                            'farmName': '농장$farmNo',
+                            'facilityName': '  ',
+                            'serviceKey': '  ',
+                          };
+
+                          farmList.add(farm);
                           if (mounted) {
                             setState(() {
                               ppfarm = farmNo - 1;
@@ -1774,23 +1883,36 @@ class _MySettingState extends State<MySetting> {
                         onPressed: () async {
                           // save prefs info of the new farm
                           // _printLatestValue();
-                          farmName[ppfarm] = inputController1.text;
-                          facilityName[ppfarm] = inputController2.text;
-                          serviceKey[ppfarm] = inputController3.text;
+                          farmList[ppfarm]['farmName'] = inputController1.text;
+                          farmList[ppfarm]['facilityName'] =
+                              inputController2.text;
+                          farmList[ppfarm]['serviceKey'] =
+                              inputController3.text;
+                          // print('저장하기: $ppfarm');
+                          // print('저장하기: ${inputController1.text}');
+
                           // go to the next farm
-                          ppfarm = (ppfarm + 1) % farmNo;
-
-                          prefsSave();
-
-                          if (mounted) {
-                            setState(() {
-                              // _printLatestValue();
-                              inputController1.text = farmName[ppfarm];
-                              inputController2.text = facilityName[ppfarm];
-                              inputController3.text = serviceKey[ppfarm];
-                              // print('next farm: ${(ppfarm + 1)} / $farmNo');
-                            });
-                          }
+                          Map farm = {
+                            'farmName': inputController1.text,
+                            'facilityName': inputController2.text,
+                            'serviceKey': inputController3.text,
+                          };
+                          farmList[ppfarm] = farm;
+                          prefsSave().then((value) {
+                            ppfarm = (ppfarm + 1) % farmNo;
+                            if (mounted) {
+                              setState(() {
+                                // _printLatestValue();
+                                inputController1.text =
+                                    farmList[ppfarm]['farmName'];
+                                inputController2.text =
+                                    farmList[ppfarm]['facilityName'];
+                                inputController3.text =
+                                    farmList[ppfarm]['serviceKey'];
+                                // print('next farm: ${(ppfarm + 1)} / $farmNo');
+                              });
+                            }
+                          });
                         },
                         child: const Text('다음'),
                       ),
@@ -1799,11 +1921,20 @@ class _MySettingState extends State<MySetting> {
                     Center(
                       child: ElevatedButton(
                         onPressed: () async {
-                          if (mounted) {
-                            setState(() {
-                              // _printLatestValue();
-                              appState.removeData();
-                            });
+                          if (ppfarm > 1) {
+                            if (mounted) {
+                              setState(() {
+                                // _printLatestValue();
+                                appState.removeData();
+                                inputController1.text =
+                                    farmList[ppfarm - 1]['farmName'];
+                                inputController2.text =
+                                    farmList[ppfarm - 1]['facilityName'];
+                                inputController3.text =
+                                    farmList[ppfarm - 1]['serviceKey'];
+                                appState.getNext();
+                              });
+                            }
                           }
                         },
                         child: const Text('삭제'),
