@@ -1237,7 +1237,7 @@ class _MyBarChartState extends State<MyBarChart> {
       padding: const EdgeInsets.all(20),
       // implement the bar chart
       child: BarChart(
-        key: ValueKey(ppfarm),
+        // key: ValueKey(ppfarm),
         // key: Key(farmList[ppfarm]['farmName']),
 
         BarChartData(
@@ -1463,7 +1463,7 @@ class _MyLineChartState extends State<MyLineChart> {
           maxX: wMAXX.toDouble() - 1,
           builder: (minX, maxX) {
             return LineChart(
-              key: Key(farmList[ppfarm]['farmName']),
+              // key: Key(farmList[ppfarm]['farmName']),
               LineChartData(
                 clipData: FlClipData.all(),
                 minX: minX,
@@ -1811,7 +1811,7 @@ class _MySettingState extends State<MySetting> {
                 Padding(
                   padding: EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 10.0),
                   child: TextFormField(
-                    key: Key(farmList[ppfarm]['farmName']),
+                    // key: Key(farmList[ppfarm]['farmName']),
                     controller: inputController3,
                     validator: (value) {
                       if (value!.trim().isEmpty) {
