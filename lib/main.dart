@@ -167,7 +167,7 @@ final today = DateTime.now();
 final somedaysago = today.subtract(Duration(days: someDAYS));
 final somedaysagoString = DateFormat('yyyyMMdd HH00').format(somedaysago);
 
-Sensor sensor = Sensor(
+Sensor sensorBlank = Sensor(
   customDt: somedaysagoString,
   temperature: 0.0,
   humidity: 0.0,
@@ -178,19 +178,19 @@ Sensor sensor = Sensor(
   xlabel: " ",
 );
 
-var sensorList = List<Sensor>.filled(wMAXX, sensor, growable: true);
+var sensorList = List<Sensor>.filled(wMAXX, sensorBlank, growable: true);
 var sensorLists = List<List<Sensor>>.filled(2, sensorList, growable: true);
 /////////////////////////////////////////////////////////////
 final somedaysagoString2 = DateFormat('yyyy-MM-dd').format(somedaysago);
 
-PINF pinf = PINF(
+PINF pinfBlank = PINF(
   customDt: somedaysagoString2,
   anthracnose: 0.0,
   botrytis: 0.0,
   xlabel: " ",
 );
 
-var pinfList = List<PINF>.filled(50, pinf, growable: true);
+var pinfList = List<PINF>.filled(50, pinfBlank, growable: true);
 var pinfLists = List<List<PINF>>.filled(2, pinfList, growable: true);
 
 /////////////////////////////////////////////////////////
@@ -300,33 +300,26 @@ Future prefsLoad() async {
   // facilityName[0] = (prefs.getString('facilityName0') ?? facilityName[0]);
   // serviceKey[0] = (prefs.getString('serviceKey0') ?? serviceKey[0]);
 
-  farmList[0]['farmName'] =
-      (prefs.getString('farmName0') ?? farmList[0]['farmName']);
-  farmList[0]['facilityName'] =
-      (prefs.getString('facilityName0') ?? farmList[0]['facilityName']);
-  farmList[0]['serviceKey'] =
-      (prefs.getString('serviceKey0') ?? farmList[0]['serviceKey']);
+  // farmList[0]['farmName'] =
+  //     (prefs.getString('farmName0') ?? farmList[0]['farmName']);
+  // farmList[0]['facilityName'] =
+  //     (prefs.getString('facilityName0') ?? farmList[0]['facilityName']);
+  // farmList[0]['serviceKey'] =
+  //     (prefs.getString('serviceKey0') ?? farmList[0]['serviceKey']);
 
   Map farm = {};
-  for (int i = 1; i < farmNo; i++) {
+  for (int i = 0; i < farmNo; i++) {
     // farmName[i] = (prefs.getString('farmName$i') ?? farmName[0]);
     // facilityName[i] = (prefs.getString('facilityName$i') ?? facilityName[0]);
     // serviceKey[i] = (prefs.getString('serviceKey$i') ?? serviceKey[0]);
 
-    // print(farmName[i]);
-    // print(facilityName[i]);
-    // print(serviceKey[i]);
-
-    farm['farmName'] =
-        (prefs.getString('farmName$i') ?? farmList[0]['farmName']);
-    farm['facilityName'] =
-        (prefs.getString('facilityName$i') ?? farmList[0]['facilityName']);
-    farm['serviceKey'] =
-        (prefs.getString('serviceKey$i') ?? farmList[0]['serviceKey']);
+    farm['farmName'] = (prefs.getString('farmName$i') ?? '기본농장');
+    farm['facilityName'] = (prefs.getString('facilityName$i') ?? '');
+    farm['serviceKey'] = (prefs.getString('serviceKey$i') ?? '');
     farmList[i] = farm;
-    print('ppfarm: $i -  ${farmList[i]['FarmName']}');
-    print('ppfarm: $i - ${farmList[i]['facilityName']}');
-    print('ppfarm: $i - ${farmList[i]['serviceKey']}');
+    print('prefsLoad() - ppfarm: $i - ${farmList[i]['farmName']}');
+    print('prefsLoad() - ppfarm: $i - ${farmList[i]['facilityName']}');
+    print('prefsLoad() - ppfarm: $i - ${farmList[i]['serviceKey']}');
   }
   return 0;
 }
@@ -334,6 +327,7 @@ Future prefsLoad() async {
 Future prefsSave() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   await prefs.setInt('farmNumber', farmNo);
+  await prefs.setInt('myFarm', ppfarm);
 
   for (int i = 0; i < farmNo; i++) {
     // await prefs.setString('farmName$i', farmName[i]);
@@ -346,7 +340,6 @@ Future prefsSave() async {
     await prefs.setString('facilityName$i', farmList[i]['facilityName']);
     await prefs.setString('serviceKey$i', farmList[i]['serviceKey']);
   }
-  await prefs.setInt('myFarm', ppfarm);
 }
 
 /////////////////////////////////////////////////////////////
@@ -434,12 +427,12 @@ class MyAppState extends ChangeNotifier {
     lastDatetime = DateFormat('yyyyMMdd HH00').format(somedaysago);
 
     for (int i = 0; i < 2; i++) {
-      sensorList = List<Sensor>.filled(wMAXX, sensor, growable: true);
+      sensorList = List<Sensor>.filled(wMAXX, sensorBlank, growable: true);
       sensorLists[i] = sensorList;
       String jsonString = jsonEncode(sensorList);
       await storage.writeJsonAsString('sensor$i.json', jsonString);
 
-      pinfList = List<PINF>.filled(50, pinf, growable: true);
+      pinfList = List<PINF>.filled(50, pinfBlank, growable: true);
       pinfLists[i] = pinfList;
       jsonString = jsonEncode(pinfList);
       await storage.writeJsonAsString('pinf$i.json', jsonString);
@@ -468,7 +461,7 @@ class MyAppState extends ChangeNotifier {
     lastDatetime = DateFormat('yyyyMMdd HH00').format(somedaysago);
     print('prefs cleared: only $farmNo farm left');
 
-    // sensorList = List<Sensor>.filled(wMAXX, sensor, growable: true);
+    // sensorList = List<Sensor>.filled(wMAXX, sensorBlank, growable: true);
     // sensorLists = List<List<Sensor>>.filled(10, sensorList, growable: true);
     // sensorLists[ppfarm] = sensorList;
     if (ppfarm >= 2) {
@@ -476,7 +469,7 @@ class MyAppState extends ChangeNotifier {
       String jsonString = jsonEncode(sensorList);
       await storage.writeJsonAsString('sensor$ppfarm.json', jsonString);
 
-      // pinfList = List<PINF>.filled(50, pinf, growable: true);
+      // pinfList = List<PINF>.filled(50, pinfBlank, growable: true);
       // pinfLists[ppfarm] = pinfList;
       pinfLists.removeAt(ppfarm);
       jsonString = jsonEncode(pinfList);
@@ -624,7 +617,7 @@ class MyAppState extends ChangeNotifier {
       weatherString = "$weatherString$v1,$v2,$v3,$v4\n";
     }
     // print(weatherString);
-    (File('${dir.path}/weather.csv').writeAsString(weatherString))
+    await (File('${dir.path}/weather.csv').writeAsString(weatherString))
         .then((value) {
       encoder.create('${dir.path}/input.zip');
       encoder.addFile(File('${dir.path}/weather.csv'));
@@ -687,7 +680,7 @@ class MyAppState extends ChangeNotifier {
 
 /////////////////////////////////////////////////////
       //pinf update
-      pinfList = List<PINF>.filled(50, pinf, growable: true);
+      pinfList = List<PINF>.filled(50, pinfBlank, growable: true);
       pinfLists[ppfarm] = pinfList;
       int j = someDAYS - 1;
       for (int i = 0; i < someDAYS - 1; i++) {
@@ -754,8 +747,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void initState() {
     super.initState();
-    prefsLoad().then((value) {
-      storage.readJsonAsString2().then((value) {
+    prefsLoad().then((value) async {
+      await storage.readJsonAsString2().then((value) {
         setState(() {
           lastDatetime = sensorLists[ppfarm][0].customDt.toString();
           lastDatetime = "${lastDatetime.substring(0, 11)}00";
@@ -902,7 +895,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   // print("prefsLoad and readJsonAsString");
                   appState.pp = 0;
                   try {
-                    storage.readJsonAsString2().then((value) {
+                    await storage.readJsonAsString2().then((value) {
                       //   lastDatetime = sensorLists[ppfarm][0].customDt.toString();
                       //   lastDatetime = "${lastDatetime.substring(0, 11)}00";
                       // print("ppfarm: $ppfarm - $lastDatetime");
@@ -972,7 +965,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   // print("prefsLoad and readJsonAsString");
 
                   // prefsLoad().then((value) {
-                  storage.readJsonAsString2().then((value) {
+                  await storage.readJsonAsString2().then((value) {
                     // lastDatetime = sensorLists[ppfarm][0].customDt.toString();
                     // lastDatetime = "${lastDatetime.substring(0, 11)}00";
                     print("이번주 시작 - ppfarm: $ppfarm - $lastDatetime");
@@ -1128,7 +1121,7 @@ class _MyLineChartPageState extends State<MyLineChartPage>
                   // print("ppfarm: $ppfarm - lastDateTime: $lastDatetime");
                   // print("prefsLoad and readJsonAsString");
 
-                  storage.readJsonAsString2().then((value) {
+                  await storage.readJsonAsString2().then((value) {
                     //   lastDatetime = sensorLists[ppfarm][0].customDt.toString();
                     //   lastDatetime = "${lastDatetime.substring(0, 11)}00";
                     //   print("ppfarm: $ppfarm - $lastDatetime");
@@ -1875,7 +1868,7 @@ class _MySettingState extends State<MySetting> {
                                   farmList[ppfarm]['facilityName'];
                               inputController3.text =
                                   farmList[ppfarm]['serviceKey'];
-                              _printLatestValue();
+                              // _printLatestValue();
                             });
                           }
                         },
@@ -1893,15 +1886,16 @@ class _MySettingState extends State<MySetting> {
                           // save prefs info of the new farm
                           // _printLatestValue();
                           // go to the next farm
-                          ppfarm = (ppfarm + 1) % farmNo;
-                          inputController1.text = farmList[ppfarm]['farmName'];
-                          inputController2.text =
-                              farmList[ppfarm]['facilityName'];
-                          inputController3.text =
-                              farmList[ppfarm]['serviceKey'];
                           if (mounted) {
                             setState(() {
-                              _printLatestValue();
+                              ppfarm = (ppfarm + 1) % farmNo;
+                              inputController1.text =
+                                  farmList[ppfarm]['farmName'];
+                              inputController2.text =
+                                  farmList[ppfarm]['facilityName'];
+                              inputController3.text =
+                                  farmList[ppfarm]['serviceKey'];
+                              // _printLatestValue();
                             });
                           }
                         },
@@ -1953,14 +1947,14 @@ class _MySettingState extends State<MySetting> {
                           await prefs.setInt('farmNumber', farmNo);
                           await prefs.setInt('myFarm', ppfarm);
 
-                          sensorList = List<Sensor>.filled(wMAXX, sensor,
+                          sensorList = List<Sensor>.filled(wMAXX, sensorBlank,
                               growable: true);
                           String jsonString = jsonEncode(sensorList);
                           await storage.writeJsonAsString(
                               'sensor${farmNo - 1}.json', jsonString);
 
                           pinfList =
-                              List<PINF>.filled(50, pinf, growable: true);
+                              List<PINF>.filled(50, pinfBlank, growable: true);
                           jsonString = jsonEncode(pinfList);
                           await storage.writeJsonAsString(
                               'pinf${farmNo - 1}.json', jsonString);
