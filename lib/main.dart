@@ -314,7 +314,6 @@ Future prefsLoad() async {
   // farmList[0]['serviceKey'] =
   //     (prefs.getString('serviceKey0') ?? farmList[0]['serviceKey']);
 
-  Map farm3 = {};
   farmList.clear();
   farmList.add(farm1);
   farmList.add(farm2);
@@ -322,13 +321,13 @@ Future prefsLoad() async {
     // farmName[i] = (prefs.getString('farmName$i') ?? farmName[0]);
     // facilityName[i] = (prefs.getString('facilityName$i') ?? facilityName[0]);
     // serviceKey[i] = (prefs.getString('serviceKey$i') ?? serviceKey[0]);
-
+    var farm3 = {};
     farm3['farmName'] =
-        (prefs.getString('farmName$i') ?? farmList[i]['farmName']);
+        (prefs.getString('farmName$i') ?? farmList[0]['farmName']);
     farm3['facilityName'] =
-        (prefs.getString('facilityName$i') ?? farmList[i]['facilityName']);
+        (prefs.getString('facilityName$i') ?? farmList[0]['facilityName']);
     farm3['serviceKey'] =
-        (prefs.getString('serviceKey$i') ?? farmList[i]['serviceKey']);
+        (prefs.getString('serviceKey$i') ?? farmList[0]['serviceKey']);
     farmList.add(farm3);
     print('prefsLoad() - ppfarm: $i - ${farmList[i]['farmName']}');
     // print('prefsLoad() - ppfarm: $i - ${farmList[i]['facilityName']}');
@@ -412,7 +411,7 @@ class MyAppState extends ChangeNotifier {
       // await prefs.setString('facilityName$i', facilityName[i]);
       // await prefs.setString('serviceKey$i', serviceKey[i]);
       // var f = farmName[i];
-      // print('prefs Save: ${(ppfarm + 1)} / $farmNo - $f');
+      print('prefs Save: $i / ${farmNo - 1} ${farmList[i]['farmName']}');
 
       await prefs.setString('farmName$i', farmList[i]['farmName']);
       await prefs.setString('facilityName$i', farmList[i]['facilityName']);
@@ -1250,6 +1249,17 @@ class _MyBarChartState extends State<MyBarChart> {
   @override
   void initState() {
     super.initState();
+    // prefsLoad().then((value) async {
+    //   await storage.readJsonAsString().then((value) {
+    //     setState(() {
+    //       //   lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+    //       //   lastDatetime = "${lastDatetime.substring(0, 11)}00";
+    //       //   print('HomePage initState - $lastDatetime');
+    //       //   print('HomePage initState - farmNo: $farmNo');
+    //     });
+    //   });
+    // });
+
     print('Bar Chart initState 호출');
   }
 
@@ -1962,18 +1972,6 @@ class _MySettingState extends State<MySetting> {
                           sensorLists.add(sensorList);
                           pinfLists.add(pinfList);
 
-                          if (mounted) {
-                            setState(() {
-                              ppfarm = farmNo - 1;
-                              // print(ppfarm);
-                              // for (int i = 0; i < farmNo; i++) {
-                              // print(farmName[i]);
-                              // }
-                              inputController1.text = '농장$farmNo';
-                              inputController2.text = '';
-                              inputController3.text = '';
-                            });
-                          }
                           SharedPreferences prefs =
                               await SharedPreferences.getInstance();
 
@@ -1992,6 +1990,19 @@ class _MySettingState extends State<MySetting> {
                           await storage.writeJsonAsString(
                               'pinf${farmNo - 1}.json', jsonString);
                           print('추가후 - $ppfarm / ${farmNo - 1}');
+
+                          if (mounted) {
+                            setState(() {
+                              ppfarm = farmNo - 1;
+                              // print(ppfarm);
+                              // for (int i = 0; i < farmNo; i++) {
+                              // print(farmName[i]);
+                              // }
+                              inputController1.text = '농장$farmNo';
+                              inputController2.text = '';
+                              inputController3.text = '';
+                            });
+                          }
                         },
                         child: const Text('추가'),
                       ),
@@ -2017,8 +2028,18 @@ class _MySettingState extends State<MySetting> {
                             'serviceKey': inputController3.text,
                           };
                           farmList[ppfarm] = farm;
+
+                          SharedPreferences prefs =
+                              await SharedPreferences.getInstance();
+                          await prefs.setInt('myFarm', ppfarm);
+                          await prefs.setInt('farmNumber', farmNo);
+                          await prefs.setString(
+                              'farmName$ppfarm', farmList[ppfarm]['farmName']);
+                          await prefs.setString('facilityName$ppfarm',
+                              farmList[ppfarm]['facilityName']);
+                          await prefs.setString('serviceKey$ppfarm',
+                              farmList[ppfarm]['serviceKey']);
                           await appState.prefsSave().then((value) {
-                            // ppfarm = (ppfarm + 1) % farmNo;
                             if (mounted) {
                               setState(() {
                                 // _printLatestValue();
@@ -2028,10 +2049,13 @@ class _MySettingState extends State<MySetting> {
                                 //     farmList[ppfarm]['facilityName'];
                                 // inputController3.text =
                                 //     farmList[ppfarm]['serviceKey'];
-                                print('저장완료: $ppfarm / ${farmNo - 1}');
                               });
                             }
                           });
+                          print('저장완료: $ppfarm / ${farmNo - 1}');
+                          if (Platform.isAndroid) {
+                            showToast("저장되었습니다", Colors.blue);
+                          }
                         },
                         child: const Text('저장'),
                       ),
