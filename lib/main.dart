@@ -213,13 +213,19 @@ class AppStorage {
 
         sensorList =
             (SensorList.fromJson(routeFromJsonFile).sensors ?? <Sensor>[]);
-        sensorLists[i] = sensorList;
+        // sensorLists[i] = sensorList;
+        if (i < 2) sensorLists[i] = sensorList;
+        if (i >= 2) sensorLists.add(sensorList);
         final routeFromJsonFile2 = await file2.readAsString();
         pinfList = (PINFList.fromJson(routeFromJsonFile2).pinfs ?? <PINF>[]);
-        pinfLists[i] = pinfList;
+        // pinfLists[i] = pinfList;
+        if (i < 2) pinfLists[i] = pinfList;
+        if (i >= 2) pinfLists.add(pinfList);
+        print("ddd");
       }
     } catch (e) {
       // If encountering an error, return 0
+      if (Platform.isAndroid) showToast("읽기오류입니다", Colors.red);
       print("읽기오류입니다");
       return 0;
     }
@@ -275,6 +281,61 @@ class AppStorage {
 final AppStorage storage = AppStorage();
 
 /////////////////////////////////////////////////////////////
+Future prefsLoad() async {
+  // farmName[2] = '농장2';
+  // facilityName[2] = '1번온실';
+  // serviceKey[2] = 'r64f2ea0960a74f4f8c48a0b3a6953973';
+
+  SharedPreferences prefs = await SharedPreferences.getInstance();
+  farmNo = (prefs.getInt('farmNumber') ?? 2);
+  // ppfarm = (prefs.getInt('myFarm') ?? 0);
+  ppfarm = 0;
+  await prefs.setInt('myFarm', ppfarm);
+
+  final today = DateTime.now();
+  final somedaysago = today.subtract(Duration(days: someDAYS));
+  final somedaysagoString = DateFormat('yyyyMMdd HH00').format(somedaysago);
+  lastDatetime = (prefs.getString('lastDatetime') ?? somedaysagoString);
+
+  // prefs.setInt('farmNumber', farmNo);
+  // prefs.setInt('myFarm', ppfarm);
+  // await prefs.setString('lastDatetime', lastDatetime);
+  print("prefsLoad() - lastDatetime: $lastDatetime");
+  print('prefsLoad() - prefsLoad: $ppfarm / ${farmNo - 1}');
+
+  // farmName[0] = (prefs.getString('farmName0') ?? farmName[0]);
+  // facilityName[0] = (prefs.getString('facilityName0') ?? facilityName[0]);
+  // serviceKey[0] = (prefs.getString('serviceKey0') ?? serviceKey[0]);
+
+  // farmList[0]['farmName'] =
+  //     (prefs.getString('farmName0') ?? farmList[0]['farmName']);
+  // farmList[0]['facilityName'] =
+  //     (prefs.getString('facilityName0') ?? farmList[0]['facilityName']);
+  // farmList[0]['serviceKey'] =
+  //     (prefs.getString('serviceKey0') ?? farmList[0]['serviceKey']);
+
+  Map farm3 = {};
+  farmList.clear();
+  farmList.add(farm1);
+  farmList.add(farm2);
+  for (int i = 2; i < farmNo; i++) {
+    // farmName[i] = (prefs.getString('farmName$i') ?? farmName[0]);
+    // facilityName[i] = (prefs.getString('facilityName$i') ?? facilityName[0]);
+    // serviceKey[i] = (prefs.getString('serviceKey$i') ?? serviceKey[0]);
+
+    farm3['farmName'] =
+        (prefs.getString('farmName$i') ?? farmList[i]['farmName']);
+    farm3['facilityName'] =
+        (prefs.getString('facilityName$i') ?? farmList[i]['facilityName']);
+    farm3['serviceKey'] =
+        (prefs.getString('serviceKey$i') ?? farmList[i]['serviceKey']);
+    farmList.add(farm3);
+    print('prefsLoad() - ppfarm: $i - ${farmList[i]['farmName']}');
+    // print('prefsLoad() - ppfarm: $i - ${farmList[i]['facilityName']}');
+    // print('prefsLoad() - ppfarm: $i - ${farmList[i]['serviceKey']}');
+  }
+  return 0;
+}
 
 /////////////////////////////////////////////////////////////
 
@@ -303,6 +364,13 @@ void main() async {
   // prefsLoad();
   HttpOverrides.global = MyHttpOverrides();
   // lastDatetime = sensorList[0].customDt.toString();
+  // prefsLoad();
+  // storage.readJsonAsString2();
+
+  // ppfarm = 0;
+  // SharedPreferences prefs = await SharedPreferences.getInstance();
+  // await prefs.setInt('myFarm', ppfarm);
+
   runApp(MyApp());
 }
 
@@ -333,58 +401,6 @@ class MyAppState extends ChangeNotifier {
   // var ppfarm = 0;
 
   var userMsg = '';
-
-  Future prefsLoad() async {
-    // farmName[2] = '농장2';
-    // facilityName[2] = '1번온실';
-    // serviceKey[2] = 'r64f2ea0960a74f4f8c48a0b3a6953973';
-
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    farmNo = (prefs.getInt('farmNumber') ?? 2);
-    ppfarm = (prefs.getInt('myFarm') ?? 0);
-
-    final today = DateTime.now();
-    final somedaysago = today.subtract(Duration(days: someDAYS));
-    final somedaysagoString = DateFormat('yyyyMMdd HH00').format(somedaysago);
-    lastDatetime = (prefs.getString('lastDatetime') ?? somedaysagoString);
-
-    // prefs.setInt('farmNumber', farmNo);
-    // prefs.setInt('myFarm', ppfarm);
-    // await prefs.setString('lastDatetime', lastDatetime);
-    print("prefsLoad() - lastDatetime: $lastDatetime");
-    print('prefsLoad() - prefsLoad: $ppfarm / ${farmNo - 1}');
-
-    // farmName[0] = (prefs.getString('farmName0') ?? farmName[0]);
-    // facilityName[0] = (prefs.getString('facilityName0') ?? facilityName[0]);
-    // serviceKey[0] = (prefs.getString('serviceKey0') ?? serviceKey[0]);
-
-    // farmList[0]['farmName'] =
-    //     (prefs.getString('farmName0') ?? farmList[0]['farmName']);
-    // farmList[0]['facilityName'] =
-    //     (prefs.getString('facilityName0') ?? farmList[0]['facilityName']);
-    // farmList[0]['serviceKey'] =
-    //     (prefs.getString('serviceKey0') ?? farmList[0]['serviceKey']);
-
-    Map farm3 = {};
-
-    for (int i = 0; i < farmNo; i++) {
-      // farmName[i] = (prefs.getString('farmName$i') ?? farmName[0]);
-      // facilityName[i] = (prefs.getString('facilityName$i') ?? facilityName[0]);
-      // serviceKey[i] = (prefs.getString('serviceKey$i') ?? serviceKey[0]);
-
-      farm3['farmName'] =
-          (prefs.getString('farmName$i') ?? farmList[i]['farmName']);
-      farm3['facilityName'] =
-          (prefs.getString('facilityName$i') ?? farmList[i]['facilityName']);
-      farm3['serviceKey'] =
-          (prefs.getString('serviceKey$i') ?? farmList[i]['serviceKey']);
-      farmList.add(farm3);
-      print('prefsLoad() - ppfarm: $i - ${farmList[i]['farmName']}');
-      // print('prefsLoad() - ppfarm: $i - ${farmList[i]['facilityName']}');
-      // print('prefsLoad() - ppfarm: $i - ${farmList[i]['serviceKey']}');
-    }
-    return 0;
-  }
 
   Future prefsSave() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -709,8 +725,9 @@ class MyAppState extends ChangeNotifier {
         // print('$j: $custom_dt');
       }
     } catch (e) {
-      if (Platform.isAndroid)
+      if (Platform.isAndroid) {
         showToast("모델호출 실패. 다시한번 시도해주세요", Colors.redAccent);
+      }
       print("모델호출 실패. 다시한번 시도해주세요");
       notifyListeners();
       return -1;
@@ -753,24 +770,25 @@ class _MyHomePageState extends State<MyHomePage> {
     super.initState();
     // var appState = context.watch<MyAppState>();
 
-    // appState.prefsLoad().then((value) async {
-    //   await storage.readJsonAsString2().then((value) {
-    //     setState(() {
-    //       lastDatetime = sensorLists[ppfarm][0].customDt.toString();
-    //       lastDatetime = "${lastDatetime.substring(0, 11)}00";
-    //       print('HomePage initState - $lastDatetime');
-    //       print('HomePage initState - farmNo: $farmNo');
-    //     });
-    //   });
-    // });
+    prefsLoad().then((value) async {
+      await storage.readJsonAsString().then((value) {
+        setState(() {
+          //   lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+          //   lastDatetime = "${lastDatetime.substring(0, 11)}00";
+          //   print('HomePage initState - $lastDatetime');
+          //   print('HomePage initState - farmNo: $farmNo');
+        });
+      });
+    });
     print('initState');
   }
 
   @override
   Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
+    // var appState = context.watch<MyAppState>();
 
     Widget page;
+
     switch (selectedIndex) {
       case 0:
         page = StrawberryPage();
@@ -857,12 +875,14 @@ class _StrawberryPageState extends State<StrawberryPage> {
 /////////////////////////////////////////////////////
   // @override
   // void didChangeDependencies() {
+  //   super.didChangeDependencies();
   //   print('didChangeDependencies 호출');
   // }
 
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
+
     // var pair = appState.current;
 
     // IconData icon;
@@ -874,9 +894,10 @@ class _StrawberryPageState extends State<StrawberryPage> {
 
     // var now = DateTime.now();
     // String formatDate = DateFormat('yyyy년 MM월 dd일').format(now);
-    print("StrawBerryPage() - $ppfarm ${farmList[ppfarm]['farmName']}");
+    // print("StrawBerryPage() - $ppfarm - ${farmList[ppfarm]['farmName']}");
 
-    // appState.prefsLoad();
+    // appState.prefsLoad();    ******************
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -994,13 +1015,13 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   appState.pp = 0;
 
                   if (Platform.isAndroid) {
-                    showToast("IOT포털에서 데이터를 가져옵니다 $ppfarm", Colors.blueAccent);
+                    showToast("IOT포털에서 데이터를 가져옵니다", Colors.blueAccent);
                   }
                   print('IOT포털에서 데이터를 가져옵니다 $ppfarm');
 
                   await appState.apiRequestIOT().then((value) async {
                     if (Platform.isAndroid) {
-                      showToast("병해충예측모델을 실행합니다 $ppfarm", Colors.blueAccent);
+                      showToast("병해충예측모델을 실행합니다", Colors.blueAccent);
                     }
                     print('병해충예측모델을 실행합니다 $ppfarm');
 
@@ -1975,7 +1996,7 @@ class _MySettingState extends State<MySetting> {
                         child: const Text('추가'),
                       ),
                     ),
-                    SizedBox(width: 10),
+                    SizedBox(width: 5),
                     Center(
                       child: ElevatedButton(
                         onPressed: () async {
@@ -2015,7 +2036,7 @@ class _MySettingState extends State<MySetting> {
                         child: const Text('저장'),
                       ),
                     ),
-                    SizedBox(width: 10),
+                    SizedBox(width: 5),
                     Center(
                       child: ElevatedButton(
                         onPressed: () async {
@@ -2038,7 +2059,7 @@ class _MySettingState extends State<MySetting> {
                         child: const Text('삭제'),
                       ),
                     ),
-                    SizedBox(width: 10),
+                    SizedBox(width: 5),
                     Center(
                       child: ElevatedButton(
                         onPressed: () async {
