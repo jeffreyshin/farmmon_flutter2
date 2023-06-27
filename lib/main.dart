@@ -887,7 +887,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
               Text(
                 '■',
                 style: TextStyle(
-                  color: Colors.amber,
+                  color: Colors.indigo,
                 ),
               ),
               SizedBox(width: 10),
@@ -895,7 +895,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
               Text(
                 '■',
                 style: TextStyle(
-                  color: Colors.indigo,
+                  color: Colors.purple,
                 ),
               ),
             ],
@@ -1231,7 +1231,79 @@ class _MyBarChartState extends State<MyBarChart> {
 
         BarChartData(
           maxY: 100,
-
+          rangeAnnotations: RangeAnnotations(
+            horizontalRangeAnnotations: [
+              HorizontalRangeAnnotation(
+                y1: 0,
+                y2: 20,
+                color: AppColors.contentColorGreen.withOpacity(0.3),
+              ),
+              HorizontalRangeAnnotation(
+                y1: 20,
+                y2: 50,
+                color: AppColors.contentColorYellow.withOpacity(0.3),
+              ),
+              HorizontalRangeAnnotation(
+                y1: 50,
+                y2: 100,
+                color: AppColors.contentColorOrange.withOpacity(0.3),
+              ),
+            ],
+          ),
+          // uncomment to see ExtraLines with RangeAnnotations
+          extraLinesData: ExtraLinesData(
+//         extraLinesOnTop: true,
+            horizontalLines: [
+              HorizontalLine(
+                y: 10,
+                // color: AppColors.contentColorBlack,
+                strokeWidth: 0,
+                dashArray: [5, 10],
+                label: HorizontalLineLabel(
+                  show: true,
+                  alignment: Alignment.topRight,
+                  padding: const EdgeInsets.only(right: 5, bottom: 15),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  labelResolver: (line) => '낮음',
+                ),
+              ),
+              HorizontalLine(
+                y: 40,
+                // color: AppColors.contentColorRed,
+                strokeWidth: 0,
+                dashArray: [5, 10],
+                label: HorizontalLineLabel(
+                  show: true,
+                  alignment: Alignment.topRight,
+                  padding: const EdgeInsets.only(right: 5, bottom: 15),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  labelResolver: (line) => '다소위험',
+                ),
+              ),
+              HorizontalLine(
+                y: 90,
+                // color: AppColors.contentColorWhite,
+                strokeWidth: 0,
+                dashArray: [5, 10],
+                label: HorizontalLineLabel(
+                  show: true,
+                  alignment: Alignment.topRight,
+                  padding: const EdgeInsets.only(right: 5, bottom: 15),
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  labelResolver: (line) => '위험',
+                ),
+              ),
+            ],
+          ),
           borderData: FlBorderData(
               border: const Border(
             top: BorderSide.none,
@@ -1244,7 +1316,7 @@ class _MyBarChartState extends State<MyBarChart> {
           barTouchData: BarTouchData(
               touchTooltipData: BarTouchTooltipData(
             maxContentWidth: 100,
-            tooltipBgColor: Colors.black,
+            tooltipBgColor: Colors.white,
           )),
           barGroups: [
             BarChartGroupData(x: 1, barRods: [
@@ -1253,12 +1325,12 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.amber),
+                  color: Colors.indigo),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 6].botrytis.toString()),
                   width: 5,
-                  color: Colors.indigo),
+                  color: Colors.purple),
             ]),
             BarChartGroupData(x: 2, barRods: [
               BarChartRodData(
@@ -1266,12 +1338,12 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.amber),
+                  color: Colors.indigo),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 5].botrytis.toString()),
                   width: 5,
-                  color: Colors.indigo),
+                  color: Colors.purple),
             ]),
             BarChartGroupData(x: 3, barRods: [
               BarChartRodData(
@@ -1279,12 +1351,12 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.amber),
+                  color: Colors.indigo),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 4].botrytis.toString()),
                   width: 5,
-                  color: Colors.indigo),
+                  color: Colors.purple),
             ]),
             BarChartGroupData(x: 4, barRods: [
               BarChartRodData(
@@ -1292,12 +1364,12 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.amber),
+                  color: Colors.indigo),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 3].botrytis.toString()),
                   width: 5,
-                  color: Colors.indigo),
+                  color: Colors.purple),
             ]),
             BarChartGroupData(x: 5, barRods: [
               BarChartRodData(
@@ -1305,12 +1377,12 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.amber),
+                  color: Colors.indigo),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 2].botrytis.toString()),
                   width: 5,
-                  color: Colors.indigo),
+                  color: Colors.purple),
             ]),
             BarChartGroupData(x: 6, barRods: [
               BarChartRodData(
@@ -1318,12 +1390,12 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.amber),
+                  color: Colors.indigo),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 1].botrytis.toString()),
                   width: 5,
-                  color: Colors.indigo),
+                  color: Colors.purple),
             ]),
             BarChartGroupData(x: 7, barRods: [
               BarChartRodData(
@@ -1331,12 +1403,12 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.amber),
+                  color: Colors.indigo),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 0].botrytis.toString()),
                   width: 5,
-                  color: Colors.indigo),
+                  color: Colors.purple),
             ]),
           ],
           titlesData: FlTitlesData(
