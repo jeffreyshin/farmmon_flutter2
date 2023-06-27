@@ -887,7 +887,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
               Text(
                 '■',
                 style: TextStyle(
-                  color: Colors.indigo,
+                  color: Colors.redAccent,
                 ),
               ),
               SizedBox(width: 10),
@@ -895,7 +895,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
               Text(
                 '■',
                 style: TextStyle(
-                  color: Colors.purple,
+                  color: Colors.blueAccent,
                 ),
               ),
             ],
@@ -1325,12 +1325,12 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.indigo),
+                  color: Colors.red),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 6].botrytis.toString()),
                   width: 5,
-                  color: Colors.purple),
+                  color: Colors.blueAccent),
             ]),
             BarChartGroupData(x: 2, barRods: [
               BarChartRodData(
@@ -1338,12 +1338,12 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.indigo),
+                  color: Colors.redAccent),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 5].botrytis.toString()),
                   width: 5,
-                  color: Colors.purple),
+                  color: Colors.blueAccent),
             ]),
             BarChartGroupData(x: 3, barRods: [
               BarChartRodData(
@@ -1351,12 +1351,12 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.indigo),
+                  color: Colors.redAccent),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 4].botrytis.toString()),
                   width: 5,
-                  color: Colors.purple),
+                  color: Colors.blueAccent),
             ]),
             BarChartGroupData(x: 4, barRods: [
               BarChartRodData(
@@ -1364,12 +1364,12 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.indigo),
+                  color: Colors.redAccent),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 3].botrytis.toString()),
                   width: 5,
-                  color: Colors.purple),
+                  color: Colors.blueAccent),
             ]),
             BarChartGroupData(x: 5, barRods: [
               BarChartRodData(
@@ -1377,12 +1377,12 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.indigo),
+                  color: Colors.redAccent),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 2].botrytis.toString()),
                   width: 5,
-                  color: Colors.purple),
+                  color: Colors.blueAccent),
             ]),
             BarChartGroupData(x: 6, barRods: [
               BarChartRodData(
@@ -1390,12 +1390,12 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.indigo),
+                  color: Colors.redAccent),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 1].botrytis.toString()),
                   width: 5,
-                  color: Colors.purple),
+                  color: Colors.blueAccent),
             ]),
             BarChartGroupData(x: 7, barRods: [
               BarChartRodData(
@@ -1403,12 +1403,12 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.indigo),
+                  color: Colors.redAccent),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 0].botrytis.toString()),
                   width: 5,
-                  color: Colors.purple),
+                  color: Colors.blueAccent),
             ]),
           ],
           titlesData: FlTitlesData(
