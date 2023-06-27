@@ -1325,7 +1325,7 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.red),
+                  color: Colors.redAccent),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 6].botrytis.toString()),
