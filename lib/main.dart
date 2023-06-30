@@ -734,7 +734,7 @@ class _MyHomePageState extends State<MyHomePage> {
         page = Placeholder();
         break;
       case 2:
-        page = Placeholder();
+        page = Placeholder(); //FavoritesPage();
         break;
       case 3:
         page = MyLineChartPage();
@@ -742,7 +742,9 @@ class _MyHomePageState extends State<MyHomePage> {
       case 4:
         page = MySetting();
         break;
-
+      case 5:
+        page = LicensePage();
+        break;
       default:
         throw UnimplementedError('no widget for $selectedIndex');
     }
@@ -776,6 +778,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   NavigationRailDestination(
                     icon: Icon(Icons.settings),
                     label: Text('설정'),
+                  ),
+                  NavigationRailDestination(
+                    icon: Icon(Icons.fact_check_outlined),
+                    label: Text('라이선스'),
                   ),
                 ],
                 selectedIndex: selectedIndex,
@@ -1188,24 +1194,26 @@ class FavoritesPage extends StatelessWidget {
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
 
-    if (appState.favorites.isEmpty) {
-      return Center(
-        child: Text('No favorites yet.'),
-      );
-    }
+    // if (appState.favorites.isEmpty) {
+    //   return Center(
+    //     child: Text('No favorites yet.'),
+    //   );
+    // }
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (_) => LicensePage()));
 
     return ListView(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(20),
-          child: Text('You have '
-              '${appState.favorites.length} favorites:'),
-        ),
-        for (int i = 1; i <= 5; i++) // var pair in appState.favorites
-          ListTile(
-            leading: Icon(Icons.favorite),
-            title: Text('공주농가$i'), // ${pair.asLowerCase}
-          ),
+        // Padding(
+        //   padding: const EdgeInsets.all(20),
+        //   child: Text('You have '
+        //       '${appState.favorites.length} favorites:'),
+        // ),
+        // for (int i = 1; i <= 5; i++) // var pair in appState.favorites
+        //   ListTile(
+        //     leading: Icon(Icons.favorite),
+        //     title: Text('공주농가$i'), // ${pair.asLowerCase}
+        //   ),
       ],
     );
   }
