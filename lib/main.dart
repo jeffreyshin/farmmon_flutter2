@@ -882,29 +882,30 @@ class _StrawberryPageState extends State<StrawberryPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Tooltip(message: """* 병 예측 낮음은 약제 살포 안함
-* 병 예측 다소높음은 약제살포
-  (1주일 전 약제살포했으면 약제살포 안함)
-* 병 예측 위험은 약제살포
-  (5일이내 약제살포했으면 약제살포 안함)""", child: Text('탄저병:')),
+              Text('탄저병:'),
               Text(
                 '■',
                 style: TextStyle(
-                  color: Colors.brown,
+                  color: Colors.pink,
                 ),
               ),
               SizedBox(width: 10),
-              Tooltip(message: """* 병 예측 낮음은 약제 살포 안함
-* 병 예측 다소높음은 약제살포
-  (1주일 전 약제살포했으면 약제살포 안함)
-* 병 예측 위험은 약제살포
-  (5일이내 약제살포했으면 약제살포 안함)""", child: Text('잿빛곰팡이병:')),
+              Text('잿빛곰팡이병:'),
               Text(
                 '■',
                 style: TextStyle(
                   color: Colors.indigo,
                 ),
               ),
+              SizedBox(width: 10),
+              Tooltip(message: """탄저병: 3~11월 발생
+잿빛곰팡이병: 9월~이듬해5월 발생
+
+* 병 예측 낮음은 약제 살포 안함
+* 병 예측 다소높음은 약제살포
+  (1주일 전 약제살포했으면 약제살포 안함)
+* 병 예측 위험은 약제살포
+  (5일 이내 약제살포했으면 약제살포 안함)""", child: Icon(Icons.help_outline)),
             ],
           ),
           Expanded(
@@ -1332,7 +1333,7 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.brown),
+                  color: Colors.pink),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 6].botrytis.toString()),
@@ -1345,7 +1346,7 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.brown),
+                  color: Colors.pink),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 5].botrytis.toString()),
@@ -1358,7 +1359,7 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.brown),
+                  color: Colors.pink),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 4].botrytis.toString()),
@@ -1371,7 +1372,7 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.brown),
+                  color: Colors.pink),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 3].botrytis.toString()),
@@ -1384,7 +1385,7 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.brown),
+                  color: Colors.pink),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 2].botrytis.toString()),
@@ -1397,7 +1398,7 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.brown),
+                  color: Colors.pink),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 1].botrytis.toString()),
@@ -1410,7 +1411,7 @@ class _MyBarChartState extends State<MyBarChart> {
                       .anthracnose
                       .toString()),
                   width: 5,
-                  color: Colors.brown),
+                  color: Colors.pink),
               BarChartRodData(
                   toY: double.parse(
                       pinfLists[ppfarm][appState.pp + 0].botrytis.toString()),
