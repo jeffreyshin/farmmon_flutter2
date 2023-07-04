@@ -33,8 +33,8 @@ For help getting started with Flutter development, view the
 samples, guidance on mobile development, and a full API reference.
 
 <img src="https://github.com/jeffreyshin/farmmon_flutter/assets/6800894/ee0a282a-695d-4eff-86d0-3598ab156b3c.jpg"  width="300" height="600">
-<img src="https://github.com/jeffreyshin/farmmon_flutter/assets/6800894/255d3d6d-474c-460b-93e6-5282f58791da.jpg"  width="300" height="600">
+<img src="https://github.com/jeffreyshin/farmmon_flutter/assets/6800894/876ffc6f-431b-4ed0-9eab-762326789174.jpg"  width="300" height="600">
 <img src="https://github.com/jeffreyshin/farmmon_flutter/assets/6800894/c53b9030-3ff8-4add-9c8d-a05234117d5f.jpg"  width="300" height="600">
 
-                  
+
 
