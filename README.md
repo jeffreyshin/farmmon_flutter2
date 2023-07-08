@@ -14,6 +14,9 @@
 beta test(23.6.23~) Bug Report:
 1. IOT포털 데이터가져오기 처음했을 때 실패: backend의 문제로 추정(python도 동일증상) 
 2. 네트워크 끊어졌을때 경고문구 표시
+3. 정시가 지났는데, IOT포탈에 그 시각 자료가 없는 경우(15:06까지 15시자료 미수신) 오류
+4. 다음주 병해충 발생 예측(기상청 단기예보 활용)
+5. 딸기흰가루병, 총채벌레 모델 추가(보고서 확인할 것)
 
  
 
@@ -30,9 +33,9 @@ For help getting started with Flutter development, view the
 [online documentation](https://docs.flutter.dev/), which offers tutorials,
 samples, guidance on mobile development, and a full API reference.
 
-<img src="https://github.com/jeffreyshin/farmmon_flutter/assets/6800894/e1f3cb5c-2a90-40a4-b9d6-f70769159edf.jpg"  width="300" height="600">
-<img src="https://github.com/jeffreyshin/farmmon_flutter/assets/6800894/255d3d6d-474c-460b-93e6-5282f58791da.jpg"  width="300" height="600">
+<img src="https://github.com/jeffreyshin/farmmon_flutter/assets/6800894/ee0a282a-695d-4eff-86d0-3598ab156b3c.jpg"  width="300" height="600">
+<img src="https://github.com/jeffreyshin/farmmon_flutter/assets/6800894/876ffc6f-431b-4ed0-9eab-762326789174.jpg"  width="300" height="600">
 <img src="https://github.com/jeffreyshin/farmmon_flutter/assets/6800894/c53b9030-3ff8-4add-9c8d-a05234117d5f.jpg"  width="300" height="600">
 
-                  
-                
+
+
