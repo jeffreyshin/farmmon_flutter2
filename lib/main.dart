@@ -13,8 +13,11 @@ import 'package:farmmon_flutter/presentation/resources/app_resources.dart';
 import 'package:farmmon_flutter/icons/custom_icons_icons.dart';
 import 'package:archive/archive_io.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:geolocator/geolocator.dart';
+import 'package:farmmon_flutter/my_location.dart';
+import 'package:farmmon_flutter/kma.dart';
 
-// import 'package:flutter/foundation.dart';
+import 'package:flutter/foundation.dart';
 // import 'package:flutter/services.dart';
 // import 'dart:ffi';
 // import 'package:flutter/cupertino.dart';
@@ -327,6 +330,40 @@ showToast(String message, Color colar) {
     toastLength: Toast.LENGTH_SHORT,
   );
 }
+
+//////////////////////////////////////////////////////////////
+
+Future<void> getMyCurrentLocation() async {
+  try {
+    // LocationPermission permission = await Geolocator.requestPermission();
+    Position position = await Geolocator.getCurrentPosition(
+        desiredAccuracy: LocationAccuracy.high);
+    var long = position.longitude;
+    var lat = position.latitude;
+    if (Platform.isAndroid) showToast("location: $long, $lat", Colors.red);
+    print('My current location: $long, $lat');
+  } catch (e) {
+    print('네트워크 연결을 확인해주세요');
+  }
+}
+
+void addMyLicense() {
+  //add License
+  LicenseRegistry.addLicense(() async* {
+    yield const LicenseEntryWithLineBreaks(<String>['farmmon_flutter'], '''
+The BSD 2-Clause License
+
+Copyright (c) 2023, Shin Jae-hoon
+All rights reserved.
+
+Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
+Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
+Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+''');
+  });
+}
 /////////////////////////////////////////////////////////////
 
 class MyHttpOverrides extends HttpOverrides {
@@ -340,6 +377,8 @@ class MyHttpOverrides extends HttpOverrides {
 
 void main() async {
   HttpOverrides.global = MyHttpOverrides();
+  MyLocation home;
+  getMyCurrentLocation();
   runApp(MyApp());
 }
 
@@ -706,7 +745,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     // var appState = context.watch<MyAppState>();
-
+    addMyLicense();
     prefsLoad().then((value) async {
       await storage.readJsonAsString().then((value) {
         setState(() {
@@ -1019,6 +1058,8 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   if (Platform.isAndroid) {
                     showToast("개발중입니다", Colors.greenAccent);
                   }
+                  getMyCurrentLocation();
+                  KMA kma;
                   // await apiRequestPEST().then((value) {
                   if (mounted) {
                     setState(() {

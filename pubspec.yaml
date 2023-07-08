@@ -26,6 +26,7 @@ dependencies:
   archive: ^3.3.7
   fluttertoast: ^8.2.2
   foundation: ^0.0.5
+  geolocator: ^9.0.2
 
 dev_dependencies:
   flutter_test:
