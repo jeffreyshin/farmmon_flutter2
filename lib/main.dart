@@ -594,7 +594,7 @@ class MyAppState extends ChangeNotifier {
     var encoder = ZipFileEncoder();
     final dir = await getApplicationDocumentsDirectory();
     // Directory dir = Directory('/storage/emulated/0/Documents ');
-    var test = sensorLists[ppfarm][0].temperature.toString();
+    var test = sensorLists[ppfarm][0].customDt.toString();
     print("apiPEST() - ppfarm: $ppfarm  - test: $test");
     String formatTime = '';
     var k = 0;
@@ -616,7 +616,7 @@ class MyAppState extends ChangeNotifier {
       var v4 = sensorLists[ppfarm][j].leafwet.toString();
       weatherString = "$weatherString$v1,$v2,$v3,$v4\n";
     }
-    // print(weatherString);
+    print(weatherString);
     await (File('${dir.path}/weather.csv').writeAsString(weatherString))
         .then((value) {
       encoder.create('${dir.path}/input.zip');
@@ -647,10 +647,11 @@ class MyAppState extends ChangeNotifier {
       );
 
       var r = response.body;
-
+      // print(r);
       r = r.replaceAll("\\", "");
+      // print(r);
       var i = r.indexOf('output');
-      var ii = r.indexOf("}}");
+      var ii = r.indexOf("}]");
       if (ii < 0) {
         if (Platform.isAndroid) {
           showToast("기상데이터는 12시부터 시작해야합니다", Colors.redAccent);
@@ -672,10 +673,12 @@ class MyAppState extends ChangeNotifier {
       var r2 = response2.body;
       r = r2.replaceAll("\\", "");
       var i2 = r.indexOf('output');
-      var ii2 = r.indexOf("}}");
+      var ii2 = r.indexOf("}]");
       var rr2 = r.substring(i2 + 10, ii2 + 2);
       final outputB = json.decode(rr2);
 
+      // print(rr);
+      // print(rr2);
       // print(output.runtimeType);
 
 /////////////////////////////////////////////////////
@@ -684,16 +687,15 @@ class MyAppState extends ChangeNotifier {
       pinfLists[ppfarm] = pinfList;
       int j = someDAYS - 1;
       for (int i = 0; i < someDAYS - 1; i++) {
-        var customDT = outputA['$j']['date'].toString();
+        var customDT = outputA[j]['date'].toString();
 
         PINF npinf = PINF(
           customDt: customDT,
           anthracnose:
-              double.parse((outputA['$j']['PINF'] * 100).toStringAsFixed(1)),
-          botrytis:
-              double.parse((outputB['$j']['PINF'] * 100).toStringAsFixed(1)),
+              double.parse((outputA[j]['PINF'] * 100).toStringAsFixed(1)),
+          botrytis: double.parse((outputB[j]['PINF'] * 100).toStringAsFixed(1)),
           xlabel: DateFormat('MM/dd').format(
-            DateTime.parse(outputA['$j']['date']),
+            DateTime.parse(outputA[j]['date']),
           ),
         );
         j--;
