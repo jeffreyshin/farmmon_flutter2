@@ -647,9 +647,9 @@ class MyAppState extends ChangeNotifier {
       );
 
       var r = response.body;
-      // print(r);
+      print(r);
       r = r.replaceAll("\\", "");
-      // print(r);
+      print(r);
       var i = r.indexOf('output');
       var ii = r.indexOf("}]");
       if (ii < 0) {
