@@ -2237,7 +2237,7 @@ class _MySettingState extends State<MySetting> {
                 SizedBox(height: 20),
                 Text("""Contributors
 앱 프로그램 제작_농촌진흥청 신재훈
-병해충예측모델개발_충청남도농업기술원 남명현(탄저병, 잿빛곰팡이병)
+병해충모델_충청남도농업기술원 남명현(탄저병, 잿빛곰팡이병)
 데이터저장소_농촌진흥청 IOT포털 서비스
 병해충예측API서비스_서울대학교 작물생태정보연구실
 일러스트_스마트팜 농부 rawpixel.com, 출처 Freepik""",
