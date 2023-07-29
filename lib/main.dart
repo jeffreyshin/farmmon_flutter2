@@ -263,7 +263,7 @@ class AppStorage {
     // Directory dir = Directory('/storage/emulated/0/Documents');
     // print('${dir.path}/sensor.json');
     print('writeJsonAsString() - writing json file: $file');
-    if (Platform.isAndroid) showToast("파일을 저장했습니다", Colors.blueAccent);
+    if (Platform.isAndroid) showToast("데이터를 저장합니다", Colors.blueAccent);
     // notifyListeners();
     return File('${dir.path}/$file').writeAsString(data ?? '');
   }
@@ -466,12 +466,25 @@ class MyAppState extends ChangeNotifier {
   }
 
   void removeData() async {
-    final today = DateTime.now();
-    final somedaysago = today.subtract(Duration(days: someDAYS));
-    lastDatetime = DateFormat('yyyyMMdd HH00').format(somedaysago);
-    print('prefs cleared: only $farmNo farm left');
+    if (ppfarm < 2) {
+      sensorList = List<Sensor>.filled(wMAXX, sensorBlank, growable: true);
+      sensorLists[ppfarm] = sensorList;
+      String jsonString = jsonEncode(sensorList);
+      await storage.writeJsonAsString('sensor$ppfarm.json', jsonString);
+
+      pinfList = List<PINF>.filled(50, pinfBlank, growable: true);
+      pinfLists[ppfarm] = pinfList;
+      jsonString = jsonEncode(pinfList);
+      await storage.writeJsonAsString('pinf$ppfarm.json', jsonString);
+    }
+    print("$ppfarm 데이터만 삭제");
 
     if (ppfarm >= 2) {
+      final today = DateTime.now();
+      final somedaysago = today.subtract(Duration(days: someDAYS));
+      lastDatetime = DateFormat('yyyyMMdd HH00').format(somedaysago);
+      print('prefs cleared: only $farmNo farm left');
+
       sensorLists.removeAt(ppfarm);
       String jsonString = jsonEncode(sensorList);
       await storage.writeJsonAsString('sensor$ppfarm.json', jsonString);
@@ -547,10 +560,11 @@ class MyAppState extends ChangeNotifier {
         var jsonObj = jsonDecode(response.body);
         if (jsonObj['datas'].length <= 0) {
           if (Platform.isAndroid) {
-            showToast("새로 가져올 데이터가 없습니다", Colors.blueAccent);
+            showToast("일부 데이터가 빠졌습니다", Colors.blueAccent);
           }
-          print('새로 가져올 데이터가 없습니다');
-          return 0;
+          print('일부 데이터가 빠졌습니다');
+          continue;
+          // return 0;
         }
         var customDT = jsonObj['datas'][0]['custom_dt'].toString();
         customDT = DateFormat('yyyyMMdd HH00').format(DateTime.parse(customDT));
@@ -602,7 +616,11 @@ class MyAppState extends ChangeNotifier {
       var v1 = sensorLists[ppfarm][k].customDt.toString();
       var d1 = DateTime.parse(v1);
       formatTime = DateFormat('HH').format(d1);
-      if (formatTime == '12') break;
+      if (formatTime == '12') {
+        print("12H found!!");
+        print(sensorLists[ppfarm][k].customDt.toString());
+        break;
+      }
     }
     if (formatTime != '12') {
       print("12시를 못찾았습니다");
@@ -616,7 +634,7 @@ class MyAppState extends ChangeNotifier {
       var v4 = sensorLists[ppfarm][j].leafwet.toString();
       weatherString = "$weatherString$v1,$v2,$v3,$v4\n";
     }
-    print(weatherString);
+    // print(weatherString);
     await (File('${dir.path}/weather.csv').writeAsString(weatherString))
         .then((value) {
       encoder.create('${dir.path}/input.zip');
@@ -647,9 +665,9 @@ class MyAppState extends ChangeNotifier {
       );
 
       var r = response.body;
-      print(r);
+      // print(r);
       r = r.replaceAll("\\", "");
-      print(r);
+      // print(r);
       var i = r.indexOf('output');
       var ii = r.indexOf("}]");
       if (ii < 0) {
@@ -701,7 +719,7 @@ class MyAppState extends ChangeNotifier {
         j--;
         // pinfList.insert(i, npinf);
         pinfLists[ppfarm].insert(i, npinf);
-        print("apiPEST() - pinfList update, ppfarm: $ppfarm");
+        // print("apiPEST() - pinfList update, ppfarm: $ppfarm");
 
         notifyListeners();
         // print('$j: $custom_dt');
@@ -776,10 +794,10 @@ class _MyHomePageState extends State<MyHomePage> {
         page = StrawberryPage();
         break;
       case 1:
-        page = Placeholder();
+        page = FavoritesPage(); //Placeholder();
         break;
       case 2:
-        page = Placeholder(); //FavoritesPage();
+        page = FavoritesPage(); //Placeholder();
         break;
       case 3:
         page = MyLineChartPage();
@@ -787,9 +805,9 @@ class _MyHomePageState extends State<MyHomePage> {
       case 4:
         page = MySetting();
         break;
-      case 5:
-        page = LicensePage();
-        break;
+      // case 5:
+      //   page = LicensePage();
+      //   break;
       default:
         throw UnimplementedError('no widget for $selectedIndex');
     }
@@ -824,10 +842,10 @@ class _MyHomePageState extends State<MyHomePage> {
                     icon: Icon(Icons.settings),
                     label: Text('설정'),
                   ),
-                  NavigationRailDestination(
-                    icon: Icon(Icons.fact_check_outlined),
-                    label: Text('라이선스'),
-                  ),
+                  // NavigationRailDestination(
+                  //   icon: Icon(Icons.fact_check_outlined),
+                  //   label: Text('라이선스'),
+                  // ),
                 ],
                 selectedIndex: selectedIndex,
                 onDestinationSelected: (value) {
@@ -1033,10 +1051,10 @@ class _StrawberryPageState extends State<StrawberryPage> {
                           jsonString = jsonEncode(pinfLists[ppfarm]);
                           storage.writeJsonAsString(
                               'pinf$ppfarm.json', jsonString);
-                          if (Platform.isAndroid) {
-                            showToast("데이터를 저장합니다", Colors.blueAccent);
-                          }
-                          print("데이터를 저장합니다");
+                          // if (Platform.isAndroid) {
+                          //   showToast("데이터를 저장합니다", Colors.blueAccent);
+                          // }
+                          // print("데이터를 저장합니다");
 
                           lastDatetime =
                               sensorLists[ppfarm][0].customDt.toString();
@@ -1246,11 +1264,15 @@ class FavoritesPage extends StatelessWidget {
     //     child: Text('No favorites yet.'),
     //   );
     // }
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (_) => LicensePage()));
+    // Navigator.of(context)
+    //     .push(MaterialPageRoute(builder: (_) => LicensePage()));
 
     return ListView(
       children: [
+        Padding(
+          padding: const EdgeInsets.all(20),
+          child: Center(child: Text('\n\n준비중입니다')),
+        ),
         // Padding(
         //   padding: const EdgeInsets.all(20),
         //   child: Text('You have '
@@ -2161,6 +2183,15 @@ class _MySettingState extends State<MySetting> {
                     Center(
                       child: ElevatedButton(
                         onPressed: () async {
+                          if (ppfarm < 2) {
+                            if (mounted) {
+                              setState(() {
+                                // _printLatestValue();
+                                appState.removeData();
+                                appState.getNext();
+                              });
+                            }
+                          }
                           if (ppfarm >= 2) {
                             if (mounted) {
                               setState(() {
@@ -2205,15 +2236,30 @@ class _MySettingState extends State<MySetting> {
                 ),
                 SizedBox(height: 20),
                 Text("""Contributors
-앱개발_농촌진흥청 신재훈
-모델러_충청남도농업기술원 남명현(탄저병, 잿빛곰팡이병)
-외부API_농촌진흥청 IOT포털, 서울대학교 병해충API
+앱 프로그램 제작_농촌진흥청 신재훈
+병해충예측모델개발_충청남도농업기술원 남명현(탄저병, 잿빛곰팡이병)
+데이터저장소_농촌진흥청 IOT포털 서비스
+병해충예측API서비스_서울대학교 작물생태정보연구실
 일러스트_스마트팜 농부 rawpixel.com, 출처 Freepik""",
                     style: TextStyle(
                       color: Colors.grey,
                       fontWeight: FontWeight.bold,
                       fontSize: 10,
                     )),
+                SizedBox(height: 10),
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text("License:"),
+                    IconButton(
+                      icon: Icon(Icons.fact_check_outlined),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                            MaterialPageRoute(builder: (_) => LicensePage()));
+                      },
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
