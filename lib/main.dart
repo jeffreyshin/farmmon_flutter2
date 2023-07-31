@@ -511,6 +511,29 @@ class MyAppState extends ChangeNotifier {
   }
 
   Future apiRequestIOT() async {
+    var urlanthracnose = 'http://147.46.206.95:7897/Anthracnose';
+    try {
+      http.Response response3 = await http.post(
+        Uri.parse(urlanthracnose),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          HttpHeaders.contentTypeHeader: 'application/json',
+        },
+        body: "",
+      );
+      print("==================");
+      print(response3.body.toString());
+    } catch (e) {
+      // if (Platform.isAndroid) {
+      //   showToast("모델호출 실패. 다시한번 시도해주세요", Colors.redAccent);
+      // }
+      print("API서버 깨우기");
+      print(
+          e.toString()); // checking an error at the first api call, 2023-07-31
+    }
+
+    // #########################################3
+
     var urliot = 'http://iot.rda.go.kr/api';
     var apikey = farmList[ppfarm]['serviceKey'];
 
@@ -560,9 +583,9 @@ class MyAppState extends ChangeNotifier {
         var jsonObj = jsonDecode(response.body);
         if (jsonObj['datas'].length <= 0) {
           if (Platform.isAndroid) {
-            showToast("일부 데이터가 빠졌습니다", Colors.blueAccent);
+            showToast("일부 데이터를 가져오지 못했습니다", Colors.blueAccent);
           }
-          print('일부 데이터가 빠졌습니다');
+          print('일부 데이터를 가져오지 못했습니다');
           continue;
           // return 0;
         }
@@ -655,83 +678,87 @@ class MyAppState extends ChangeNotifier {
     // http request
     var urlanthracnose = 'http://147.46.206.95:7897/Anthracnose';
     var urlbotrytis = 'http://147.46.206.95:7898/Botrytis';
-    try {
-      http.Response response = await http.post(
-        Uri.parse(urlanthracnose),
-        headers: <String, String>{
-          'Content-Type': 'application/json',
-        },
-        body: body,
-      );
+    // try {
 
-      var r = response.body;
-      // print(r);
-      r = r.replaceAll("\\", "");
-      // print(r);
-      var i = r.indexOf('output');
-      var ii = r.indexOf("}]");
-      if (ii < 0) {
-        if (Platform.isAndroid) {
-          showToast("기상데이터는 12시부터 시작해야합니다", Colors.redAccent);
-        }
-        print("기상데이터는 12시부터 시작해야합니다");
-        return 0;
+    http.Response response = await http.post(
+      Uri.parse(urlanthracnose),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: body,
+    );
+
+    var r = response.body;
+    // print(r);
+    r = r.replaceAll("\\", "");
+    // print(r);
+    var i = r.indexOf('output');
+    var ii = r.indexOf("}]");
+    if (ii < 0) {
+      if (Platform.isAndroid) {
+        showToast("기상데이터는 12시부터 시작해야합니다", Colors.redAccent);
       }
-      var rr = r.substring(i + 10, ii + 2);
-      final outputA = json.decode(rr);
+      print("기상데이터는 12시부터 시작해야합니다");
+      return 0;
+    }
+    var rr = r.substring(i + 10, ii + 2);
+    final outputA = json.decode(rr);
 
-      http.Response response2 = await http.post(
-        Uri.parse(urlbotrytis),
-        headers: <String, String>{
-          'Content-Type': 'application/json',
-        },
-        body: body,
-      );
+    http.Response response2 = await http.post(
+      Uri.parse(urlbotrytis),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+      },
+      body: body,
+    );
 
-      var r2 = response2.body;
-      r = r2.replaceAll("\\", "");
-      var i2 = r.indexOf('output');
-      var ii2 = r.indexOf("}]");
-      var rr2 = r.substring(i2 + 10, ii2 + 2);
-      final outputB = json.decode(rr2);
+    var r2 = response2.body;
+    r = r2.replaceAll("\\", "");
+    var i2 = r.indexOf('output');
+    var ii2 = r.indexOf("}]");
+    var rr2 = r.substring(i2 + 10, ii2 + 2);
+    final outputB = json.decode(rr2);
 
-      // print(rr);
-      // print(rr2);
-      // print(output.runtimeType);
+    // print(rr);
+    // print(rr2);
+    // print(output.runtimeType);
 
 /////////////////////////////////////////////////////
-      //pinf update
-      pinfList = List<PINF>.filled(50, pinfBlank, growable: true);
-      pinfLists[ppfarm] = pinfList;
-      int j = someDAYS - 1;
-      for (int i = 0; i < someDAYS - 1; i++) {
-        var customDT = outputA[j]['date'].toString();
+    //pinf update
+    pinfList = List<PINF>.filled(50, pinfBlank, growable: true);
+    pinfLists[ppfarm] = pinfList;
+    int j = someDAYS - 1;
+    for (int i = 0; i < someDAYS - 1; i++) {
+      var customDT = outputA[j]['date'].toString();
 
-        PINF npinf = PINF(
-          customDt: customDT,
-          anthracnose:
-              double.parse((outputA[j]['PINF'] * 100).toStringAsFixed(1)),
-          botrytis: double.parse((outputB[j]['PINF'] * 100).toStringAsFixed(1)),
-          xlabel: DateFormat('MM/dd').format(
-            DateTime.parse(outputA[j]['date']),
-          ),
-        );
-        j--;
-        // pinfList.insert(i, npinf);
-        pinfLists[ppfarm].insert(i, npinf);
-        // print("apiPEST() - pinfList update, ppfarm: $ppfarm");
+      PINF npinf = PINF(
+        customDt: customDT,
+        anthracnose:
+            double.parse((outputA[j]['PINF'] * 100).toStringAsFixed(1)),
+        botrytis: double.parse((outputB[j]['PINF'] * 100).toStringAsFixed(1)),
+        xlabel: DateFormat('MM/dd').format(
+          DateTime.parse(outputA[j]['date']),
+        ),
+      );
+      j--;
+      // pinfList.insert(i, npinf);
+      pinfLists[ppfarm].insert(i, npinf);
+      // print("apiPEST() - pinfList update, ppfarm: $ppfarm");
 
-        notifyListeners();
-        // print('$j: $custom_dt');
-      }
-    } catch (e) {
-      if (Platform.isAndroid) {
-        showToast("모델호출 실패. 다시한번 시도해주세요", Colors.redAccent);
-      }
-      print("모델호출 실패. 다시한번 시도해주세요");
       notifyListeners();
-      return -1;
+      // print('$j: $custom_dt');
     }
+    // } catch (e) {
+    //   if (Platform.isAndroid) {
+    //     showToast("모델호출 실패. 다시한번 시도해주세요", Colors.redAccent);
+    //   }
+    //   print("모델호출 실패. 다시한번 시도해주세요");
+    //   print(
+    //       e.toString()); // checking an error at the first api call, 2023-07-31
+    //   notifyListeners();
+    //   return -1;
+    // }
 
     return 0;
   }
