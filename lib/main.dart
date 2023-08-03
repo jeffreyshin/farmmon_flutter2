@@ -303,9 +303,13 @@ Future prefsLoad() async {
   // farmList[0]['serviceKey'] =
   //     (prefs.getString('serviceKey0') ?? farmList[0]['serviceKey']);
 
+  farm1['farmName'] = (prefs.getString('farmName0') ?? '기본농장');
+  farm2['farmName'] = (prefs.getString('farmName1') ?? '농장2');
+
   farmList.clear();
   farmList.add(farm1);
   farmList.add(farm2);
+
   for (int i = 2; i < farmNo; i++) {
     var farm3 = {};
     farm3['farmName'] =
@@ -557,6 +561,8 @@ class MyAppState extends ChangeNotifier {
     var deltaT12 = deltaT % 12;
     deltaT = 24;
     if (deltaT < 12) deltaT = deltaT + deltaT12;
+    // now = now.subtract(Duration(hours: deltaT + deltaT12));
+
     try {
       // print('before for loop');
       for (int i = 0; i < difference; i++) {
@@ -634,8 +640,10 @@ class MyAppState extends ChangeNotifier {
     var test = sensorLists[ppfarm][0].customDt.toString();
     print("apiPEST() - ppfarm: $ppfarm  - test: $test");
     String formatTime = '';
+    var kk = sensorLists[ppfarm].length;
+    kk = 380;
     var k = 0;
-    for (k = 0; k < wMAXX; k++) {
+    for (k = kk - 1; k >= 0; k--) {
       var v1 = sensorLists[ppfarm][k].customDt.toString();
       var d1 = DateTime.parse(v1);
       formatTime = DateFormat('HH').format(d1);
@@ -645,12 +653,14 @@ class MyAppState extends ChangeNotifier {
         break;
       }
     }
+
     if (formatTime != '12') {
       print("12시를 못찾았습니다");
       return -1;
     }
+
     var weatherString = 'datetime,temperature,humidity,leafwet\n';
-    for (int j = (k + (someDAYS - 1) * 24); j >= 0; j--) {
+    for (int j = k; j >= 0; j--) {
       var v1 = sensorLists[ppfarm][j].customDt.toString();
       var v2 = sensorLists[ppfarm][j].temperature.toString();
       var v3 = sensorLists[ppfarm][j].humidity.toString();
@@ -690,9 +700,9 @@ class MyAppState extends ChangeNotifier {
     );
 
     var r = response.body;
-    // print(r);
+    print(r);
     r = r.replaceAll("\\", "");
-    // print(r);
+    print(r);
     var i = r.indexOf('output');
     var ii = r.indexOf("}]");
     if (ii < 0) {
@@ -729,7 +739,7 @@ class MyAppState extends ChangeNotifier {
     pinfList = List<PINF>.filled(50, pinfBlank, growable: true);
     pinfLists[ppfarm] = pinfList;
     int j = someDAYS - 1;
-    for (int i = 0; i < someDAYS - 1; i++) {
+    for (int i = 0; i < someDAYS; i++) {
       var customDT = outputA[j]['date'].toString();
 
       PINF npinf = PINF(
@@ -744,6 +754,7 @@ class MyAppState extends ChangeNotifier {
       j--;
       // pinfList.insert(i, npinf);
       pinfLists[ppfarm].insert(i, npinf);
+      print(customDT.toString());
       // print("apiPEST() - pinfList update, ppfarm: $ppfarm");
 
       notifyListeners();
@@ -2277,7 +2288,7 @@ class _MySettingState extends State<MySetting> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text("License:"),
+                    Text("v0.2.2   License:"),
                     IconButton(
                       icon: Icon(Icons.fact_check_outlined),
                       onPressed: () {
