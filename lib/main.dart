@@ -16,7 +16,7 @@ import 'package:farmmon_flutter/zoomable_chart.dart';
 import 'package:farmmon_flutter/presentation/resources/app_resources.dart';
 import 'package:farmmon_flutter/icons/custom_icons_icons.dart';
 import 'package:archive/archive_io.dart';
-import 'package:fluttertoast/fluttertoast.dart';
+// import 'package:fluttertoast/fluttertoast.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:farmmon_flutter/my_location.dart';
 import 'package:farmmon_flutter/kma.dart';
@@ -224,7 +224,7 @@ class AppStorage {
       }
     } catch (e) {
       // If encountering an error, return 0
-      if (Platform.isAndroid) showToast("읽기오류입니다", Colors.red);
+      // if (Platform.isAndroid) showToast(context, "읽기오류입니다", Colors.red);
       print("읽기오류입니다");
       return 0;
     }
@@ -263,7 +263,7 @@ class AppStorage {
     // Directory dir = Directory('/storage/emulated/0/Documents');
     // print('${dir.path}/sensor.json');
     print('writeJsonAsString() - writing json file: $file');
-    if (Platform.isAndroid) showToast("데이터를 저장합니다", Colors.blueAccent);
+    // if (Platform.isAndroid) showToast("데이터를 저장합니다", Colors.blueAccent);
     // notifyListeners();
     return File('${dir.path}/$file').writeAsString(data ?? '');
   }
@@ -328,15 +328,38 @@ Future prefsLoad() async {
 
 /////////////////////////////////////////////////////////////
 
-showToast(String message, Color colar) {
-  return Fluttertoast.showToast(
-    msg: message,
-    gravity: ToastGravity.BOTTOM,
-    backgroundColor: colar,
-    fontSize: 20,
-    textColor: Colors.white,
-    toastLength: Toast.LENGTH_SHORT,
+showToast(BuildContext context, String message, Color color) {
+  ScaffoldMessenger.of(context).removeCurrentSnackBar();
+  return ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(
+      content: Text(message),
+      backgroundColor: color, //Colors.teal,
+      margin: EdgeInsets.fromLTRB(40, 0, 50, 40),
+      duration: Duration(milliseconds: 1000),
+      behavior: SnackBarBehavior.floating,
+      // action: SnackBarAction(
+      //   label: 'Undo',
+      //   textColor: Colors.white,
+      //   onPressed: () => print('Pressed'),
+      // ),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: color,
+          // width: 2,
+        ),
+      ),
+    ),
   );
+  // return Fluttertoast.showToast(
+  //   msg: message,
+  //   gravity: ToastGravity.BOTTOM,
+  //   backgroundColor: colar,
+  //   fontSize: 20,
+  //   textColor: Colors.white,
+  //   // toastLength: Toast.LENGTH_SHORT,
+  //   // toastLength: Duration(seconds: 3),
+  // );
 }
 
 //////////////////////////////////////////////////////////////
@@ -348,7 +371,7 @@ Future<void> getMyCurrentLocation() async {
         desiredAccuracy: LocationAccuracy.high);
     var long = position.longitude;
     var lat = position.latitude;
-    if (Platform.isAndroid) showToast("location: $long, $lat", Colors.red);
+    // if (Platform.isAndroid) showToast(context, "location: $long, $lat", Colors.red);
     print('My current location: $long, $lat');
   } catch (e) {
     print('네트워크 연결을 확인해주세요');
@@ -418,7 +441,7 @@ class MyAppState extends ChangeNotifier {
 
   var userMsg = '';
 
-  Future prefsSave() async {
+  Future prefsSave(BuildContext context) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setInt('farmNumber', farmNo);
     await prefs.setInt('myFarm', ppfarm);
@@ -432,7 +455,7 @@ class MyAppState extends ChangeNotifier {
     }
   }
 
-  Future prefsClear() async {
+  Future prefsClear(BuildContext context) async {
     farmList[0] = farm1;
     farmList[1] = farm2;
 
@@ -465,11 +488,11 @@ class MyAppState extends ChangeNotifier {
     await prefs.setInt('ppfarm', ppfarm);
     print('prefs cleared: only $farmNo farm left');
 
-    if (Platform.isAndroid) showToast("초기화 완료", Colors.blueAccent);
+    if (Platform.isAndroid) showToast(context, "초기화 완료", Colors.blueAccent);
     notifyListeners();
   }
 
-  void removeData() async {
+  void removeData(BuildContext context) async {
     if (ppfarm < 2) {
       sensorList = List<Sensor>.filled(wMAXX, sensorBlank, growable: true);
       sensorLists[ppfarm] = sensorList;
@@ -480,6 +503,10 @@ class MyAppState extends ChangeNotifier {
       pinfLists[ppfarm] = pinfList;
       jsonString = jsonEncode(pinfList);
       await storage.writeJsonAsString('pinf$ppfarm.json', jsonString);
+      if (Platform.isAndroid) {
+        showToast(context, "${ppfarm + 1}번째 농장 데이터만 삭제했습니다", Colors.blueAccent);
+      }
+      print("ppfarm ${ppfarm + 1} 농장 데이터만 삭제했습니다");
     }
     print("$ppfarm 데이터만 삭제");
 
@@ -500,6 +527,10 @@ class MyAppState extends ChangeNotifier {
       await storage.writeJsonAsString('pinf$ppfarm.json', jsonString);
       farmList.removeAt(ppfarm);
       print("$ppfarm 삭제");
+      if (Platform.isAndroid) {
+        showToast(context, "${ppfarm + 1}번째 농장을 삭제했습니다", Colors.blueAccent);
+      }
+      print("ppfarm ${ppfarm + 1} 농장을 삭제했습니다");
       ppfarm--;
       farmNo = farmNo - 1;
       SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -507,14 +538,10 @@ class MyAppState extends ChangeNotifier {
       await prefs.setInt('ppfarm', ppfarm);
     }
 
-    if (Platform.isAndroid) {
-      showToast("ppfarm ${ppfarm + 1}번 농장 데이터를 삭제했습니다", Colors.blueAccent);
-    }
-    print("ppfarm ${ppfarm + 1} 농장 데이터를 삭제했습니다");
     notifyListeners();
   }
 
-  Future apiRequestIOT() async {
+  Future apiRequestIOT(BuildContext context) async {
     var urlanthracnose = 'http://147.46.206.95:7897/Anthracnose';
     try {
       http.Response response3 = await http.post(
@@ -581,7 +608,7 @@ class MyAppState extends ChangeNotifier {
         statusCode = response.statusCode;
         if (response.statusCode != 200) {
           if (Platform.isAndroid) {
-            showToast("네트워크 상태를 확인해주세요", Colors.redAccent);
+            showToast(context, "네트워크 상태를 확인해주세요", Colors.redAccent);
           }
           print("네트워크 상태를 확인해주세요");
           return -1;
@@ -589,7 +616,7 @@ class MyAppState extends ChangeNotifier {
         var jsonObj = jsonDecode(response.body);
         if (jsonObj['datas'].length <= 0) {
           if (Platform.isAndroid) {
-            showToast("일부 데이터를 가져오지 못했습니다", Colors.blueAccent);
+            showToast(context, "일부 데이터를 가져오지 못했습니다", Colors.redAccent);
           }
           print('일부 데이터를 가져오지 못했습니다');
           continue;
@@ -618,7 +645,8 @@ class MyAppState extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      if (Platform.isAndroid) showToast("네트워크 상태를 확인해주세요", Colors.redAccent);
+      if (Platform.isAndroid)
+        showToast(context, "네트워크 상태를 확인해주세요", Colors.redAccent);
       print("네트워크 상태를 확인해주세요");
       notifyListeners();
       return -1;
@@ -633,7 +661,7 @@ class MyAppState extends ChangeNotifier {
     return statusCode;
   }
 
-  Future apiRequestPEST() async {
+  Future apiRequestPEST(BuildContext context) async {
     var encoder = ZipFileEncoder();
     final dir = await getApplicationDocumentsDirectory();
     // Directory dir = Directory('/storage/emulated/0/Documents ');
@@ -707,7 +735,7 @@ class MyAppState extends ChangeNotifier {
     var ii = r.indexOf("}]");
     if (ii < 0) {
       if (Platform.isAndroid) {
-        showToast("기상데이터는 12시부터 시작해야합니다", Colors.redAccent);
+        showToast(context, "기상데이터는 12시부터 시작해야합니다", Colors.redAccent);
       }
       print("기상데이터는 12시부터 시작해야합니다");
       return 0;
@@ -738,8 +766,9 @@ class MyAppState extends ChangeNotifier {
     //pinf update
     pinfList = List<PINF>.filled(50, pinfBlank, growable: true);
     pinfLists[ppfarm] = pinfList;
-    int j = someDAYS - 1;
-    for (int i = 0; i < someDAYS; i++) {
+    int j = outputA.length - 1;
+    int jj = j;
+    for (int i = 0; i <= jj; i++) {
       var customDT = outputA[j]['date'].toString();
 
       PINF npinf = PINF(
@@ -976,7 +1005,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
                     });
                   } catch (e) {
                     if (Platform.isAndroid) {
-                      showToast("다시한번 시도해주세요", Colors.redAccent);
+                      showToast(context, "다시한번 시도해주세요", Colors.redAccent);
                     }
                     print('다시한번 시도해주세요');
                   }
@@ -1061,17 +1090,26 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   appState.pp = 0;
 
                   if (Platform.isAndroid) {
-                    showToast("IOT포털에서 데이터를 가져옵니다", Colors.blueAccent);
+                    showToast(context, "IOT포털에서 데이터를 가져옵니다", Colors.blueAccent);
+                    // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    //   content: Text("IOT포털에서 데이터를 가져옵니다"),
+                    //   duration: Duration(seconds: 1),
+                    // ));
                   }
                   print('IOT포털에서 데이터를 가져옵니다 $ppfarm');
 
-                  await appState.apiRequestIOT().then((value) async {
+                  await appState.apiRequestIOT(context).then((value) async {
                     if (Platform.isAndroid) {
-                      showToast("병해충예측모델을 실행합니다", Colors.blueAccent);
+                      showToast(context, "병해충예측모델을 실행합니다", Colors.blueAccent);
+
+                      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                      //   content: Text("병해충예측모델을 실행합니다"),
+                      //   duration: Duration(seconds: 1),
+                      // ));
                     }
                     print('병해충예측모델을 실행합니다 $ppfarm');
 
-                    await appState.apiRequestPEST().then((value) {
+                    await appState.apiRequestPEST(context).then((value) {
                       // print(difference);
                       // print(statusCode);
 
@@ -1118,7 +1156,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
                 onPressed: () async {
                   appState.pp = 0;
                   if (Platform.isAndroid) {
-                    showToast("개발중입니다", Colors.greenAccent);
+                    showToast(context, "개발중입니다", Colors.greenAccent);
                   }
                   getMyCurrentLocation();
                   KMA kma;
@@ -2202,7 +2240,7 @@ class _MySettingState extends State<MySetting> {
                               farmList[ppfarm]['facilityName']);
                           await prefs.setString('serviceKey$ppfarm',
                               farmList[ppfarm]['serviceKey']);
-                          await appState.prefsSave().then((value) {
+                          await appState.prefsSave(context).then((value) {
                             if (mounted) {
                               setState(() {
                                 // _printLatestValue();
@@ -2211,7 +2249,7 @@ class _MySettingState extends State<MySetting> {
                           });
                           print('저장완료: $ppfarm / ${farmNo - 1}');
                           if (Platform.isAndroid) {
-                            showToast("저장되었습니다", Colors.blue);
+                            showToast(context, "저장되었습니다", Colors.blue);
                           }
                         },
                         child: const Text('저장'),
@@ -2225,7 +2263,7 @@ class _MySettingState extends State<MySetting> {
                             if (mounted) {
                               setState(() {
                                 // _printLatestValue();
-                                appState.removeData();
+                                appState.removeData(context);
                                 appState.getNext();
                               });
                             }
@@ -2234,7 +2272,7 @@ class _MySettingState extends State<MySetting> {
                             if (mounted) {
                               setState(() {
                                 // _printLatestValue();
-                                appState.removeData();
+                                appState.removeData(context);
                                 inputController1.text =
                                     farmList[ppfarm - 1]['farmName'];
                                 inputController2.text =
@@ -2256,7 +2294,7 @@ class _MySettingState extends State<MySetting> {
                           if (mounted) {
                             setState(() async {
                               // _printLatestValue();
-                              await appState.prefsClear().then((value) {
+                              await appState.prefsClear(context).then((value) {
                                 inputController1.text =
                                     farmList[ppfarm]['farmName'];
                                 inputController2.text =
