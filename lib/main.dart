@@ -584,14 +584,15 @@ class MyAppState extends ChangeNotifier {
     var urliotString = "$urliot/$apikey/$formatDate/$formatTime";
     var uriiot = Uri.parse(urliotString);
 
-    var deltaT = int.parse(formatTime);
-    var deltaT12 = deltaT % 12;
-    deltaT = 24;
-    if (deltaT < 12) deltaT = deltaT + deltaT12;
+    // var deltaT = int.parse(formatTime);
+    // var deltaT12 = deltaT % 12;
+    // deltaT = 24;
+    // if (deltaT < 12) deltaT = deltaT + deltaT12;
     // now = now.subtract(Duration(hours: deltaT + deltaT12));
 
     try {
       // print('before for loop');
+      int ii = 0;
       for (int i = 0; i < difference; i++) {
         String formatDate = DateFormat('yyyyMMdd').format(now);
         String formatTime = DateFormat('HH').format(now);
@@ -638,7 +639,8 @@ class MyAppState extends ChangeNotifier {
         );
 
         // sensorList.insert(0, nsensor);
-        sensorList.insert(i, nsensor);
+        sensorList.insert(ii, nsensor);
+        ii++;
         print('IOT()- $i----${nsensor.customDt}');
         var progress = ((i + 1) / difference) * 100;
         userMsg = "${progress.toStringAsFixed(0)}%";
@@ -1120,6 +1122,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
                         lastDatetime = "${lastDatetime.substring(0, 11)}00";
                         print("데이터 갱신: $lastDatetime");
                         if ((difference >= 0)) {
+                          // difference >= 0
                           //(statusCode == 200) &&
                           String jsonString = jsonEncode(sensorLists[ppfarm]);
                           storage.writeJsonAsString(
