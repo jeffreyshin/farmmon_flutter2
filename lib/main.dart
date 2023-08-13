@@ -305,6 +305,10 @@ Future prefsLoad() async {
 
   farm1['farmName'] = (prefs.getString('farmName0') ?? '기본농장');
   farm2['farmName'] = (prefs.getString('farmName1') ?? '농장2');
+  farm1['servicekey'] =
+      (prefs.getString('servicekey0') ?? 'r34df5d2d566049e2a809c41da915adc6');
+  farm2['servicekey'] =
+      (prefs.getString('servicekey1') ?? 'r64f2ea0960a74f4f8c48a0b3a6953973');
 
   farmList.clear();
   farmList.add(farm1);
@@ -381,7 +385,7 @@ Future<void> getMyCurrentLocation() async {
 void addMyLicense() {
   //add License
   LicenseRegistry.addLicense(() async* {
-    yield const LicenseEntryWithLineBreaks(<String>['farmmon_flutter'], '''
+    yield const LicenseEntryWithLineBreaks(<String>['@farmmon_flutter'], '''
 The BSD 2-Clause License
 
 Copyright (c) 2023, Shin Jae-hoon
@@ -421,7 +425,7 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (context) => MyAppState(),
       child: MaterialApp(
-        title: 'FarmMon App',
+        title: '농장보기(FarmMon)',
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
@@ -862,16 +866,16 @@ class _MyHomePageState extends State<MyHomePage> {
       case 0:
         page = StrawberryPage();
         break;
+      // case 1:
+      //   page = FavoritesPage(); //Placeholder();
+      //   break;
+      // case 2:
+      //   page = FavoritesPage(); //Placeholder();
+      //   break;
       case 1:
-        page = FavoritesPage(); //Placeholder();
-        break;
-      case 2:
-        page = FavoritesPage(); //Placeholder();
-        break;
-      case 3:
         page = MyLineChartPage();
         break;
-      case 4:
+      case 2:
         page = MySetting();
         break;
       // case 5:
@@ -895,14 +899,14 @@ class _MyHomePageState extends State<MyHomePage> {
                     icon: Icon(CustomIcons.strawberry), //solidLemon
                     label: Text('딸기'),
                   ),
-                  NavigationRailDestination(
-                    icon: Icon(CustomIcons.tomato), //solidLemon
-                    label: Text('토마토'),
-                  ),
-                  NavigationRailDestination(
-                    icon: Icon(CustomIcons.bellpepper), //solidLemon
-                    label: Text('파프리카'),
-                  ),
+                  // NavigationRailDestination(
+                  //   icon: Icon(CustomIcons.tomato), //solidLemon
+                  //   label: Text('토마토'),
+                  // ),
+                  // NavigationRailDestination(
+                  //   icon: Icon(CustomIcons.bellpepper), //solidLemon
+                  //   label: Text('파프리카'),
+                  // ),
                   NavigationRailDestination(
                     icon: Icon(Icons.thermostat),
                     label: Text('환경'),
@@ -1053,6 +1057,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              SizedBox(width: 10),
               ElevatedButton(
                 onPressed: () {
                   appState.pp = 7;
@@ -1154,27 +1159,27 @@ class _StrawberryPageState extends State<StrawberryPage> {
                 },
                 child: Text('이번주'),
               ),
-              SizedBox(width: 10),
-              ElevatedButton(
-                onPressed: () async {
-                  appState.pp = 0;
-                  if (Platform.isAndroid) {
-                    showToast(context, "개발중입니다", Colors.greenAccent);
-                  }
-                  getMyCurrentLocation();
-                  KMA kma;
-                  // await apiRequestPEST().then((value) {
-                  if (mounted) {
-                    setState(() {
-                      // lastDatetime = sensorLists[ppfarm][0].customDt.toString();
-                      // appState.userMsg = lastDatetime;
-                      appState.getNext();
-                    });
-                  }
-                  // });
-                },
-                child: Text('다음주'),
-              ),
+              // SizedBox(width: 10),
+              // ElevatedButton(
+              //   onPressed: () async {
+              //     appState.pp = 0;
+              //     if (Platform.isAndroid) {
+              //       showToast(context, "개발중입니다", Colors.greenAccent);
+              //     }
+              //     getMyCurrentLocation();
+              //     KMA kma;
+              //     // await apiRequestPEST().then((value) {
+              //     if (mounted) {
+              //       setState(() {
+              //         // lastDatetime = sensorLists[ppfarm][0].customDt.toString();
+              //         // appState.userMsg = lastDatetime;
+              //         appState.getNext();
+              //       });
+              //     }
+              //     // });
+              //   },
+              //   child: Text('다음주'),
+              // ),
               SizedBox(width: 10),
               Text(appState.userMsg),
             ],
@@ -2027,40 +2032,40 @@ class _MySettingState extends State<MySetting> {
                     keyboardType: TextInputType.text,
                   ),
                 ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 10.0),
-                  child: TextFormField(
-                    controller: inputController2,
-                    validator: (value) {
-                      if (value!.trim().isEmpty) {
-                        return '센서위치를 입력하세요';
-                      }
-                      return null;
-                    },
-                    onChanged: (text) {
-                      // setState(() {
-                      //   facilityName[ppfarm] = text;
-                      // });
-                    },
-                    decoration: InputDecoration(
-                      labelText: farmList[ppfarm]['facilityName'],
-                      hintText: '센서위치를 입력해주세요',
-                      labelStyle: TextStyle(color: Colors.grey),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                        borderSide: BorderSide(width: 1, color: Colors.grey),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                        borderSide: BorderSide(width: 1, color: Colors.grey),
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(10.0)),
-                      ),
-                    ),
-                    keyboardType: TextInputType.text,
-                  ),
-                ),
+                // Padding(
+                //   padding: EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 10.0),
+                //   child: TextFormField(
+                //     controller: inputController2,
+                //     validator: (value) {
+                //       if (value!.trim().isEmpty) {
+                //         return '센서위치를 입력하세요';
+                //       }
+                //       return null;
+                //     },
+                //     onChanged: (text) {
+                //       // setState(() {
+                //       //   facilityName[ppfarm] = text;
+                //       // });
+                //     },
+                //     decoration: InputDecoration(
+                //       labelText: farmList[ppfarm]['facilityName'],
+                //       hintText: '센서위치를 입력해주세요',
+                //       labelStyle: TextStyle(color: Colors.grey),
+                //       focusedBorder: OutlineInputBorder(
+                //         borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                //         borderSide: BorderSide(width: 1, color: Colors.grey),
+                //       ),
+                //       enabledBorder: OutlineInputBorder(
+                //         borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                //         borderSide: BorderSide(width: 1, color: Colors.grey),
+                //       ),
+                //       border: OutlineInputBorder(
+                //         borderRadius: BorderRadius.all(Radius.circular(10.0)),
+                //       ),
+                //     ),
+                //     keyboardType: TextInputType.text,
+                //   ),
+                // ),
                 Padding(
                   padding: EdgeInsets.fromLTRB(20.0, 0.0, 20.0, 10.0),
                   child: TextFormField(
@@ -2315,10 +2320,11 @@ class _MySettingState extends State<MySetting> {
                 ),
                 SizedBox(height: 20),
                 Text("""Contributors
-앱 프로그램 제작_농촌진흥청 신재훈
-병해충모델_충청남도농업기술원 남명현(탄저병, 잿빛곰팡이병)
+총괄기획, 앱 개발_농촌진흥청 신재훈
+병해충모델개발, 검증_충남농업기술원 남명현
+환경센서_(주)유샘인스트루먼트
 데이터저장소_농촌진흥청 IOT포털 서비스
-병해충예측API서비스_서울대학교 작물생태정보연구실
+병해충모델API개발_서울대학교 작물생태정보연구실
 일러스트_스마트팜 농부 rawpixel.com, 출처 Freepik""",
                     style: TextStyle(
                       color: Colors.grey,
@@ -2329,7 +2335,7 @@ class _MySettingState extends State<MySetting> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text("v0.2.2   License:"),
+                    Text("v0.2.3   License:"),
                     IconButton(
                       icon: Icon(Icons.fact_check_outlined),
                       onPressed: () {
