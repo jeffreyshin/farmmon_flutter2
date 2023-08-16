@@ -22,7 +22,7 @@ beta test(23.6.23~) Bug Report:
 6. IOT포털 데이터가 누락되었을 때 weather.csv가 12시부터 시작되지 않는 문제 - 처리완료
 7. 첫번째, 두번째 농가 데이터만 삭제하기 - 처리완료
 8. License메뉴 설정화면안으로 넣기 - 처리완료
-9. 첫째, 둘째 농가 이름 바꾸기 - 처리완료
+9. 첫째, 둘째 농가 이름/apiKey 바꾸기 가능하게 - 처리완료
 10. iot portal apikey 입력텍스트 공백제거(trim) - 바로적용할 것
 
 ## Getting Started
