@@ -24,6 +24,7 @@ beta test(23.6.23~) Bug Report:
 8. License메뉴 설정화면안으로 넣기 - 처리완료
 9. 첫째, 둘째 농가 이름/apiKey 바꾸기 가능하게 - 처리완료
 10. iot portal apikey 입력텍스트 공백제거(trim) - 바로적용할 것
+11. iot portal 데이터 다수 누락시 병해충 모델 실행오류(9.24) - 처리완료 
 
 ## Getting Started
 
