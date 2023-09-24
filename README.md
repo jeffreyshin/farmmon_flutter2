@@ -1,6 +1,6 @@
 # farmmon_flutter
 
-https://github.com/jeffreyshin/farmmon_flutter/releases/download/v.0.2.1/app-release.apk
+배포중: https://github.com/jeffreyshin/farmmon_flutter/releases/download/v.0.3.1/app-release.apk
 
 딸기 탄저병, 잿빛곰팡이병 발생 모니터링을 위한 안드로이드앱
 - 충남 논산딸기연구소의 모델을 사용함
