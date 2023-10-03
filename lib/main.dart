@@ -4,6 +4,7 @@
 
 import 'dart:io';
 import 'dart:convert';
+import 'package:farmmon_flutter/splash.dart';
 import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
 import 'package:provider/provider.dart';
@@ -23,6 +24,11 @@ import 'package:farmmon_flutter/kma.dart';
 import 'package:farmmon_flutter/weather.dart';
 
 import 'package:flutter/foundation.dart';
+
+import 'package:farmmon_flutter/kakao_login.dart';
+import 'package:farmmon_flutter/main_view_model.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+
 // import 'package:flutter/services.dart';
 // import 'dart:ffi';
 // import 'package:flutter/cupertino.dart';
@@ -71,7 +77,7 @@ Sensor sensorBlank = Sensor(
   xlabel: " ",
 );
 
-var sensorList = List<Sensor>.filled(wMAXX, sensorBlank, growable: true);
+var sensorList = List<Sensor>.filled(wMAXX, sensorBlank, growable: true); //
 var sensorLists = List<List<Sensor>>.filled(2, sensorList, growable: true);
 
 /////////////////////////////////////////////////////////////
@@ -411,11 +417,12 @@ class MyHttpOverrides extends HttpOverrides {
   }
 }
 
-void main() async {
+void main() {
+  KakaoSdk.init(nativeAppKey: '3dba5c41ff1963c8cac077f92b4def2a');
   HttpOverrides.global = MyHttpOverrides();
   MyLocation home;
   getMyCurrentLocation();
-  runApp(MyApp());
+  runApp(const SplashScreen());
 }
 
 class MyApp extends StatelessWidget {
@@ -442,6 +449,7 @@ class MyAppState extends ChangeNotifier {
   var current = WordPair.random();
   var favorites = <WordPair>[];
   var pp = 0;
+  var chart = 0;
   // var ppfarm = 0;
 
   var userMsg = '';
@@ -477,7 +485,7 @@ class MyAppState extends ChangeNotifier {
     lastDatetime = DateFormat('yyyyMMdd HH00').format(somedaysago);
 
     for (int i = 0; i < 2; i++) {
-      sensorList = List<Sensor>.filled(wMAXX, sensorBlank, growable: true);
+      sensorList = List<Sensor>.filled(wMAXX, sensorBlank, growable: true); //
       sensorLists[i] = sensorList;
       String jsonString = jsonEncode(sensorList);
       await storage.writeJsonAsString('sensor$i.json', jsonString);
@@ -499,7 +507,8 @@ class MyAppState extends ChangeNotifier {
 
   void removeData(BuildContext context) async {
     if (ppfarm < 2) {
-      sensorList = List<Sensor>.filled(wMAXX, sensorBlank, growable: true);
+      sensorList =
+          List<Sensor>.filled(wMAXX, sensorBlank, growable: true); // wMAXX
       sensorLists[ppfarm] = sensorList;
       String jsonString = jsonEncode(sensorList);
       await storage.writeJsonAsString('sensor$ppfarm.json', jsonString);
@@ -582,6 +591,7 @@ class MyAppState extends ChangeNotifier {
 
     difference = int.parse(
         now.difference(DateTime.parse(lastDatetime)).inHours.toString());
+    if (difference > 380) difference = 380;
     print('IOT()- ppfarm: $ppfarm - Difference: $difference');
     String formatDate = DateFormat('yyyyMMdd').format(now);
     String formatTime = DateFormat('HH').format(now);
@@ -676,7 +686,7 @@ class MyAppState extends ChangeNotifier {
     print("apiPEST() - ppfarm: $ppfarm  - test: $test");
     String formatTime = '';
     var kk = sensorLists[ppfarm].length;
-    kk = 380;
+    // kk = 380;    2023-09-24
     var k = 0;
     for (k = kk - 1; k >= 0; k--) {
       var v1 = sensorLists[ppfarm][k].customDt.toString();
@@ -865,9 +875,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
     switch (selectedIndex) {
       case 0:
-        page = StrawberryPage();
+        page = StrawberryPage(); // LoginPage();
         break;
-      case 3:
+      case 2:
         page = WeatherPage(); //Placeholder();
         break;
       // case 2:
@@ -876,7 +886,7 @@ class _MyHomePageState extends State<MyHomePage> {
       case 1:
         page = MyLineChartPage();
         break;
-      case 2:
+      case 3:
         page = MySetting();
         break;
       // case 5:
@@ -913,12 +923,12 @@ class _MyHomePageState extends State<MyHomePage> {
                     label: Text('환경'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.settings),
-                    label: Text('설정'),
+                    icon: Icon(Icons.sunny), //solidLemon
+                    label: Text('기상예보'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.sunny), //solidLemon
-                    label: Text('날씨'),
+                    icon: Icon(Icons.settings),
+                    label: Text('설정'),
                   ),
                   // NavigationRailDestination(
                   //   icon: Icon(Icons.fact_check_outlined),
@@ -1337,6 +1347,57 @@ class BigCard extends StatelessWidget {
           "예측결과",
           style: style,
           semanticsLabel: "탄저병 예측 결과 차트",
+        ),
+      ),
+    );
+  }
+}
+
+class LoginPage extends StatefulWidget {
+  // const LoginPage({Key? key, required this.title}) : super(key: key);
+
+  // final String title;
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final viewModel = MainViewModel(KakaoLogin());
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('widget.title'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Image.network(
+                viewModel.user?.kakaoAccount?.profile?.profileImageUrl ?? ''),
+            Text(
+              '${viewModel.isLogined}',
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await viewModel.login();
+                setState(() {
+                  runApp(const MyApp());
+                });
+              },
+              child: const Text('login'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await viewModel.logout();
+                setState(() {});
+              },
+              child: const Text('logout'),
+            ),
+          ],
         ),
       ),
     );
@@ -2200,8 +2261,9 @@ class _MySettingState extends State<MySetting> {
                           await prefs.setInt('farmNumber', farmNo);
                           await prefs.setInt('myFarm', ppfarm);
 
-                          sensorList = List<Sensor>.filled(wMAXX, sensorBlank,
-                              growable: true);
+                          sensorList =
+                              List<Sensor>.filled(wMAXX, sensorBlank, //
+                                  growable: true);
                           String jsonString = jsonEncode(sensorList);
                           await storage.writeJsonAsString(
                               'sensor${farmNo - 1}.json', jsonString);
@@ -2330,6 +2392,7 @@ class _MySettingState extends State<MySetting> {
 환경센서_(주)유샘인스트루먼트
 데이터저장소_농촌진흥청 IOT포털 서비스
 병해충모델API개발_서울대학교 작물생태정보연구실
+기상예보_기상청 단기예보API
 일러스트_스마트팜 농부 rawpixel.com, 출처 Freepik""",
                     style: TextStyle(
                       color: Colors.grey,
@@ -2340,7 +2403,7 @@ class _MySettingState extends State<MySetting> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text("v0.2.3   License:"),
+                    Text("v0.3.1   License:"),
                     IconButton(
                       icon: Icon(Icons.fact_check_outlined),
                       onPressed: () {
@@ -2371,16 +2434,32 @@ class Fcst {
   String? fcstTime;
   String? TMP;
   String? REH;
-  String? SKY;
+  String? WSD;
 
   Fcst({
     this.fcstDate,
     this.fcstTime,
     this.TMP,
     this.REH,
-    this.SKY,
+    this.WSD,
   });
 }
+
+Fcst fcstBlank = Fcst(
+  fcstDate: '20230801',
+  fcstTime: '1200',
+  TMP: '0.0',
+  REH: '0.0',
+  WSD: '0.0',
+);
+
+var fcstList = List<Fcst>.filled(200, fcstBlank, growable: true);
+var fcstDate = List<String>.filled(200, '20230801', growable: true);
+var fcstTime = List<String>.filled(200, '1200', growable: true);
+var TMP = List<String>.filled(200, '0.0', growable: true);
+var REH = List<String>.filled(200, '0.0', growable: true);
+var WSD = List<String>.filled(200, '0.0', growable: true);
+var tag = 0;
 
 class _WeatherPageState extends State<WeatherPage> {
   String? baseTime;
@@ -2402,7 +2481,7 @@ class _WeatherPageState extends State<WeatherPage> {
   @override
   void initState() {
     super.initState();
-    getWeather();
+    // getWeather();
   }
 
   //오늘 날짜 20201109 형태로 리턴
@@ -2416,19 +2495,10 @@ class _WeatherPageState extends State<WeatherPage> {
         .format(DateTime.now().subtract(Duration(days: 1)));
   }
 
-  void getWeather() async {
+  Future getWeather() async {
     // MyLocation userLocation = MyLocation();
     // await userLocation.getMyCurrentLocation(); //사용자의 현재 위치 불러올 때까지 대기
-
-    Fcst fcstBlank = Fcst(
-      fcstDate: '',
-      fcstTime: '',
-      TMP: '',
-      REH: '',
-      SKY: '',
-    );
-
-    var fcstList = List<Fcst>.filled(0, fcstBlank, growable: true);
+    // var appState = context.watch<MyAppState>();
 
     xCoordinate = 55; // userLocation.currentX; //x좌표
     yCoordinate = 127; // userLocation.currentY; //y좌표
@@ -2580,12 +2650,12 @@ class _WeatherPageState extends State<WeatherPage> {
     //   var SKY = parsed_json['fcstValue'];
     //   print("SKY: $SKY");
     // }
-
-    var fcstDate = [];
-    var fcstTime = [];
-    var TMP = [];
-    var REH = [];
-    var SKY = [];
+    int j = 0;
+    fcstDate.clear();
+    fcstTime.clear();
+    TMP.clear();
+    REH.clear();
+    WSD.clear();
     for (int i = 0; i < wlist.length; i++) {
       if (wlist[i]['category'] == 'TMP') {
         fcstDate.add(wlist[i]['fcstDate']);
@@ -2595,8 +2665,8 @@ class _WeatherPageState extends State<WeatherPage> {
       if (wlist[i]['category'] == 'REH') {
         REH.add(wlist[i]['fcstValue']);
       }
-      if (wlist[i]['category'] == 'SKY') {
-        SKY.add(wlist[i]['fcstValue']);
+      if (wlist[i]['category'] == 'WSD') {
+        WSD.add(wlist[i]['fcstValue']);
       }
     }
 
@@ -2606,14 +2676,14 @@ class _WeatherPageState extends State<WeatherPage> {
         fcstTime: fcstTime[i],
         TMP: TMP[i],
         REH: REH[i],
-        SKY: SKY[i],
+        WSD: WSD[i],
       );
       fcstList.add(fcstData);
       var t = fcstData.fcstDate.toString();
       var tt = fcstData.fcstTime.toString();
       var ttt = fcstData.TMP.toString();
       var tttt = fcstData.REH.toString();
-      var ttttt = fcstData.SKY.toString();
+      var ttttt = fcstData.WSD.toString();
       print("$t $tt : $ttt, $tttt, $ttttt");
     }
     print("pause");
@@ -2643,15 +2713,27 @@ class _WeatherPageState extends State<WeatherPage> {
     // parseAddrData: addrData,
     //   );
     // }));
+    // Navigator.push(context, MaterialPageRoute(builder: (context) {
+    //   return WeatherPage();
+    // }));
+    tag = 1;
+    return 0;
   }
 
-  var ppfarm = 0;
-  var farmNo = 2;
-
   // final AppStorage storage = AppStorage();
+  Future _future() async {
+    // await Future.delayed(Duration(seconds: 5));
+    if (tag == 0) {
+      return await getWeather();
+    }
+    return 0;
+    // return 'done!';
+  }
 
   @override
   Widget build(BuildContext context) {
+    // var appState = context.watch<MyAppState>();
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -2672,17 +2754,18 @@ class _WeatherPageState extends State<WeatherPage> {
                   await prefs.setInt('myFarm', ppfarm);
                   print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
                   print("LineChartPage() - ppfarm: $ppfarm / ${farmNo - 1}");
-
+                  await getWeather().then((value) {
+                    if (mounted) {
+                      setState(() {
+                        // appState.pp = 0;
+                        // appState.getNext();
+                      });
+                    }
+                  });
                   // await storage.readJsonAsString2().then((value) {
-                  if (mounted) {
-                    setState(() {
-                      // appState.pp = 0;
-                      // appState.getNext();
-                    });
-                  }
                   // });
                 },
-                child: Text('다음'),
+                child: Text('불러오기'),
               ),
             ],
           ),
@@ -2712,28 +2795,52 @@ class _WeatherPageState extends State<WeatherPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('엽면습윤:'),
+                  Text('풍속:'),
                   Text(
                     '■',
                     style: TextStyle(
-                      color: Colors.greenAccent,
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  Text('CO2농도:'),
-                  Text(
-                    '■',
-                    style: TextStyle(
-                      color: Colors.grey,
+                      color: Colors.yellowAccent,
                     ),
                   ),
                 ],
               ),
             ],
           ),
-          SizedBox(width: 20),
+          SizedBox(height: 20),
           Expanded(
-            child: MyLineChart(),
+            child: FutureBuilder(
+                future: _future(),
+                builder: (BuildContext context, AsyncSnapshot snapshot) {
+                  if (snapshot.hasData == false) {
+                    return Column(
+                      children: [
+                        CircularProgressIndicator(),
+                        Expanded(child: MyLineChart2()),
+                      ],
+                    );
+                    // Expanded(
+                    //   child: Center(child: CircularProgressIndicator()),
+                    // );
+                  } else if (snapshot.hasError) {
+                    return Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        'Error: ${snapshot.error}',
+                        style: TextStyle(fontSize: 15),
+                      ),
+                    );
+                  } else {
+                    return MyLineChart2();
+
+                    // Padding(
+                    //   padding: const EdgeInsets.all(8.0),
+                    //   child: Text(
+                    //     snapshot.data.toString(),
+                    //     style: TextStyle(fontSize: 15),
+                    //   ),
+                    // );
+                  }
+                }),
           ),
           SizedBox(height: 20),
         ],
@@ -2864,15 +2971,14 @@ class _MyLineChartState2 extends State<MyLineChart2> {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
-    var wMAXX = 100;
 
     return Padding(
       padding: const EdgeInsets.all(10),
       // implement the bar chart
       child: AspectRatio(
         aspectRatio: 16 / 9,
-        child: ZoomableChart(
-          maxX: wMAXX.toDouble() - 1,
+        child: ZoomableChart2(
+          maxX: 56,
           builder: (minX, maxX) {
             return LineChart(
               // key: Key(farmList[ppfarm]['farmName']),
@@ -2899,8 +3005,8 @@ class _MyLineChartState2 extends State<MyLineChart2> {
                     tooltipBgColor: Colors.black,
                     getTooltipItems: (touchedSpots) {
                       return touchedSpots.map((LineBarSpot touchedSpot) {
-                        final multiplyer = [0.5, 1, 10, 1];
-                        final unit = ['ºC', '%', 'ppm', ''];
+                        final multiplyer = [0.5, 1, 0.1];
+                        final unit = ['ºC', '%', 'm/s'];
                         final textStyle = TextStyle(
                           color: touchedSpot.bar.gradient?.colors[0] ??
                               touchedSpot.bar.color,
@@ -2920,14 +3026,8 @@ class _MyLineChartState2 extends State<MyLineChart2> {
                 lineBarsData: [
                   LineChartBarData(
                     spots: [
-                      for (int i = 0; i < wMAXX; i++)
-                        FlSpot(
-                            i.toDouble(),
-                            double.parse(sensorLists[ppfarm]
-                                        [appState.pp + (wMAXX - i - 1)]
-                                    .temperature
-                                    .toString()) *
-                                2)
+                      for (int i = 0; i < TMP.length; i++)
+                        FlSpot(i.toDouble(), (double.parse(TMP[i]) * 2))
                     ],
                     isCurved: true,
                     color: AppColors.contentColorRed,
@@ -2940,14 +3040,8 @@ class _MyLineChartState2 extends State<MyLineChart2> {
                   ),
                   LineChartBarData(
                     spots: [
-                      for (int i = 0; i < wMAXX; i++)
-                        FlSpot(
-                            i.toDouble(),
-                            double.parse(sensorLists[ppfarm]
-                                        [appState.pp + (wMAXX - i - 1)]
-                                    .humidity
-                                    .toString()) *
-                                2)
+                      for (int i = 0; i < REH.length; i++)
+                        FlSpot(i.toDouble(), double.parse(REH[i]))
                     ],
                     isCurved: true,
                     color: AppColors.contentColorBlue,
@@ -2960,18 +3054,12 @@ class _MyLineChartState2 extends State<MyLineChart2> {
                   ),
                   LineChartBarData(
                     spots: [
-                      for (int i = 0; i < wMAXX; i++)
-                        FlSpot(
-                            i.toDouble(),
-                            double.parse(sensorLists[ppfarm]
-                                        [appState.pp + (wMAXX - i - 1)]
-                                    .cotwo
-                                    .toString()) *
-                                2)
+                      for (int i = 0; i < WSD.length; i++)
+                        FlSpot(i.toDouble(), (double.parse(WSD[i]) * 10))
                     ],
                     isCurved: true,
-                    color: AppColors.contentColorBlack,
-                    gradient: LinearGradient(colors: gradientColors),
+                    color: AppColors.contentColorYellow,
+                    // gradient: LinearGradient(colors: gradientColors),
                     barWidth: 0,
                     isStrokeCapRound: true,
                     dotData: FlDotData(
@@ -2979,31 +3067,7 @@ class _MyLineChartState2 extends State<MyLineChart2> {
                     ),
                     belowBarData: BarAreaData(
                       show: true,
-                      // color: gradientColors.map((color) => color.withOpacity(0.3)).toList(),
-                    ),
-                  ),
-                  LineChartBarData(
-                    spots: [
-                      for (int i = 0; i < wMAXX; i++)
-                        FlSpot(
-                            i.toDouble(),
-                            double.parse(sensorLists[ppfarm]
-                                        [appState.pp + (wMAXX - i - 1)]
-                                    .leafwet
-                                    .toString()) *
-                                2)
-                    ],
-                    isCurved: true,
-                    color: AppColors.contentColorGreen,
-                    // gradient: LinearGradient(colors: gradientColors),
-                    barWidth: 5,
-                    isStrokeCapRound: true,
-                    dotData: FlDotData(
-                      show: false,
-                    ),
-                    belowBarData: BarAreaData(
-                      show: true,
-                      color: AppColors.contentColorGreen,
+                      color: AppColors.contentColorYellow,
                       // color: gradientColors.map((color) => color.withOpacity(0.3)).toList(),
                     ),
                   ),
@@ -3069,16 +3133,21 @@ class _MyLineChartState2 extends State<MyLineChart2> {
   }
 
   Widget getTitles(double value, TitleMeta meta) {
-    // var appState = context.watch<MyAppState>();
+    var appState = context.watch<MyAppState>();
 
     final style = TextStyle(
       // color: Colors.black,
       fontWeight: FontWeight.bold,
       fontSize: 12,
     );
-    String text;
+    var text = "";
+    try {
+      text = DateFormat('MM/dd HH').format(DateTime.parse(
+          "${fcstDate[value.toInt()]} ${fcstTime[value.toInt()]}"));
+    } catch (e) {
+      text = "";
+    }
 
-    text = "x";
     return SideTitleWidget(
       axisSide: meta.axisSide,
       space: 4,
