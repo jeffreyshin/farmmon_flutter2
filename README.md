@@ -1,6 +1,6 @@
 # farmmon_flutter
 
-https://github.com/jeffreyshin/farmmon_flutter/releases/download/v.0.2.1/app-release.apk
+배포중: https://github.com/jeffreyshin/farmmon_flutter/releases/download/v.0.3.1/app-release.apk
 
 딸기 탄저병, 잿빛곰팡이병 발생 모니터링을 위한 안드로이드앱
 - 충남 논산딸기연구소의 모델을 사용함
@@ -24,6 +24,7 @@ beta test(23.6.23~) Bug Report:
 8. License메뉴 설정화면안으로 넣기 - 처리완료
 9. 첫째, 둘째 농가 이름/apiKey 바꾸기 가능하게 - 처리완료
 10. iot portal apikey 입력텍스트 공백제거(trim) - 바로적용할 것
+11. iot portal 데이터 다수 누락시 병해충 모델 실행오류(9.24) - 처리완료 
 
 ## Getting Started
 
