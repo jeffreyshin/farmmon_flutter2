@@ -5,6 +5,7 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:farmmon_flutter/splash.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
 import 'package:provider/provider.dart';
@@ -46,6 +47,8 @@ var wMAXX = 72;
 var someDAYS = 16;
 var difference = 0;
 var statusCode = 0;
+
+final viewModel = MainViewModel(KakaoLogin());
 
 Map farm1 = {
   'farmName': '기본농장',
@@ -976,6 +979,7 @@ class _StrawberryPageState extends State<StrawberryPage> {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
+    // final viewModel = MainViewModel(KakaoLogin());
 
     // var pair = appState.current;
 
@@ -994,7 +998,17 @@ class _StrawberryPageState extends State<StrawberryPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          SizedBox(height: 30),
+          SizedBox(height: 40),
+          Image.network(
+              width: 30,
+              height: 30,
+              fit: BoxFit.cover,
+              viewModel.user?.kakaoAccount?.profile?.profileImageUrl ?? ''),
+          Text(
+            "${viewModel.user?.kakaoAccount?.profile?.nickname}",
+            style: TextStyle(fontSize: 12),
+          ),
+          // SizedBox(height: 10),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -1363,40 +1377,71 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final viewModel = MainViewModel(KakaoLogin());
+  // final viewModel = MainViewModel(KakaoLogin());
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('widget.title'),
+        title: Center(child: Text('농장보기')),
       ),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Image.network(
-                viewModel.user?.kakaoAccount?.profile?.profileImageUrl ?? ''),
-            Text(
-              '${viewModel.isLogined}',
-              style: Theme.of(context).textTheme.headlineMedium,
-            ),
-            ElevatedButton(
-              onPressed: () async {
+            // Image.network(
+            //     width: 50,
+            //     height: 50,
+            //     fit: BoxFit.cover,
+            //     viewModel.user?.kakaoAccount?.profile?.profileImageUrl ?? ''),
+            // Text(
+            //   '${viewModel.isLogined}',
+            //   style: Theme.of(context).textTheme.headlineMedium,
+            // ),
+            InkWell(
+              onTap: () async {
                 await viewModel.login();
                 setState(() {
+                  print("${viewModel.isLogined}");
                   runApp(const MyApp());
                 });
               },
-              child: const Text('login'),
+              child: Image.asset("assets/images/kakao_login_medium_wide.png"),
             ),
-            ElevatedButton(
-              onPressed: () async {
-                await viewModel.logout();
-                setState(() {});
-              },
-              child: const Text('logout'),
+            // ElevatedButton(
+            //   onPressed: () async {
+            //     await viewModel.login();
+            //     setState(() {
+            //       runApp(const MyApp());
+            //     });
+            //   },
+            //   child: const Text('login'),
+            // ),
+            SizedBox(height: 20),
+            SizedBox(
+              width: 300, //MediaQuery.of(context).size.width,
+              child: CupertinoButton(
+                onPressed: () async {
+                  await viewModel.logout();
+                  setState(() {});
+                },
+                color: Colors.grey.shade300,
+                child: Text(
+                  '카카오 로그아웃',
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
             ),
+            // ElevatedButton(
+            //   onPressed: () async {
+            //     await viewModel.logout();
+            //     setState(() {});
+            //   },
+            //   child: const Text('logout'),
+            // ),
           ],
         ),
       ),
