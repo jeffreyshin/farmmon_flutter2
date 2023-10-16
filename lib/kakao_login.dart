@@ -6,6 +6,8 @@ class KakaoLogin implements SocialLogin {
   Future<bool> login() async {
     try {
       bool isInstalled = await isKakaoTalkInstalled();
+      print("kakaotalk installed: $isInstalled");
+      // isInstalled = true;
       if (isInstalled) {
         try {
           await UserApi.instance.loginWithKakaoTalk();

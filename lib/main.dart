@@ -28,7 +28,13 @@ import 'package:flutter/foundation.dart';
 
 import 'package:farmmon_flutter/kakao_login.dart';
 import 'package:farmmon_flutter/main_view_model.dart';
-import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
+import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao;
+
+import 'package:farmmon_flutter/google_login.dart';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 // import 'package:flutter/services.dart';
 // import 'dart:ffi';
@@ -48,7 +54,7 @@ var someDAYS = 16;
 var difference = 0;
 var statusCode = 0;
 
-final viewModel = MainViewModel(KakaoLogin());
+var viewModel = MainViewModel(KakaoLogin());
 
 Map farm1 = {
   'farmName': '기본농장',
@@ -420,12 +426,21 @@ class MyHttpOverrides extends HttpOverrides {
   }
 }
 
-void main() {
-  KakaoSdk.init(nativeAppKey: '3dba5c41ff1963c8cac077f92b4def2a');
+void main() async {
+  await Future.delayed(Duration(seconds: 1));
+  kakao.KakaoSdk.init(nativeAppKey: '3dba5c41ff1963c8cac077f92b4def2a');
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   HttpOverrides.global = MyHttpOverrides();
   MyLocation home;
   getMyCurrentLocation();
+  // if (!viewModel.isLogined) {
+  //   await viewModel.login().then((value) {
   runApp(const SplashScreen());
+  // });
+  // }
 }
 
 class MyApp extends StatelessWidget {
@@ -853,8 +868,10 @@ class _MyHomePageState extends State<MyHomePage> {
   var selectedIndex = 0;
 
   @override
-  void initState() {
+  void initState() async {
     super.initState();
+    await viewModel.login(); // 2023.10.15
+
     // var appState = context.watch<MyAppState>();
     addMyLicense();
     prefsLoad().then((value) async {
@@ -999,19 +1016,25 @@ class _StrawberryPageState extends State<StrawberryPage> {
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
           SizedBox(height: 40),
-          Image.network(
-              width: 30,
-              height: 30,
-              fit: BoxFit.cover,
-              viewModel.user?.kakaoAccount?.profile?.profileImageUrl ?? ''),
-          Text(
-            "${viewModel.user?.kakaoAccount?.profile?.nickname}",
-            style: TextStyle(fontSize: 12),
-          ),
           // SizedBox(height: 10),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
+              Column(
+                children: [
+                  Image.network(
+                      width: 30,
+                      height: 30,
+                      fit: BoxFit.cover,
+                      viewModel.user?.kakaoAccount?.profile?.profileImageUrl ??
+                          ''),
+                  Text(
+                    "${viewModel.user?.kakaoAccount?.profile?.nickname ?? ''}",
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ],
+              ),
+              SizedBox(width: 10),
               Text(
                 farmList[ppfarm]['farmName'],
                 style: TextStyle(fontSize: 25),
@@ -1377,77 +1400,165 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  // final viewModel = MainViewModel(KakaoLogin());
+  // final viewModel1 = MainViewModel(KakaoLogin());
 
   @override
   Widget build(BuildContext context) {
+    print('LoginPage: isLogined - ${viewModel.isLogined}');
     return Scaffold(
-      appBar: AppBar(
-        title: Center(child: Text('농장보기')),
-      ),
+      // appBar: AppBar(
+      //   title: Center(child: Text('농장보기')),
+      // ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            // Image.network(
-            //     width: 50,
-            //     height: 50,
-            //     fit: BoxFit.cover,
-            //     viewModel.user?.kakaoAccount?.profile?.profileImageUrl ?? ''),
-            // Text(
-            //   '${viewModel.isLogined}',
-            //   style: Theme.of(context).textTheme.headlineMedium,
-            // ),
-            InkWell(
-              onTap: () async {
-                await viewModel.login();
-                setState(() {
-                  print("${viewModel.isLogined}");
-                  runApp(const MyApp());
-                });
-              },
-              child: Image.asset("assets/images/kakao_login_medium_wide.png"),
-            ),
-            // ElevatedButton(
-            //   onPressed: () async {
-            //     await viewModel.login();
-            //     setState(() {
-            //       runApp(const MyApp());
-            //     });
-            //   },
-            //   child: const Text('login'),
-            // ),
-            SizedBox(height: 20),
-            SizedBox(
-              width: 300, //MediaQuery.of(context).size.width,
-              child: CupertinoButton(
-                onPressed: () async {
-                  await viewModel.logout();
-                  setState(() {});
-                },
-                color: Colors.grey.shade300,
-                child: Text(
-                  '카카오 로그아웃',
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: Colors.black87,
+        child: StreamBuilder<User?>(
+            stream: FirebaseAuth.instance.authStateChanges(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      // Text(
+                      //   '${viewModel.isLogined}',
+                      //   style: Theme.of(context).textTheme.headlineMedium,
+                      // ),
+                      InkWell(
+                        onTap: () async {
+                          viewModel = MainViewModel(KakaoLogin());
+                          await viewModel.login().then((value) {
+                            setState(() {
+                              print("In StreamBuilder: ${viewModel.isLogined}");
+                              // runApp(const MyApp());
+                            });
+                          });
+                        },
+                        child: Image.asset(
+                            "assets/images/kakao_login_medium_wide.png"),
+                      ),
+                      SizedBox(height: 50),
+                      InkWell(
+                        onTap: () async {
+                          viewModel = MainViewModel(GoogleLogin());
+                          await viewModel.login().then((value) {
+                            setState(() {
+                              print("In StreamBuilder: ${viewModel.isLogined}");
+                              // runApp(const MyApp());
+                            });
+                          });
+                        },
+                        child: Image.asset(
+                            "assets/images/btn_google_signin_light_normal_web@2x.jpg"),
+                      ),
+                      // ElevatedButton(
+                      //   onPressed: () async {
+                      //     await viewModel.logout();
+                      //     setState(() {});
+                      //   },
+                      //   child: const Text('Logout'),
+                      // ),
+                      // Image.network(viewModel
+                      //         .user?.kakaoAccount?.profile?.profileImageUrl ??
+                      //     ''),
+                      // ElevatedButton(
+                      //   onPressed: () async {
+                      //     await viewModel.login();
+                      //     setState(() {});
+                      //   },
+                      //   child: const Text('Login'),
+                      // ),
+                    ],
                   ),
-                ),
-              ),
-            ),
-            // ElevatedButton(
-            //   onPressed: () async {
-            //     await viewModel.logout();
-            //     setState(() {});
-            //   },
-            //   child: const Text('logout'),
-            // ),
-          ],
-        ),
+                );
+              }
+              print("snapshot.hasData: ${viewModel.isLogined}");
+              return MaterialApp(home: Scaffold(body: MyApp()));
+              // return Column(
+              //   mainAxisAlignment: MainAxisAlignment.center,
+              //   children: <Widget>[
+              //     Image.network(
+              //         viewModel.user?.kakaoAccount?.profile?.profileImageUrl ??
+              //             ''),
+              //     Text(
+              //       '${viewModel.isLogined}',
+              //       style: Theme.of(context).textTheme.headline4,
+              //     ),
+              //     ElevatedButton(
+              //       onPressed: () async {
+              //         await viewModel.logout();
+              //         setState(() {});
+              //       },
+              //       child: const Text('Logout'),
+              //     ),
+              //   ],
+              // );
+            }),
       ),
     );
   }
 }
+//       body: Center(
+//         child: Column(
+//           mainAxisAlignment: MainAxisAlignment.center,
+//           children: <Widget>[
+//             // Image.network(
+//             //     width: 50,
+//             //     height: 50,
+//             //     fit: BoxFit.cover,
+//             //     viewModel.user?.kakaoAccount?.profile?.profileImageUrl ?? ''),
+//             // Text(
+//             //   '${viewModel.isLogined}',
+//             //   style: Theme.of(context).textTheme.headlineMedium,
+//             // ),
+//             InkWell(
+//               onTap: () async {
+//                 await viewModel.login();
+//                 setState(() {
+//                   print("${viewModel.isLogined}");
+//                   runApp(const MyApp());
+//                 });
+//               },
+//               child: Image.asset("assets/images/kakao_login_medium_wide.png"),
+//             ),
+//             // ElevatedButton(
+//             //   onPressed: () async {
+//             //     await viewModel.login();
+//             //     setState(() {
+//             //       runApp(const MyApp());
+//             //     });
+//             //   },
+//             //   child: const Text('login'),
+//             // ),
+//             SizedBox(height: 20),
+//             SizedBox(
+//               width: 300, //MediaQuery.of(context).size.width,
+//               child: CupertinoButton(
+//                 onPressed: () async {
+//                   await viewModel.logout();
+//                   setState(() {});
+//                 },
+//                 color: Colors.grey.shade300,
+//                 child: Text(
+//                   '로그아웃',
+//                   style: TextStyle(
+//                     fontSize: 15,
+//                     color: Colors.black87,
+//                   ),
+//                 ),
+//               ),
+//             ),
+//             // ElevatedButton(
+//             //   onPressed: () async {
+//             //     await viewModel.logout();
+//             //     setState(() {});
+//             //   },
+//             //   child: const Text('logout'),
+//             // ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
 
 class FavoritesPage extends StatelessWidget {
   @override
@@ -2455,6 +2566,13 @@ class _MySettingState extends State<MySetting> {
                         Navigator.of(context).push(
                             MaterialPageRoute(builder: (_) => LicensePage()));
                       },
+                    ),
+                    ElevatedButton(
+                      onPressed: () async {
+                        await viewModel.logout();
+                        setState(() {});
+                      },
+                      child: const Text('로그아웃'),
                     ),
                   ],
                 ),
