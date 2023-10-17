@@ -1452,10 +1452,16 @@ class _LoginPageState extends State<LoginPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Text(
-                      //   '${viewModel.isLoggedin}',
-                      //   style: Theme.of(context).textTheme.headlineMedium,
-                      // ),
+                      Text(
+                        '농장보기',
+                        style: Theme.of(context).textTheme.headlineMedium,
+                      ),
+                      Image.asset(
+                          width: 150,
+                          height: 150,
+                          fit: BoxFit.cover,
+                          "assets/images/app_icon.png"),
+                      SizedBox(height: 50),
                       InkWell(
                         onTap: () async {
                           viewModel = MainViewModel(KakaoLogin());
@@ -1470,7 +1476,7 @@ class _LoginPageState extends State<LoginPage> {
                         child: Image.asset(
                             "assets/images/kakao_login_medium_wide.png"),
                       ),
-                      SizedBox(height: 50),
+                      SizedBox(height: 30),
                       InkWell(
                         onTap: () async {
                           viewModel = MainViewModel(GoogleLogin());
