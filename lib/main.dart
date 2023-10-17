@@ -22,7 +22,7 @@ import 'package:archive/archive_io.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:farmmon_flutter/my_location.dart';
 import 'package:farmmon_flutter/kma.dart';
-import 'package:farmmon_flutter/weather.dart';
+// import 'package:farmmon_flutter/weather.dart';
 
 import 'package:flutter/foundation.dart';
 
@@ -48,13 +48,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 // var pp = 0;
 var ppfarm = 0;
 var farmNo = 2;
+var signinMethod = 'Kakao';
 var lastDatetime = '';
 var wMAXX = 72;
 var someDAYS = 16;
 var difference = 0;
 var statusCode = 0;
 
-var viewModel = MainViewModel(KakaoLogin());
+var viewModel = MainViewModel(GoogleLogin());
+kakao.User? user;
 
 Map farm1 = {
   'farmName': '기본농장',
@@ -297,6 +299,7 @@ final AppStorage storage = AppStorage();
 Future prefsLoad() async {
   SharedPreferences prefs = await SharedPreferences.getInstance();
   farmNo = (prefs.getInt('farmNumber') ?? 2);
+  signinMethod = (prefs.getString('signinMethod') ?? 'Google');
   // ppfarm = (prefs.getInt('myFarm') ?? 0);
   ppfarm = 0;
   await prefs.setInt('myFarm', ppfarm);
@@ -343,6 +346,16 @@ Future prefsLoad() async {
     // print('prefsLoad() - ppfarm: $i - ${farmList[i]['facilityName']}');
     // print('prefsLoad() - ppfarm: $i - ${farmList[i]['serviceKey']}');
   }
+
+  try {
+    user = await kakao.UserApi.instance.me();
+    print("${user!.id.toString()}");
+    print("${user!.kakaoAccount!.profile!.nickname}");
+    print("${user!.kakaoAccount!.email!}");
+  } catch (e) {
+    print("error");
+  }
+
   return 0;
 }
 
@@ -436,6 +449,16 @@ void main() async {
   HttpOverrides.global = MyHttpOverrides();
   MyLocation home;
   getMyCurrentLocation();
+  if (signinMethod == 'Kakao') {
+    viewModel = MainViewModel(KakaoLogin());
+  }
+  if (signinMethod == 'Google') {
+    viewModel = MainViewModel(GoogleLogin());
+  }
+  // if (!viewModel.isLoggedin) {
+  // await viewModel.login(); // retrieve user information
+  // }
+
   // if (!viewModel.isLogined) {
   //   await viewModel.login().then((value) {
   runApp(const SplashScreen());
@@ -476,6 +499,7 @@ class MyAppState extends ChangeNotifier {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setInt('farmNumber', farmNo);
     await prefs.setInt('myFarm', ppfarm);
+    await prefs.setString('signinMethod', signinMethod);
 
     for (int i = 0; i < farmNo; i++) {
       print('prefs Save: $i / ${farmNo - 1} ${farmList[i]['farmName']}');
@@ -868,10 +892,8 @@ class _MyHomePageState extends State<MyHomePage> {
   var selectedIndex = 0;
 
   @override
-  void initState() async {
+  void initState() {
     super.initState();
-    await viewModel.login(); // 2023.10.15
-
     // var appState = context.watch<MyAppState>();
     addMyLicense();
     prefsLoad().then((value) async {
@@ -884,6 +906,11 @@ class _MyHomePageState extends State<MyHomePage> {
         });
       });
     });
+
+    // if (!viewModel.isLoggedin) {
+    // await viewModel.login(); // retrieve user information
+    // }
+    // if (signinMethod == 'Kakao') await viewModel.login();
     print('initState');
   }
 
@@ -996,7 +1023,6 @@ class _StrawberryPageState extends State<StrawberryPage> {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
-    // final viewModel = MainViewModel(KakaoLogin());
 
     // var pair = appState.current;
 
@@ -1026,10 +1052,12 @@ class _StrawberryPageState extends State<StrawberryPage> {
                       width: 30,
                       height: 30,
                       fit: BoxFit.cover,
-                      viewModel.user?.kakaoAccount?.profile?.profileImageUrl ??
-                          ''),
+                      // viewModel.user?.kakaoAccount?.profile?.profileImageUrl ??
+                      //     ''),
+                      user?.kakaoAccount?.profile?.profileImageUrl ?? ''),
                   Text(
-                    "${viewModel.user?.kakaoAccount?.profile?.nickname ?? ''}",
+                    "${user?.kakaoAccount?.profile?.nickname ?? ''}",
+                    // "${viewModel.user?.kakaoAccount?.profile?.nickname ?? ''}",
                     style: TextStyle(fontSize: 12),
                   ),
                 ],
@@ -1046,6 +1074,9 @@ class _StrawberryPageState extends State<StrawberryPage> {
                   SharedPreferences prefs =
                       await SharedPreferences.getInstance();
                   await prefs.setInt('myFarm', ppfarm);
+
+                  // if (Platform.isAndroid)
+                  //   showToast(context, signinMethod, Colors.redAccent);
 
                   //just for check the state
 
@@ -1114,6 +1145,9 @@ class _StrawberryPageState extends State<StrawberryPage> {
                 onPressed: () {
                   appState.pp = 7;
                   appState.toggleFavorite();
+                  // if (Platform.isAndroid)
+                  //   showToast(context, viewModel.isLoggedin.toString(),
+                  //       Colors.redAccent);
                 },
                 child: Text('지난주'),
               ),
@@ -1404,7 +1438,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    print('LoginPage: isLogined - ${viewModel.isLogined}');
+    print('LoginPage: isLoggedin - ${viewModel.isLoggedin}');
     return Scaffold(
       // appBar: AppBar(
       //   title: Center(child: Text('농장보기')),
@@ -1419,7 +1453,7 @@ class _LoginPageState extends State<LoginPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       // Text(
-                      //   '${viewModel.isLogined}',
+                      //   '${viewModel.isLoggedin}',
                       //   style: Theme.of(context).textTheme.headlineMedium,
                       // ),
                       InkWell(
@@ -1427,7 +1461,8 @@ class _LoginPageState extends State<LoginPage> {
                           viewModel = MainViewModel(KakaoLogin());
                           await viewModel.login().then((value) {
                             setState(() {
-                              print("In StreamBuilder: ${viewModel.isLogined}");
+                              print(
+                                  "In StreamBuilder: ${viewModel.isLoggedin}");
                               // runApp(const MyApp());
                             });
                           });
@@ -1441,7 +1476,8 @@ class _LoginPageState extends State<LoginPage> {
                           viewModel = MainViewModel(GoogleLogin());
                           await viewModel.login().then((value) {
                             setState(() {
-                              print("In StreamBuilder: ${viewModel.isLogined}");
+                              print(
+                                  "In StreamBuilder: ${viewModel.isLoggedin}");
                               // runApp(const MyApp());
                             });
                           });
@@ -1470,7 +1506,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 );
               }
-              print("snapshot.hasData: ${viewModel.isLogined}");
+              print("snapshot.hasData: ${viewModel.isLoggedin}");
               return MaterialApp(home: Scaffold(body: MyApp()));
               // return Column(
               //   mainAxisAlignment: MainAxisAlignment.center,
@@ -1479,7 +1515,7 @@ class _LoginPageState extends State<LoginPage> {
               //         viewModel.user?.kakaoAccount?.profile?.profileImageUrl ??
               //             ''),
               //     Text(
-              //       '${viewModel.isLogined}',
+              //       '${viewModel.isLoggedin}',
               //       style: Theme.of(context).textTheme.headline4,
               //     ),
               //     ElevatedButton(

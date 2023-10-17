@@ -1,3 +1,4 @@
+import 'package:farmmon_flutter/main.dart';
 import 'package:farmmon_flutter/social_login.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart';
 
@@ -11,6 +12,7 @@ class KakaoLogin implements SocialLogin {
       if (isInstalled) {
         try {
           await UserApi.instance.loginWithKakaoTalk();
+          signinMethod = 'Kakao';
           return true;
         } catch (e) {
           return false;
@@ -18,6 +20,7 @@ class KakaoLogin implements SocialLogin {
       } else {
         try {
           await UserApi.instance.loginWithKakaoAccount();
+          signinMethod = 'Kakao';
           return true;
         } catch (e) {
           return false;

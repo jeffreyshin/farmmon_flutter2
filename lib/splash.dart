@@ -12,11 +12,11 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen> {
   // bool _isLogined = false;
-  bool _isLogined = viewModel.isLogined;
+  bool _isLoggedin = viewModel.isLoggedin;
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        home: Scaffold(body: _isLogined ? MyApp() : LoginPage()));
+    return MaterialApp(home: Scaffold(body: LoginPage()));
+    // Scaffold(body: _isLoggedin ? MyApp() : LoginPage())); // MyApp()
   }
 }

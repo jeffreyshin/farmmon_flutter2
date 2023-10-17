@@ -1,3 +1,4 @@
+import 'package:farmmon_flutter/main.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:farmmon_flutter/social_login.dart';
@@ -21,6 +22,7 @@ class GoogleLogin implements SocialLogin {
 
       // Once signed in, return the UserCredential
       await FirebaseAuth.instance.signInWithCredential(credential);
+      signinMethod = 'Google';
       return true;
     } catch (error) {
       return false;
@@ -30,7 +32,8 @@ class GoogleLogin implements SocialLogin {
   @override
   Future<bool> logout() async {
     try {
-      await FirebaseAuth.instance.signOut();
+      // await FirebaseAuth.instance.signOut();
+      await GoogleSignIn().signOut(); //For GoogleSignIn
       return true;
     } catch (error) {
       return false;

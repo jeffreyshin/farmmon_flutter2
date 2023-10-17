@@ -1,21 +1,26 @@
+import 'package:farmmon_flutter/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:farmmon_flutter/firebase_auth_remote_data_source.dart';
 import 'package:farmmon_flutter/social_login.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao;
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MainViewModel {
   final _firebaseAuthDataSource = FirebaseAuthRemoteDataSource();
   final SocialLogin _socialLogin;
-  bool isLogined = false;
+  bool isLoggedin = false;
   kakao.User? user;
 
   MainViewModel(this._socialLogin);
 
   Future login() async {
-    isLogined = await _socialLogin.login();
-    if (isLogined) {
-      user = await kakao.UserApi.instance.me();
+    isLoggedin = await _socialLogin.login();
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('signinMethod', signinMethod);
 
+    if (isLoggedin) {
+      // if (signinMethod == 'Kakao') {
+      user = await kakao.UserApi.instance.me();
       print("Kakao talk logged in... ");
 
       final token = await _firebaseAuthDataSource.createCustomToken({
@@ -28,13 +33,14 @@ class MainViewModel {
 
       await FirebaseAuth.instance.signInWithCustomToken(token);
       print("firebase: signIn with token... ");
+      // }
     }
   }
 
   Future logout() async {
     await _socialLogin.logout();
     await FirebaseAuth.instance.signOut();
-    isLogined = false;
+    isLoggedin = false;
     user = null;
   }
 }
