@@ -14,6 +14,7 @@
 7. 복수의 농장에 대해 적용되도록 수정함(농장추가, 삭제가능)
 8. 카카오톡, Google 소셜로그인, firebase 인증기능 추가
 9. firestore 농가별 IOT portal 인증정보 활용 ~ 3rd party firebase계정에서 구현(개인정보처리)
+10. 클린 아키텍처(MVVM) 적용 코드 정리
 
 beta test(23.6.23~) Bug Report:
 1. IOT포털 데이터가져오기 처음했을 때 실패: backend의 문제로 추정(python도 동일증상)  - 꼼수로 처리완료
