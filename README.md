@@ -12,7 +12,9 @@
 5. 농가 등록메뉴 구성함(사용자편이 무시하고 기능만 구현: 농가명_필수, 장치명_선택, iot포털serviceKey_필수)
 6. 시간별 환경데이터 갱신된 데이터만 받아오도록 수정
 7. 복수의 농장에 대해 적용되도록 수정함(농장추가, 삭제가능)
-8. 카카오톡 소셜로그인 추가 작업중
+8. 카카오톡, Google 소셜로그인, firebase 인증기능 추가
+9. firestore 농가별 IOT portal 인증정보 활용 ~ 3rd party firebase계정에서 구현(개인정보처리)
+10. 클린 아키텍처(MVVM) 적용 코드 정리
 
 beta test(23.6.23~) Bug Report:
 1. IOT포털 데이터가져오기 처음했을 때 실패: backend의 문제로 추정(python도 동일증상)  - 꼼수로 처리완료
@@ -24,10 +26,9 @@ beta test(23.6.23~) Bug Report:
 7. 첫번째, 두번째 농가 데이터만 삭제하기 - 처리완료
 8. License메뉴 설정화면안으로 넣기 - 처리완료
 9. 첫째, 둘째 농가 이름/apiKey 바꾸기 가능하게 - 처리완료
-10. iot portal apikey 입력텍스트 공백제거(trim) - 바로적용할 것
+10. iot portal apikey 입력텍스트 공백제거(trim) - 나중에 처리
 11. iot portal 데이터 다수 누락시 병해충 모델 실행오류(9.24) - 처리완료
-
-12. 
+ 
 
 ## Getting Started
 
