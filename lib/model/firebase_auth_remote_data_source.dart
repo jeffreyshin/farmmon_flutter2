@@ -1,6 +1,5 @@
 import 'package:http/http.dart' as http;
 
-
 class FirebaseAuthRemoteDataSource {
   final String url =
       'https://us-central1-farmmon-flutter-0711.cloudfunctions.net/createCustomToken';

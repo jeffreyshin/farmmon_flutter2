@@ -1,7 +1,7 @@
 import 'package:farmmon_flutter/main.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:farmmon_flutter/social_login.dart';
+import 'package:farmmon_flutter/viewmodel/social_login.dart';
 
 class GoogleLogin implements SocialLogin {
   @override

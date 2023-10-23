@@ -1,7 +1,8 @@
-import 'package:farmmon_flutter/kakao_login.dart';
+import 'package:farmmon_flutter/viewmodel/kakao_login.dart';
 import 'package:farmmon_flutter/main.dart';
 import 'package:flutter/material.dart';
-import 'package:farmmon_flutter/main_view_model.dart';
+import 'package:farmmon_flutter/viewmodel/main_view_model.dart';
+import 'package:farmmon_flutter/view/homepage.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

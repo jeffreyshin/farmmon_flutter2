@@ -1,7 +1,7 @@
 import 'package:farmmon_flutter/main.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:farmmon_flutter/firebase_auth_remote_data_source.dart';
-import 'package:farmmon_flutter/social_login.dart';
+import 'package:farmmon_flutter/model/firebase_auth_remote_data_source.dart';
+import 'package:farmmon_flutter/viewmodel/social_login.dart';
 import 'package:kakao_flutter_sdk_user/kakao_flutter_sdk_user.dart' as kakao;
 import 'package:shared_preferences/shared_preferences.dart';
 
