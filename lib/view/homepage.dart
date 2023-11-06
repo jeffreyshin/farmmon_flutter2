@@ -37,6 +37,8 @@ import 'package:farmmon_flutter/firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:farmmon_flutter/main.dart';
 
+import 'package:farmmon_flutter/model/model.dart';
+
 /////////////////////////////////////////////////////////////////////
 class AppStorage {
   Future readJsonAsString() async {
@@ -326,6 +328,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return LayoutBuilder(builder: (context, constraints) {
       return Scaffold(
+        resizeToAvoidBottomInset: false,
         body: Row(
           children: [
             SafeArea(
@@ -820,6 +823,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     print('LoginPage: isLoggedin - ${viewModel.isLoggedin}');
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       // appBar: AppBar(
       //   title: Center(child: Text('농장보기')),
       // ),
@@ -893,7 +897,9 @@ class _LoginPageState extends State<LoginPage> {
                 );
               }
               print("snapshot.hasData: ${viewModel.isLoggedin}");
-              return MaterialApp(home: Scaffold(body: MyApp()));
+              return MaterialApp(
+                  home:
+                      Scaffold(resizeToAvoidBottomInset: false, body: MyApp()));
               // return Column(
               //   mainAxisAlignment: MainAxisAlignment.center,
               //   children: <Widget>[

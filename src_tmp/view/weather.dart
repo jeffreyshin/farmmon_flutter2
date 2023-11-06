@@ -17,7 +17,7 @@ import 'package:flutter/material.dart';
 // import 'package:flutter_config/flutter_config.dart';
 // import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:farmmon_flutter/model/kma.dart';
-import 'package:farmmon_flutter/view/weather_screen.dart';
+// import 'package:farmmon_flutter/view/weather_screen.dart';
 import 'package:intl/intl.dart';
 // import 'weather_screen.dart';
 // import 'package:hiiidan_weather/data/my_location.dart';

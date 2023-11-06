@@ -4,8 +4,9 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 // import 'package:timer_builder/timer_builder.dart';
-import 'package:farmmon_flutter/model/model.dart';
 import 'package:intl/date_symbol_data_local.dart';
+
+import '../model/model.dart';
 // import 'setting.dart';
 
 class WeatherScreen extends StatefulWidget {

@@ -17,7 +17,9 @@ class _SplashScreenState extends State<SplashScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: Scaffold(body: LoginPage()));
+    return MaterialApp(
+        home: Scaffold(resizeToAvoidBottomInset: false, body: LoginPage()));
+
     // Scaffold(body: _isLoggedin ? MyApp() : LoginPage())); // MyApp()
   }
 }
