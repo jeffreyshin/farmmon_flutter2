@@ -28,6 +28,7 @@ beta test(23.6.23~) Bug Report:
 9. 첫째, 둘째 농가 이름/apiKey 바꾸기 가능하게 - 처리완료
 10. iot portal apikey 입력텍스트 공백제거(trim) - 나중에 처리
 11. iot portal 데이터 다수 누락시 병해충 모델 실행오류(9.24) - 처리완료
+12. 텍스트필드 입력할때 화면 밀어올리는 오류 - 처리완료
  
 
 ## Getting Started
