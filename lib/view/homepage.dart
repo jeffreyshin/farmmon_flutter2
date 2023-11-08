@@ -150,7 +150,7 @@ Future prefsLoad() async {
   farm1['farmName'] = (prefs.getString('farmName0') ?? '기본농장');
   farm2['farmName'] = (prefs.getString('farmName1') ?? '농장2');
   farm1['serviceKey'] =
-      (prefs.getString('serviceKey0') ?? 'r34df5d2d566049e2a809c41da915adc6');
+      (prefs.getString('serviceKey0') ?? 'v8UppqLzoaGtPqyRaEXiRCM8KAukLvivR');
   farm2['serviceKey'] =
       (prefs.getString('serviceKey1') ?? 'r64f2ea0960a74f4f8c48a0b3a6953973');
 
@@ -1987,7 +1987,7 @@ class _MySettingState extends State<MySetting> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text("v0.3.1   License:"),
+                    Text("v0.4.0   License:"),
                     IconButton(
                       icon: Icon(Icons.fact_check_outlined),
                       onPressed: () {

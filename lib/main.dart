@@ -64,7 +64,7 @@ kakao.User? user;
 Map farm1 = {
   'farmName': '기본농장',
   'facilityName': '1번온실',
-  'serviceKey': 'r34df5d2d566049e2a809c41da915adc6',
+  'serviceKey': 'v8UppqLzoaGtPqyRaEXiRCM8KAukLvivR',
 };
 Map farm2 = {
   'farmName': '농장2',
