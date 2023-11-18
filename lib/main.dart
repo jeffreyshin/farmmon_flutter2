@@ -61,6 +61,12 @@ var statusCode = 0;
 var viewModel = MainViewModel(GoogleLogin());
 kakao.User? user;
 
+Map<String, dynamic> firestoreData = {
+  'email': "",
+  'apikey': "",
+  'username': ""
+};
+
 Map farm1 = {
   'farmName': '기본농장',
   'facilityName': '1번온실',

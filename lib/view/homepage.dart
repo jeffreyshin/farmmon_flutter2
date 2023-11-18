@@ -35,6 +35,8 @@ import 'package:farmmon_flutter/viewmodel/google_login.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:farmmon_flutter/firebase_options.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:farmmon_flutter/main.dart';
 
 import 'package:farmmon_flutter/model/model.dart';
@@ -1599,10 +1601,18 @@ class _MySettingState extends State<MySetting> {
   TextEditingController inputController3 = TextEditingController();
   // String inputText = '';
   // String text = 'first';
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  getUserInfo(userID) async {
+    var result = await firestore.collection('users').doc(userID).get();
+    print(result.data());
+    firestoreData = result.data()!;
+  }
 
   @override
   void initState() {
     super.initState();
+    getUserInfo('신재훈001');
     // var appState = context.watch<MyAppState>();
 
     // Start listening to changes.
@@ -1634,6 +1644,11 @@ class _MySettingState extends State<MySetting> {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
+
+    final String documentId;
+
+    CollectionReference users = FirebaseFirestore.instance.collection('users');
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
@@ -1817,6 +1832,28 @@ class _MySettingState extends State<MySetting> {
                         child: const Text('다음'),
                       ),
                     ),
+                    SizedBox(width: 10),
+                    Center(
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.brown,
+                          foregroundColor: Colors.white,
+                        ),
+                        onPressed: () async {
+                          if (mounted) {
+                            String n = (ppfarm + 1).toString().padLeft(3, "0");
+
+                            await getUserInfo(
+                                '${user?.kakaoAccount?.profile?.nickname ?? ''}$n');
+                            print(
+                                '${user?.kakaoAccount?.profile?.nickname ?? ''}$n');
+                            inputController3.text = firestoreData['apikey'];
+                          }
+                          setState(() {});
+                        },
+                        child: const Text('가져오기'),
+                      ),
+                    ),
                   ],
                 ),
                 SizedBox(
@@ -1970,6 +2007,7 @@ class _MySettingState extends State<MySetting> {
                   ],
                 ),
                 SizedBox(height: 20),
+                // GetUserName('신재훈001'),
                 Text("""Contributors
 총괄기획, 앱 개발_농촌진흥청 신재훈
 병해충모델개발, 검증_충남농업기술원 남명현
@@ -2776,3 +2814,72 @@ class _MyLineChartState2 extends State<MyLineChart2> {
 }
 
 /////////////////////////////////////////////////////////////
+
+class AddUser extends StatelessWidget {
+  final String fullName;
+  final String company;
+  final int age;
+
+  AddUser(this.fullName, this.company, this.age);
+
+  @override
+  Widget build(BuildContext context) {
+    // Create a CollectionReference called users that references the firestore collection
+    CollectionReference users = FirebaseFirestore.instance.collection('users');
+
+    Future<void> addUser() {
+      // Call the user's CollectionReference to add a new user
+      return users
+          .add({
+            'full_name': fullName, // John Doe
+            'company': company, // Stokes and Sons
+            'age': age // 42
+          })
+          .then((value) => print("User Added"))
+          .catchError((error) => print("Failed to add user: $error"));
+    }
+
+    return TextButton(
+      onPressed: addUser,
+      child: Text(
+        "Add User",
+      ),
+    );
+  }
+}
+
+class GetUserName extends StatelessWidget {
+  final String documentId;
+
+  GetUserName(this.documentId);
+
+  @override
+  Widget build(BuildContext context) {
+    CollectionReference users = FirebaseFirestore.instance.collection('users');
+
+    return FutureBuilder<DocumentSnapshot>(
+      future: users.doc(documentId).get(),
+      builder:
+          (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+        if (snapshot.hasError) {
+          return Text("Something went wrong");
+        }
+
+        if (snapshot.hasData && !snapshot.data!.exists) {
+          return Text("Document does not exist");
+        }
+
+        if (snapshot.connectionState == ConnectionState.done) {
+          Map<String, dynamic> data =
+              snapshot.data!.data() as Map<String, dynamic>;
+
+          var firestoreData = data;
+
+          return Text("${data['email']} ${data['apikey']}");
+        }
+
+        return Text("loading");
+      },
+    );
+  }
+}
