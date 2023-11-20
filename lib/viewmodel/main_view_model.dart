@@ -39,7 +39,7 @@ class MainViewModel {
           'email': user!.kakaoAccount!.email!,
           'photoURL': user!.kakaoAccount!.profile!.profileImageUrl!,
         };
-      } else if (signinMethod == 'google') {
+      } else if (signinMethod == 'Google') {
         // loginInfo;
       }
     }

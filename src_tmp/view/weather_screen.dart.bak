@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 // import 'package:timer_builder/timer_builder.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-import '../model/model.dart';
+import '../model/model.dart.bak';
 // import 'setting.dart';
 
 class WeatherScreen extends StatefulWidget {

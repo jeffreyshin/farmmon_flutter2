@@ -5,7 +5,6 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:farmmon_flutter/view/splash.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:english_words/english_words.dart';
 import 'package:provider/provider.dart';
@@ -13,18 +12,11 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
-import 'package:fl_chart/fl_chart.dart';
-import 'package:farmmon_flutter/view/zoomable_chart.dart';
-import 'package:farmmon_flutter/presentation/resources/app_resources.dart';
-import 'package:farmmon_flutter/icons/custom_icons_icons.dart';
+
 import 'package:archive/archive_io.dart';
 // import 'package:fluttertoast/fluttertoast.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:farmmon_flutter/viewmodel/my_location.dart';
-import 'package:farmmon_flutter/model/kma.dart';
 // import 'package:farmmon_flutter/weather.dart';
-
-import 'package:flutter/foundation.dart';
 
 import 'package:farmmon_flutter/viewmodel/kakao_login.dart';
 import 'package:farmmon_flutter/viewmodel/main_view_model.dart';
@@ -34,8 +26,7 @@ import 'package:farmmon_flutter/viewmodel/google_login.dart';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:farmmon_flutter/view/homepage.dart';
+import 'package:farmmon_flutter/view/view_homepage.dart';
 
 import 'model/model.dart';
 
@@ -67,7 +58,7 @@ Map<String, dynamic> firestoreData = {
   'username': ""
 };
 
-Map<String, dynamic> loginInfo = {
+Map<String, String?> loginInfo = {
   'uid': "",
   'displayName': "",
   'email': "",
