@@ -19,21 +19,29 @@ class MainViewModel {
     await prefs.setString('signinMethod', signinMethod);
 
     if (isLoggedin) {
-      // if (signinMethod == 'Kakao') {
-      user = await kakao.UserApi.instance.me();
-      print("Kakao talk logged in... ");
+      if (signinMethod == 'Kakao') {
+        user = await kakao.UserApi.instance.me();
+        print("Kakao talk logged in... ");
 
-      final token = await _firebaseAuthDataSource.createCustomToken({
-        'uid': user!.id.toString(),
-        'displayName': user!.kakaoAccount!.profile!.nickname,
-        'email': user!.kakaoAccount!.email!,
-        'photoURL': user!.kakaoAccount!.profile!.profileImageUrl!,
-      });
-      print("firebase: create token... ");
+        final token = await _firebaseAuthDataSource.createCustomToken({
+          'uid': user!.id.toString(),
+          'displayName': user!.kakaoAccount!.profile!.nickname,
+          'email': user!.kakaoAccount!.email!,
+          'photoURL': user!.kakaoAccount!.profile!.profileImageUrl!,
+        });
+        print("firebase: create token... ");
 
-      await FirebaseAuth.instance.signInWithCustomToken(token);
-      print("firebase: signIn with token... ");
-      // }
+        await FirebaseAuth.instance.signInWithCustomToken(token);
+        print("firebase: signIn with token... ");
+        loginInfo = {
+          'uid': user!.id.toString(),
+          'displayName': user!.kakaoAccount!.profile!.nickname,
+          'email': user!.kakaoAccount!.email!,
+          'photoURL': user!.kakaoAccount!.profile!.profileImageUrl!,
+        };
+      } else if (signinMethod == 'google') {
+        // loginInfo;
+      }
     }
   }
 

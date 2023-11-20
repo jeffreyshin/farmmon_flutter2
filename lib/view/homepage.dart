@@ -437,12 +437,11 @@ class _StrawberryPageState extends State<StrawberryPage> {
                       width: 30,
                       height: 30,
                       fit: BoxFit.cover,
-                      // viewModel.user?.kakaoAccount?.profile?.profileImageUrl ??
-                      //     ''),
-                      user?.kakaoAccount?.profile?.profileImageUrl ?? ''),
+                      (loginInfo['photoURL'] ?? '')),
+                  // user?.kakaoAccount?.profile?.profileImageUrl ?? ''),
                   Text(
-                    "${user?.kakaoAccount?.profile?.nickname ?? ''}",
-                    // "${viewModel.user?.kakaoAccount?.profile?.nickname ?? ''}",
+                    loginInfo['displayName'],
+                    // "${user?.kakaoAccount?.profile?.nickname ?? ''}",
                     style: TextStyle(fontSize: 12),
                   ),
                 ],

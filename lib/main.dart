@@ -67,6 +67,13 @@ Map<String, dynamic> firestoreData = {
   'username': ""
 };
 
+Map<String, dynamic> loginInfo = {
+  'uid': "",
+  'displayName': "",
+  'email': "",
+  'photoURL': ""
+};
+
 Map farm1 = {
   'farmName': '기본농장',
   'facilityName': '1번온실',
