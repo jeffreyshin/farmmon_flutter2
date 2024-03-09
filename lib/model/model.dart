@@ -109,3 +109,13 @@ class PINFList {
     return PINFList(pinfs: pinfs);
   }
 }
+
+class output {
+  String date;
+  String type;
+  double? LW;
+  double? WT;
+  double? PINF;
+  double? WI;
+  output(this.date, this.type, this.LW, this.WT, this.PINF, this.WI);
+}

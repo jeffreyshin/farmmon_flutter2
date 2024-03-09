@@ -13,6 +13,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 
+//import 'package:csv/csv.dart';
+
 import 'package:archive/archive_io.dart';
 // import 'package:fluttertoast/fluttertoast.dart';
 import 'package:farmmon_flutter/viewmodel/my_location.dart';
@@ -271,7 +273,7 @@ class MyAppState extends ChangeNotifier {
   }
 
   Future apiRequestIOT(BuildContext context) async {
-    var urlanthracnose = 'http://147.46.206.95:7897/Anthracnose';
+    var urlanthracnose = 'https://anthracnose-api.camp.re.kr/Anthracnose';
     try {
       http.Response response3 = await http.post(
         Uri.parse(urlanthracnose),
@@ -377,8 +379,9 @@ class MyAppState extends ChangeNotifier {
         notifyListeners();
       }
     } catch (e) {
-      if (Platform.isAndroid)
+      if (Platform.isAndroid) {
         showToast(context, "네트워크 상태를 확인해주세요", Colors.redAccent);
+      }
       print("네트워크 상태를 확인해주세요");
       notifyListeners();
       return -1;
@@ -428,6 +431,7 @@ class MyAppState extends ChangeNotifier {
       weatherString = "$weatherString$v1,$v2,$v3,$v4\n";
     }
     // print(weatherString);
+    // zip weather.csv
     await (File('${dir.path}/weather.csv').writeAsString(weatherString))
         .then((value) {
       encoder.create('${dir.path}/input.zip');
@@ -435,22 +439,142 @@ class MyAppState extends ChangeNotifier {
       encoder.close();
     });
 
-    // zip weather.csv
     // base64 encoding
     var z = await File('${dir.path}/input.zip').readAsBytes();
     String token = base64.encode(z);
-
+/*
     var body = jsonEncode({
       'Input': token,
       'type': "file",
     });
+*/
+
+/////////////////////////////////////
+// anthracnose
+/////////////////////////////////////
 
     // http request
-    var urlanthracnose = 'http://147.46.206.95:7897/Anthracnose';
-    var urlbotrytis = 'http://147.46.206.95:7898/Botrytis';
-    // try {
+    var urlanthracnose = 'https://anthracnose-api.camp.re.kr/Anthracnose';
+    var urlbotrytis = 'https://botrytis-api.camp.re.kr/Botrytis';
 
-    http.Response response = await http.post(
+    var apikey = "61cdc660a46f4fcc93004de201c58dff";
+    var param = jsonEncode({'apiKey': apikey});
+
+// create session
+    var urlm = "$urlanthracnose/connect";
+//    print(urlm);
+    http.Response responseC = await http.post(
+      Uri.parse(urlm),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: param,
+    );
+    var jobID = responseC.body;
+    print("jobID호출");
+    print(jobID);
+
+// launch model by session key
+    param = jsonEncode({'apiKey': apikey, 'jobid': jobID, 'file': token});
+    urlm = "$urlanthracnose/launch";
+    http.Response responseL = await http.post(
+      Uri.parse(urlm),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: param,
+    );
+    var rL = responseL.body;
+    print(rL);
+
+// get Status model
+    urlm = "$urlanthracnose/getStatus";
+    param = jsonEncode({'apiKey': apikey, 'jobid': jobID});
+    http.Response responseS = await http.post(
+      Uri.parse(urlm),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: param,
+    );
+    var rS = responseS.body;
+    print(rS);
+
+    if (responseS.statusCode == 200) {
+      while (true) {
+        if (responseS.body == "completed") break;
+        responseS = await http.post(
+          Uri.parse(urlm),
+          headers: <String, String>{
+            'Content-Type': 'application/json',
+            HttpHeaders.contentTypeHeader: 'application/json',
+          },
+          body: param,
+        );
+        await Future.delayed(Duration(seconds: 1));
+      }
+      rS = responseS.body;
+      // print(rgetStatus);
+    }
+
+// get output
+    urlm = "$urlanthracnose/getOutput";
+    param = jsonEncode({'apiKey': apikey, 'jobid': jobID, 'variable': "all"});
+    http.Response responseO = await http.post(
+      Uri.parse(urlm),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: param,
+    );
+    var rO = responseO.bodyBytes;
+    // print("output A ######################################");
+    // print(rgetOutput);
+
+    await (File('${dir.path}/output.zip').writeAsBytes(rO));
+
+// Decode the Zip file
+    final bytes = rO;
+    final archive = ZipDecoder().decodeBytes(bytes);
+
+// Extract the contents of the Zip archive to disk.
+    for (final file in archive) {
+      final filename = file.name;
+      if (file.isFile) {
+        final data = file.content as List<int>;
+        File('${dir.path}/$filename')
+          ..createSync(recursive: true)
+          ..writeAsBytesSync(data);
+      } else {
+        File('${dir.path}/$filename').create(recursive: true);
+      }
+    }
+
+// Read the Zip file from disk.
+    var rrr = await File('${dir.path}/output.csv').readAsString();
+    print(rrr);
+// remove session
+    urlm = "$urlanthracnose/disconnect";
+    param = jsonEncode({'apiKey': apikey, 'jobid': jobID});
+    http.Response responseD = await http.post(
+      Uri.parse(urlm),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: param,
+    );
+    var rD = responseD.body;
+    print(rD);
+
+    // http request
+    // try {
+/*
+    http.Response response3 = await http.post(
       Uri.parse(urlanthracnose),
       headers: <String, String>{
         'Content-Type': 'application/json',
@@ -458,10 +582,41 @@ class MyAppState extends ChangeNotifier {
       },
       body: body,
     );
-
-    var r = response.body;
+    var r = response3.body;
     print(r);
-    r = r.replaceAll("\\", "");
+*/
+
+//////////////////////////////////////////////////////////////
+    ///
+
+    var outputA = <output>[];
+    File file = File('${dir.path}/output.csv');
+    outputA = file
+        .readAsLinesSync()
+        .skip(1) // Skip the header row
+        .map((line) {
+      final parts = line.split(',');
+      return output(
+          parts[0],
+          parts[1],
+          double.tryParse(parts[2]),
+          double.tryParse(parts[3]),
+          double.tryParse(parts[4])! * 100.0,
+          double.tryParse(parts[5]));
+    }).toList();
+
+//    List<List<dynamic>> outputA = CsvToListConverter().convert(rrr);
+
+    // print(outputA[0].date);
+    // print(outputA[0].type);
+
+    // if (Platform.isAndroid) {
+    //   showToast(
+    //       context, "${outputA[0].date}, ${outputA[0].type}", Colors.redAccent);
+    // }
+
+/*
+    var r = rrr.replaceAll("\\", "");
     print(r);
     var i = r.indexOf('output');
     var ii = r.indexOf("}]");
@@ -474,7 +629,125 @@ class MyAppState extends ChangeNotifier {
     }
     var rr = r.substring(i + 10, ii + 2);
     final outputA = json.decode(rr);
+*/
 
+/////////////////////////////////////
+// botrytis
+/////////////////////////////////////
+
+// create session
+    var urlm2 = "$urlbotrytis/connect";
+//    print(urlm2);
+    http.Response responseC2 = await http.post(
+      Uri.parse(urlm2),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: param,
+    );
+    var jobID2 = responseC2.body;
+    print("jobID호출");
+    print(jobID2);
+
+// launch model by session key
+    param = jsonEncode({'apiKey': apikey, 'jobid': jobID2, 'file': token});
+    urlm2 = "$urlbotrytis/launch";
+    http.Response responseL2 = await http.post(
+      Uri.parse(urlm2),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: param,
+    );
+    var rL2 = responseL2.body;
+    print(rL2);
+
+// get Status model
+    urlm2 = "$urlbotrytis/getStatus";
+    param = jsonEncode({'apiKey': apikey, 'jobid': jobID2});
+    http.Response responseS2 = await http.post(
+      Uri.parse(urlm2),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: param,
+    );
+    var rS2 = responseS2.body;
+    print(rS2);
+
+    if (responseS2.statusCode == 200) {
+      while (true) {
+        if (responseS2.body == "completed") break;
+        responseS2 = await http.post(
+          Uri.parse(urlm2),
+          headers: <String, String>{
+            'Content-Type': 'application/json',
+            HttpHeaders.contentTypeHeader: 'application/json',
+          },
+          body: param,
+        );
+        await Future.delayed(Duration(seconds: 1));
+      }
+      rS2 = responseS2.body;
+      // print(rgetStatus2);
+    }
+
+// get output
+    urlm2 = "$urlbotrytis/getOutput";
+    param = jsonEncode({'apiKey': apikey, 'jobid': jobID2, 'variable': "all"});
+    http.Response responseO2 = await http.post(
+      Uri.parse(urlm2),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: param,
+    );
+    var rO2 = responseO2.bodyBytes;
+    // print("outputB ##############################");
+    // print(rgetOutput2);
+
+    await (File('${dir.path}/output.zip').writeAsBytes(rO2));
+
+// Decode the Zip file
+    final bytes2 = rO2;
+    final archive2 = ZipDecoder().decodeBytes(bytes2);
+
+// Extract the contents of the Zip archive to disk.
+    for (final file in archive2) {
+      final filename = file.name;
+      if (file.isFile) {
+        final data = file.content as List<int>;
+        File('${dir.path}/$filename')
+          ..createSync(recursive: true)
+          ..writeAsBytesSync(data);
+      } else {
+        File('${dir.path}/$filename').create(recursive: true);
+      }
+    }
+
+// Read the Zip file from disk.
+    var rrr2 = await File('${dir.path}/output.csv').readAsString();
+    print(rrr2);
+
+// remove session
+    urlm2 = "$urlbotrytis/disconnect";
+    param = jsonEncode({'apiKey': apikey, 'jobid': jobID2});
+    http.Response responseD2 = await http.post(
+      Uri.parse(urlm2),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+        HttpHeaders.contentTypeHeader: 'application/json',
+      },
+      body: param,
+    );
+    var rD2 = responseD2.body;
+    print(rD2);
+
+/*
     http.Response response2 = await http.post(
       Uri.parse(urlbotrytis),
       headers: <String, String>{
@@ -482,17 +755,46 @@ class MyAppState extends ChangeNotifier {
       },
       body: body,
     );
+*/
 
-    var r2 = response2.body;
-    r = r2.replaceAll("\\", "");
-    var i2 = r.indexOf('output');
-    var ii2 = r.indexOf("}]");
-    var rr2 = r.substring(i2 + 10, ii2 + 2);
+    var outputB = <output>[];
+    File file2 = File('${dir.path}/output.csv');
+    outputB = file2
+        .readAsLinesSync()
+        .skip(1) // Skip the header row
+        .map((line) {
+      final parts = line.split(',');
+      return output(
+          parts[0],
+          parts[1],
+          double.tryParse(parts[2]),
+          double.tryParse(parts[3]),
+          double.tryParse(parts[4])! * 100.0,
+          double.tryParse(parts[5]));
+    }).toList();
+
+    // if (Platform.isAndroid) {
+    //   showToast(
+    //       context, "${outputB[0].date}, ${outputB[0].type}", Colors.redAccent);
+    // }
+
+//    List<List<dynamic>> outputB = CsvToListConverter().convert(rrr);
+//    print(outputB);
+//    print(outputB);
+
+/*
+    var r2 = rrr2.replaceAll("\\", "");
+    print(r2);
+
+    var i2 = r2.indexOf('output');
+    var ii2 = r2.indexOf("}]");
+    var rr2 = r2.substring(i2 + 10, ii2 + 2);
     final outputB = json.decode(rr2);
 
     // print(rr);
     // print(rr2);
     // print(output.runtimeType);
+*/
 
 /////////////////////////////////////////////////////
     //pinf update
@@ -501,21 +803,25 @@ class MyAppState extends ChangeNotifier {
     int j = outputA.length - 1;
     int jj = j;
     for (int i = 0; i <= jj; i++) {
-      var customDT = outputA[j]['date'].toString();
+      var customDT = outputA[j].date;
+      double? PINFA = outputA[j].PINF;
+      double? PINFB = outputB[j].PINF;
 
       PINF npinf = PINF(
         customDt: customDT,
-        anthracnose:
-            double.parse((outputA[j]['PINF'] * 100).toStringAsFixed(1)),
-        botrytis: double.parse((outputB[j]['PINF'] * 100).toStringAsFixed(1)),
+        anthracnose: PINFA,
+        botrytis: PINFB,
         xlabel: DateFormat('MM/dd').format(
-          DateTime.parse(outputA[j]['date']),
+          DateTime.parse(outputA[j].date),
         ),
       );
       j--;
+
+      //        botrytis: double.parse((outputB[j].PINF).toStringAsFixed(1)),
+
       // pinfList.insert(i, npinf);
       pinfLists[ppfarm].insert(i, npinf);
-      print(customDT.toString());
+      // print(customDT.toString());
       // print("apiPEST() - pinfList update, ppfarm: $ppfarm");
 
       notifyListeners();

@@ -23,14 +23,14 @@ class GoogleLogin implements SocialLogin {
       // Once signed in, return the UserCredential
       UserCredential authResult =
           await FirebaseAuth.instance.signInWithCredential(credential);
-      User? user = authResult.user;
       loginInfo = {
-        'uid': user?.uid,
-        'displayName': user?.displayName,
-        'email': user?.email,
-        'photoURL': user?.photoURL,
+        'uid': authResult.user?.uid,
+        'displayName': authResult.user?.displayName,
+        'email': authResult.user?.email,
+        'photoURL': authResult.user?.photoURL,
       };
       signinMethod = 'Google';
+      print(loginInfo['photoURL']);
       return true;
     } catch (error) {
       return false;
