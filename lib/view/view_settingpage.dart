@@ -453,7 +453,7 @@ class _MySettingState extends State<MySetting> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text("v0.4.0   License:"),
+                    Text("v0.5.0   License:"),
                     IconButton(
                       icon: Icon(Icons.fact_check_outlined),
                       onPressed: () {
