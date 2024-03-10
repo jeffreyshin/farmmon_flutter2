@@ -823,8 +823,6 @@ class MyAppState extends ChangeNotifier {
       pinfLists[ppfarm].insert(i, npinf);
       // print(customDT.toString());
       // print("apiPEST() - pinfList update, ppfarm: $ppfarm");
-
-      notifyListeners();
       // print('$j: $custom_dt');
     }
     // } catch (e) {
@@ -837,6 +835,7 @@ class MyAppState extends ChangeNotifier {
     //   notifyListeners();
     //   return -1;
     // }
+    notifyListeners();
 
     return 0;
   }
