@@ -8,9 +8,10 @@ class KMA {
   final String currentWeatherUrl; //초단기 실황
   final String superShortWeatherUrl; //초단기 예보
   final String airConditionUrl; //대기오염 정보
+  final String ASOSUrl;
 
   KMA(this.today2amUrl, this.shortTermWeatherUrl, this.currentWeatherUrl,
-      this.superShortWeatherUrl, this.airConditionUrl);
+      this.superShortWeatherUrl, this.airConditionUrl, this.ASOSUrl);
 
   //최저, 최고기온 json
   Future<dynamic> getToday2amData() async {
@@ -59,6 +60,17 @@ class KMA {
   //에어코리아 json
   Future<dynamic> getAirConditionData() async {
     http.Response response = await http.get(Uri.parse(airConditionUrl));
+    if (response.statusCode == 200) {
+      String jsonData = response.body;
+      var parsingData = jsonDecode(jsonData);
+      // print(parsingData);
+      return parsingData;
+    }
+  }
+
+  // ASOS
+  Future<dynamic> getASOSData() async {
+    http.Response response = await http.get(Uri.parse(ASOSUrl));
     if (response.statusCode == 200) {
       String jsonData = response.body;
       var parsingData = jsonDecode(jsonData);

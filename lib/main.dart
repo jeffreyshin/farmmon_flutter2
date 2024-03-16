@@ -41,6 +41,8 @@ import 'model/model.dart';
 // import 'package:dio/dio.dart';
 // import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import 'package:farmmon_flutter/view/view_heatmap.dart';
+
 // var pp = 0;
 var ppfarm = 0;
 var farmNo = 2;
@@ -634,7 +636,9 @@ class MyAppState extends ChangeNotifier {
 /////////////////////////////////////
 // botrytis
 /////////////////////////////////////
-
+    if (Platform.isAndroid) {
+      showToast(context, "잿빛곰팡이병 예측모델을 실행합니다", Colors.blueAccent);
+    }
 // create session
     var urlm2 = "$urlbotrytis/connect";
 //    print(urlm2);
@@ -795,7 +799,9 @@ class MyAppState extends ChangeNotifier {
     // print(rr2);
     // print(output.runtimeType);
 */
-
+    if (Platform.isAndroid) {
+      showToast(context, "결과수신을 완료했습니다", Colors.blueAccent);
+    }
 /////////////////////////////////////////////////////
     //pinf update
     pinfList = List<PINF>.filled(50, pinfBlank, growable: true);
