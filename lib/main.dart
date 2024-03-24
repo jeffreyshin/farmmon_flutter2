@@ -807,7 +807,7 @@ class MyAppState extends ChangeNotifier {
     // print(output.runtimeType);
 */
     if (Platform.isAndroid) {
-      showToast(context, "결과수신을 완료했습니다", Colors.blueAccent);
+      showToast(context, "예측결과를 표시합니다", Colors.blueAccent);
     }
 /////////////////////////////////////////////////////
     //pinf update
@@ -1128,7 +1128,7 @@ class MyAppState extends ChangeNotifier {
     // print(output.runtimeType);
 */
     if (Platform.isAndroid) {
-      showToast(context, "결과수신을 완료했습니다", Colors.blueAccent);
+      showToast(context, "예측결과를 표시합니다", Colors.blueAccent);
     }
 /////////////////////////////////////////////////////
     //pinf update

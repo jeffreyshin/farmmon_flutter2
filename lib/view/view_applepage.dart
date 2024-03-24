@@ -10,6 +10,7 @@ import 'package:farmmon_flutter/main.dart';
 import 'package:farmmon_flutter/model/kma.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:http/http.dart' as http;
 
 ///////////////////////////////////////////////////////////////////
 
@@ -132,6 +133,7 @@ class _ApplePageState extends State<ApplePage> {
   @override
   void initState() {
     // getWeather();
+    Provider.of<MyAppState>(context, listen: false);
     _initExampleData();
     super.initState();
   }
@@ -158,9 +160,6 @@ class _ApplePageState extends State<ApplePage> {
 
     var obsJson;
     var obs;
-    if (Platform.isAndroid) {
-      showToast(context, "기상청 ASOS 데이터를 가져옵니다", Colors.blueAccent);
-    }
 
     var apiKey =
         "Mhl9mL16kvqOfLoUJxorRFlPrkeLeO%2FoTgVPBEjFs4pj73UcWtPnsTpOikSTt1Xu9tSM7%2ByzbcMh4WyL7TGypA%3D%3D";
@@ -371,6 +370,7 @@ class _ApplePageState extends State<ApplePage> {
 
     await appState.apiRequestApple(context).then((value) {
       _initExampleData();
+      tag = 1; //1;
       setState(() {});
     });
 
@@ -393,14 +393,45 @@ class _ApplePageState extends State<ApplePage> {
     // Navigator.push(context, MaterialPageRoute(builder: (context) {
     //   return WeatherPage();
     // }));
-    tag = 1; //1;
     return 0;
+  }
+
+  Future getWeather2() async {
+    var appState = context.watch<MyAppState>();
+
+    var i;
+    var region = 'hadong';
+    var itemsList = ['tmax', 'tmin', 'rain'];
+    var daysList = ['20230716', '20230717'];
+    var items = itemsList.join(', ');
+    var days = daysList.join(', ');
+
+    var geocode = '127.72743,35.09714';
+    var rda_30mUrl =
+        "https://hadong.agmet.kr/farm/pickvalue/${region}/${items}/${days}/${geocode}/json";
+
+// request url
+    var headers = {
+      'Accept': 'application/json; charset=utf-8',
+      'Content-Type': 'application/json; charset=utf-8'
+    };
+//response = requests.get(api_url, headers=headers)
+
+    http.Response response = await http.get(Uri.parse(rda_30mUrl));
+    if (response.statusCode == 200) {
+      String jsonData = response.body;
+      var parsingData = jsonDecode(jsonData);
+      print(parsingData);
+    }
   }
 
   // final AppStorage storage = AppStorage();
   Future _future() async {
     // await Future.delayed(Duration(seconds: 5));
     if (tag == 0) {
+      if (Platform.isAndroid) {
+        showToast(context, "기상청 ASOS 데이터를 가져옵니다", Colors.blueAccent);
+      }
       return await getWeather();
     }
     return 0;
@@ -483,6 +514,7 @@ class _ApplePageState extends State<ApplePage> {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
+    // Provider.of<MyAppState>(context, listen: false); //2024-03-24
     final title = selectedItem != null
         ? '${selectedItem!.value.toStringAsFixed(2)} ${selectedItem!.unit}'
         : '--- ${heatmapDataPower.items.first.unit}';
@@ -509,6 +541,10 @@ class _ApplePageState extends State<ApplePage> {
                   await prefs.setInt('myFarm', ppfarm);
                   print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
                   print("LineChartPage() - ppfarm: $ppfarm / ${farmNo - 1}");
+                  if (Platform.isAndroid) {
+                    showToast(
+                        context, "기상청 ASOS 데이터를 가져옵니다", Colors.blueAccent);
+                  }
                   await getWeather().then((value) {
                     if (mounted) {
                       setState(() {
