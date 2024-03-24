@@ -191,24 +191,24 @@ class _StrawberryPageState extends State<StrawberryPage> {
 
                   appState.pp = 0;
 
-                  if (Platform.isAndroid) {
-                    showToast(context, "IOT포털에서 데이터를 가져옵니다", Colors.blueAccent);
-                    // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                    //   content: Text("IOT포털에서 데이터를 가져옵니다"),
-                    //   duration: Duration(seconds: 1),
-                    // ));
-                  }
+                  // if (Platform.isAndroid) {
+                  //   showToast(context, "IOT포털에서 데이터를 가져옵니다", Colors.blueAccent);
+                  //   // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  //   //   content: Text("IOT포털에서 데이터를 가져옵니다"),
+                  //   //   duration: Duration(seconds: 1),
+                  //   // ));
+                  // }
                   print('IOT포털에서 데이터를 가져옵니다 $ppfarm');
 
                   await appState.apiRequestIOT(context).then((value) async {
-                    if (Platform.isAndroid) {
-                      showToast(context, "병해충예측모델을 실행합니다", Colors.blueAccent);
+                    // if (Platform.isAndroid) {
+                    //   showToast(context, "병해충예측모델을 실행합니다", Colors.blueAccent);
 
-                      // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                      //   content: Text("병해충예측모델을 실행합니다"),
-                      //   duration: Duration(seconds: 1),
-                      // ));
-                    }
+                    // ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    //   content: Text("병해충예측모델을 실행합니다"),
+                    //   duration: Duration(seconds: 1),
+                    // ));
+                    // }
                     print('병해충예측모델을 실행합니다 $ppfarm');
 
                     await appState.apiRequestPEST(context).then((value) {

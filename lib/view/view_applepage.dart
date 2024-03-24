@@ -1,6 +1,10 @@
 import 'dart:math';
-
+import 'dart:io';
+import 'dart:convert';
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:fl_heatmap/fl_heatmap.dart';
+import 'package:farmmon_flutter/view/view_homepage.dart';
 import 'package:flutter/material.dart';
 import 'package:farmmon_flutter/main.dart';
 import 'package:farmmon_flutter/model/kma.dart';
@@ -33,7 +37,65 @@ Fcst fcstBlank = Fcst(
   WSD: '0.0',
 );
 
+///////////////////////////////////////////////////////////////////
+
+class Asos {
+  String? date;
+  double? hour;
+  double? tair;
+  double? humi;
+  double? radi;
+  double? rain;
+  double? maxAirtemp;
+  double? minAirtemp;
+  double? wet;
+  double? wspd;
+  double? tGrowth;
+  double? tHI;
+  double? av_t_7d;
+  double? av_rh_5d;
+  double? deg;
+
+  Asos({
+    this.date,
+    this.hour,
+    this.tair,
+    this.humi,
+    this.radi,
+    this.rain,
+    this.maxAirtemp,
+    this.minAirtemp,
+    this.wet,
+    this.wspd,
+    this.tGrowth,
+    this.tHI,
+    this.av_t_7d,
+    this.av_rh_5d,
+    this.deg,
+  });
+}
+
+Asos asosBlank = Asos(
+  date: '20240101',
+  hour: 0.0,
+  tair: 0.0,
+  humi: 0.0,
+  radi: 0.0,
+  rain: 0.0,
+  maxAirtemp: 0.0,
+  minAirtemp: 0.0,
+  wet: 0.0,
+  wspd: 0.0,
+  tGrowth: 0.0,
+  tHI: 0.0,
+  av_t_7d: 0.0,
+  av_rh_5d: 0.0,
+  deg: 0.0,
+);
+
 var fcstList = List<Fcst>.filled(200, fcstBlank, growable: true);
+var asosList = List<Asos>.filled(200, asosBlank, growable: true);
+
 var fcstDate = List<String>.filled(200, '20230801', growable: true);
 var fcstTime = List<String>.filled(200, '1200', growable: true);
 var TMP = List<String>.filled(200, '0.0', growable: true);
@@ -43,14 +105,14 @@ var tag = 0;
 
 var avgTa = List<String>.filled(200, '0.0', growable: true);
 
-class WeatherPage2 extends StatefulWidget {
-  const WeatherPage2({Key? key}) : super(key: key);
+class ApplePage extends StatefulWidget {
+  const ApplePage({Key? key}) : super(key: key);
 
   @override
-  _WeatherPage2State createState() => _WeatherPage2State();
+  _ApplePageState createState() => _ApplePageState();
 }
 
-class _WeatherPage2State extends State<WeatherPage2> {
+class _ApplePageState extends State<ApplePage> {
   String? baseTime;
   String? baseDate;
   String? baseDate_2am;
@@ -69,9 +131,9 @@ class _WeatherPage2State extends State<WeatherPage2> {
 
   @override
   void initState() {
+    // getWeather();
     _initExampleData();
     super.initState();
-    // getWeather();
   }
 
   //오늘 날짜 20201109 형태로 리턴
@@ -86,42 +148,19 @@ class _WeatherPage2State extends State<WeatherPage2> {
   }
 
   Future getWeather() async {
-    // MyLocation userLocation = MyLocation();
-    // await userLocation.getMyCurrentLocation(); //사용자의 현재 위치 불러올 때까지 대기
-    // var appState = context.watch<MyAppState>();
+    var appState = context.watch<MyAppState>();
 
     xCoordinate = 55; // userLocation.currentX; //x좌표
     yCoordinate = 127; // userLocation.currentY; //y좌표
-
-    // userLati = userLocation.lati;
-    // userLongi = userLocation.longi;
 
     var tm_x = 55;
     var tm_y = 127;
 
     var obsJson;
     var obs;
-
-    // print(xCoordinate);
-    // print(yCoordinate);
-
-    //카카오맵 역지오코딩
-    // var kakaoGeoUrl = Uri.parse(
-    //     'https://dapi.kakao.com/v2/local/geo/coord2address.json?x=$userLongi&y=$userLati&input_coord=WGS84');
-    // var kakaoGeo = await http
-    //     .get(kakaoGeoUrl, headers: {"Authorization": "KakaoAK $kakaoApiKey"});
-    //jason data
-    // String addr = kakaoGeo.body;
-
-    //카카오맵 좌표계 변환
-    // var kakaoXYUrl =
-    //     Uri.parse('https://dapi.kakao.com/v2/local/geo/transcoord.json?'
-    //         'x=$userLongi&y=$userLati&input_coord=WGS84&output_coord=TM');
-    // var kakaoTM = await http
-    //     .get(kakaoXYUrl, headers: {"Authorization": "KakaoAK $kakaoApiKey"});
-    // var TM = jsonDecode(kakaoTM.body);
-    // tm_x = TM['documents'][0]['x'];
-    // tm_y = TM['documents'][0]['y'];
+    if (Platform.isAndroid) {
+      showToast(context, "기상청 ASOS 데이터를 가져옵니다", Colors.blueAccent);
+    }
 
     var apiKey =
         "Mhl9mL16kvqOfLoUJxorRFlPrkeLeO%2FoTgVPBEjFs4pj73UcWtPnsTpOikSTt1Xu9tSM7%2ByzbcMh4WyL7TGypA%3D%3D";
@@ -133,8 +172,7 @@ class _WeatherPage2State extends State<WeatherPage2> {
       baseDate_2am = getSystemTime();
       baseTime_2am = "0200";
     }
-    // print(baseDate_2am);
-    // print(baseTime_2am);
+
     //단기 예보 시간별 baseTime, baseDate
     //오늘 최저 기온
     String today2am =
@@ -165,10 +203,6 @@ class _WeatherPage2State extends State<WeatherPage2> {
 
     print(baseDate);
     print(baseTime);
-    // print(currentBaseTime); //초단기 실황
-    // print(currentBaseDate);
-    // print(sswBaseTime); //초단기 예보
-    // print(sswBaseDate);
 
     String airConditon =
         'http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?'
@@ -179,7 +213,7 @@ class _WeatherPage2State extends State<WeatherPage2> {
         'http://apis.data.go.kr/1360000/AsosDalyInfoService/getWthrDataList'
         '?serviceKey=$apiKey&numOfRows=60&pageNo=1&'
         'DataType=JSON&dataCd=ASOS&dateCd=DAY&'
-        'startDt=20100101&endDt=20100105&stnIds=119';
+        'startDt=20230301&endDt=20230311&stnIds=119';
 
     KMA kmaData = KMA(today2am, shortTermWeather, currentWeather,
         superShortWeather, airConditon, ASOS);
@@ -187,59 +221,85 @@ class _WeatherPage2State extends State<WeatherPage2> {
     // json 데이터
     var today2amData = await kmaData.getToday2amData();
     var shortTermWeatherData = await kmaData.getShortTermWeatherData();
-    print("getShortTermWeatherData");
-    print(kmaData.shortTermWeatherUrl);
-    // var currentWeatherData = await kmaData.getCurrentWeatherData();
-    // var superShortWeatherData = await kmaData.getSuperShortWeatherData();
-    // var airConditionData = await kmaData.getAirConditionData();
-    // var addrData = jsonDecode(addr);
-
-    // print('2am: $today2amData');
-    // print('shortTermWeather: $shortTermWeatherData');
-
+    // print("getShortTermWeatherData");
+    // print(kmaData.shortTermWeatherUrl);
+    print("getASOSData");
     print(kmaData.ASOSUrl);
-    var ASOSData = await kmaData.getASOSData();
-    print(ASOSData.toString());
-
-    print("pause");
+    var asosData = await kmaData.getASOSData();
+    // print(asosData.toString());
+    // await Future.delayed(Duration(seconds: 2));
+    // print(asosData.toString());
 
 ///////////////////////////////////////////////////////////////////////////
 // get ASOS data
 
     var asos_json;
-    var asoslist = [];
+    var alist = [];
 
     //ASOS data
 
-    print(ASOSData['response']['body']['items']['item']);
-    int totalCountASOS = ASOSData['response']['body']['totalCount'];
+    // print("asosData");
+    // print(asosData['response']['body']['items']['item']);
+
+    int totalCountASOS = asosData['response']['body']['totalCount'];
+    // print(totalCountASOS);
+
     for (int i = 0; i < totalCountASOS; i++) {
       //데이터 전체를 돌면서 원하는 데이터 추출
-      asos_json = ASOSData['response']['body']['items']['item'][i];
-      var asosdata = {
+      asos_json = asosData['response']['body']['items']['item'][i];
+      // print('asos_json ========= ${asos_json['tm']}');
+      // print('asos_json ========= ${asos_json['avgTa']}');
+
+      var adata = {
         'date': asos_json['tm'],
-        'hour': 0,
+        'hour': '0.0',
         'tair': asos_json['avgTa'],
         'humi': asos_json['avgRhm'],
         'radi': asos_json['sumGsr'],
-        'rain': asos_json['sumRn'],
+        'rain': (asos_json['sumRn'] == '' ? '0.0' : asos_json['sumRn']),
         'maxAirtemp': asos_json['maxTa'],
         'minAirtemp': asos_json['minTa'],
-        'wet': 0,
+        'wet': '0.0',
         'wspd': asos_json['avgWs'],
-        'tGrowth': 0,
-        'tHI': 0,
+        'tGrowth': '0.0',
+        'tHI': '0.0',
         'av_t_7d': asos_json['avgTa'],
         'av_rh_5d': asos_json['avgRhm'],
+        'deg': '0.0',
       };
-      asoslist.add(asosdata);
+      alist.add(adata);
+
+      // print('alist added!!!!!!!!!!!!!!!!!!!!');
+      // print(i);
     }
 
-    int i;
-    for (i = 0; i < 10; i++) {
-      print(asoslist[i]['avgTa'].toString());
-      avgTa[i] = asoslist[i]['avgTa'];
+    // print(alist[0]);
+    asosList.clear();
+
+    for (int i = 0; i < alist.length; i++) {
+      // print(alist[i]['date']);
+      Asos asosdata = Asos(
+        date: alist[i]['date'],
+        hour: double.parse(alist[i]['hour']),
+        tair: double.parse(alist[i]['tair']),
+        humi: double.parse(alist[i]['humi']),
+        radi: double.parse(alist[i]['radi']),
+        rain: double.parse(alist[i]['rain']),
+        maxAirtemp: double.parse(alist[i]['maxAirtemp']),
+        minAirtemp: double.parse(alist[i]['minAirtemp']),
+        wet: double.parse(alist[i]['wet']),
+        wspd: double.parse(alist[i]['wspd']),
+        tGrowth: double.parse(alist[i]['tGrowth']),
+        tHI: double.parse(alist[i]['tHI']),
+        av_t_7d: double.parse(alist[i]['av_t_7d']),
+        av_rh_5d: double.parse(alist[i]['av_rh_5d']),
+        deg: double.parse(alist[i]['deg']),
+      );
+      asosList.add(asosdata);
+      // print("after: asosList.add(asosdata);");
     }
+
+///////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -249,7 +309,6 @@ class _WeatherPage2State extends State<WeatherPage2> {
     //단기예보
     //내일, 모레 최고 최저 온도
 
-    // print(shortTermWeatherData['response']['body']['items']['item']);
     int totalCount = shortTermWeatherData['response']['body']['totalCount'];
     for (int i = 0; i < totalCount; i++) {
       //데이터 전체를 돌면서 원하는 데이터 추출
@@ -269,16 +328,7 @@ class _WeatherPage2State extends State<WeatherPage2> {
 
       wlist.add(wdata);
     }
-    //습도
-    // if (parsed_json['category'] == 'REH') {
-    //   var REH = parsed_json['fcstValue'];
-    //   print("RH: $REH");
-    // }
-    //SKY 코드값
-    // if (parsed_json['category'] == 'SKY') {
-    //   var SKY = parsed_json['fcstValue'];
-    //   print("SKY: $SKY");
-    // }
+
     int j = 0;
     fcstDate.clear();
     fcstTime.clear();
@@ -313,9 +363,16 @@ class _WeatherPage2State extends State<WeatherPage2> {
       var ttt = fcstData.TMP.toString();
       var tttt = fcstData.REH.toString();
       var ttttt = fcstData.WSD.toString();
-      print("$t $tt : $ttt, $tttt, $ttttt");
+      // print("$t $tt : $ttt, $tttt, $ttttt");
     }
-    print("pause");
+    print("end of API request!!!");
+
+////////////////////////////////////////////////////////////////////////////
+
+    await appState.apiRequestApple(context).then((value) {
+      _initExampleData();
+      setState(() {});
+    });
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -336,7 +393,7 @@ class _WeatherPage2State extends State<WeatherPage2> {
     // Navigator.push(context, MaterialPageRoute(builder: (context) {
     //   return WeatherPage();
     // }));
-    tag = 1;
+    tag = 1; //1;
     return 0;
   }
 
@@ -362,6 +419,7 @@ class _WeatherPage2State extends State<WeatherPage2> {
   // }
 
   void _initExampleData() {
+    print("_initExampleData()");
     const rows = [
       '가루깍지벌레',
       '갈색무늬병',
@@ -379,23 +437,32 @@ class _WeatherPage2State extends State<WeatherPage2> {
       '애모무늬잎말이나방',
       '점박이응애'
     ];
+
     const columns = [
-      '일',
-      '월',
-      '화',
-      '수',
-      '목',
-      '금',
-      '토',
+      '-3D',
+      '-2d',
+      '-1d',
+      '0d',
+      '+1d',
+      '+2d',
+      '+3d',
     ];
-    final r = double.parse(avgTa[0]); //Random();
+
+    final r = asosList[0].deg; //Random();
+    // print(asosList.length);
+    // print("######################################");
+    // print(asosList[0].tair);
+    // print(asosList[1].tair);
+    // print(asosList[2].tair);
+    // print(asosList[3].tair);
+    // print("######################################");
 
     const String unit = '단위';
     final items = [
       for (int row = 0; row < rows.length; row++)
         for (int col = 0; col < columns.length; col++)
           HeatmapItem(
-              value: 1.0, //r.nextDouble() * 6,
+              value: asosList[col].deg as double, //r.nextDouble() * 6,
               // style: row == 0 && col > 1
               //     ? HeatmapItemStyle.hatched
               //     : HeatmapItemStyle.filled,
@@ -415,7 +482,7 @@ class _WeatherPage2State extends State<WeatherPage2> {
 
   @override
   Widget build(BuildContext context) {
-    // var appState = context.watch<MyAppState>();
+    var appState = context.watch<MyAppState>();
     final title = selectedItem != null
         ? '${selectedItem!.value.toStringAsFixed(2)} ${selectedItem!.unit}'
         : '--- ${heatmapDataPower.items.first.unit}';
@@ -431,7 +498,7 @@ class _WeatherPage2State extends State<WeatherPage2> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                "기상예보",
+                "사과 병해충 예측",
                 style: TextStyle(fontSize: 25),
               ),
               SizedBox(width: 20),
@@ -447,13 +514,14 @@ class _WeatherPage2State extends State<WeatherPage2> {
                       setState(() {
                         // appState.pp = 0;
                         // appState.getNext();
+                        // print("setState");
                       });
                     }
                   });
                   // await storage.readJsonAsString2().then((value) {
                   // });
                 },
-                child: Text('불러오기'),
+                child: Text('예측'),
               ),
             ],
           ),
@@ -463,49 +531,13 @@ class _WeatherPage2State extends State<WeatherPage2> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('기온:'),
-                  Text(
-                    '■',
-                    style: TextStyle(
-                      color: Colors.red,
-                    ),
-                  ),
                   SizedBox(width: 10),
-                  Text('상대습도:'),
-                  Text(
-                    '■',
-                    style: TextStyle(
-                      color: Colors.blue,
-                    ),
-                  ),
                 ],
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('풍속:'),
-                  Text(
-                    '■',
-                    style: TextStyle(
-                      color: Colors.yellowAccent,
-                    ),
-                  ),
-                ],
+                children: [],
               ),
-              const SizedBox(height: 16),
-              Text(title, textScaleFactor: 1.4),
-              Text(subtitle),
-              const SizedBox(height: 8),
-              Heatmap(
-                  onItemSelectedListener: (HeatmapItem? selectedItem) {
-                    debugPrint(
-                        'Item ${selectedItem?.yAxisLabel}/${selectedItem?.xAxisLabel} with value ${selectedItem?.value} selected');
-                    setState(() {
-                      this.selectedItem = selectedItem;
-                    });
-                  },
-                  // rowsVisible: 5,
-                  heatmapData: heatmapDataPower)
             ],
           ),
           SizedBox(height: 20),
@@ -532,7 +564,27 @@ class _WeatherPage2State extends State<WeatherPage2> {
                       ),
                     );
                   } else {
-                    return SizedBox();
+                    return Column(
+                      children: [
+                        // Expanded(child: MyLineChart2()),
+                        const SizedBox(height: 16),
+                        Text(title, textScaleFactor: 1.4),
+                        Text(subtitle),
+                        const SizedBox(height: 8),
+                        Heatmap(
+                            onItemSelectedListener:
+                                (HeatmapItem? selectedItem) {
+                              debugPrint(
+                                  'Item ${selectedItem?.yAxisLabel}/${selectedItem?.xAxisLabel} with value ${selectedItem?.value} selected');
+                              setState(() {
+                                this.selectedItem = selectedItem;
+                              });
+                            },
+                            rowsVisible: 7,
+                            heatmapData: heatmapDataPower)
+                      ],
+                    );
+
                     // return MyLineChart2();
 
                     // Padding(
@@ -659,110 +711,3 @@ class _WeatherPage2State extends State<WeatherPage2> {
 }
 
 ///////////////////////////////////////////////////////////////////
-
-class ApplePage extends StatefulWidget {
-  const ApplePage({Key? key}) : super(key: key);
-
-  @override
-  State<ApplePage> createState() => _ApplePageState();
-}
-
-class _ApplePageState extends State<ApplePage> {
-  HeatmapItem? selectedItem;
-
-  late HeatmapData heatmapDataPower;
-
-  @override
-  void initState() {
-    _initExampleData();
-    super.initState();
-  }
-
-  void _initExampleData() {
-    const rows = [
-      '가루깍지벌레',
-      '갈색무늬병',
-      '검은별무늬병',
-      '겹무늬썩음병',
-      '굴나방',
-      '꼬마배나무이',
-      '복숭아순나방',
-      '복숭아순나방붙이',
-      '복숭아심식나방',
-      '복숭아유리나방',
-      '사과무늬잎말이나방',
-      '사과응애',
-      '사과탄저병',
-      '애모무늬잎말이나방',
-      '점박이응애'
-    ];
-    const columns = [
-      '일',
-      '월',
-      '화',
-      '수',
-      '목',
-      '금',
-      '토',
-    ];
-    final r = Random();
-    const String unit = '단위';
-    final items = [
-      for (int row = 0; row < rows.length; row++)
-        for (int col = 0; col < columns.length; col++)
-          HeatmapItem(
-              value: r.nextDouble() * 6,
-              // style: row == 0 && col > 1
-              //     ? HeatmapItemStyle.hatched
-              //     : HeatmapItemStyle.filled,
-              style: HeatmapItemStyle.filled,
-              unit: unit,
-              xAxisLabel: columns[col],
-              yAxisLabel: rows[row]),
-    ];
-    heatmapDataPower = HeatmapData(
-      rows: rows,
-      columns: columns,
-      radius: 6.0,
-      items: items,
-      colorPalette: colorPaletteRed,
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final title = selectedItem != null
-        ? '${selectedItem!.value.toStringAsFixed(2)} ${selectedItem!.unit}'
-        : '--- ${heatmapDataPower.items.first.unit}';
-    final subtitle = selectedItem != null
-        ? '${selectedItem!.xAxisLabel} ${selectedItem!.yAxisLabel}'
-        : '---';
-    return MaterialApp(
-      home: Scaffold(
-        appBar: AppBar(
-          title: const Text('사과 병해충 예측'),
-        ),
-        body: SingleChildScrollView(
-          child: Column(
-            children: [
-              const SizedBox(height: 16),
-              Text(title, textScaleFactor: 1.4),
-              Text(subtitle),
-              const SizedBox(height: 8),
-              Heatmap(
-                  onItemSelectedListener: (HeatmapItem? selectedItem) {
-                    debugPrint(
-                        'Item ${selectedItem?.yAxisLabel}/${selectedItem?.xAxisLabel} with value ${selectedItem?.value} selected');
-                    setState(() {
-                      this.selectedItem = selectedItem;
-                    });
-                  },
-                  // rowsVisible: 5,
-                  heatmapData: heatmapDataPower)
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}

@@ -330,7 +330,7 @@ class _MyHomePageState extends State<MyHomePage> {
         page = PepperPage(); //Placeholder();
         break;
       case 5:
-        page = WeatherPage2(); // GrapePage();
+        page = ApplePage(); // GrapePage();
         break;
       case 6:
         page = MyLineChartPage();
