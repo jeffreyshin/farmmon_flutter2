@@ -13,6 +13,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:farmmon_flutter/view/view_applepage.dart';
+import 'package:farmmon_flutter/view/view_weatherpage.dart';
 
 //import 'package:csv/csv.dart';
 
@@ -854,6 +855,7 @@ class MyAppState extends ChangeNotifier {
   }
 
   Future apiRequestApple(BuildContext context) async {
+    print("apiRequestApple!!");
     var encoder = ZipFileEncoder();
     final dir = await getApplicationDocumentsDirectory();
     // Directory dir = Directory('/storage/emulated/0/Documents ');
@@ -862,30 +864,42 @@ class MyAppState extends ChangeNotifier {
     var kk = sensorLists[ppfarm].length;
     var k = 0;
 
+    final today = DateTime.now();
+    final sdate = today.subtract(Duration(days: 4));
+    final edate = today.add(Duration(days: 2));
     var weatherString =
         'date,hour,tair,humi,radi,rain,maxAirtemp,minAirtemp,wet,'
         'wspd,tGrowth,tHI,av_t_7d,av_rh_5d\n';
+
     for (int i = 0; i < 7; i++) {
-      var v1 = asosList[i].date;
-      var v2 = asosList[i].hour.toString();
-      var v3 = asosList[i].tair.toString();
-      var v4 = asosList[i].humi.toString();
-      var v5 = asosList[i].radi.toString();
-      var v6 = asosList[i].rain.toString();
-      var v7 = asosList[i].maxAirtemp.toString();
-      var v8 = asosList[i].minAirtemp.toString();
-      var v9 = asosList[i].wet.toString();
-      var v10 = asosList[i].wspd.toString();
-      var v11 = asosList[i].tGrowth.toString();
-      var v12 = asosList[i].tHI.toString();
-      var v13 = asosList[i].av_t_7d.toString();
-      var v14 = asosList[i].av_rh_5d.toString();
+      var date = ewsList[i].date;
+      // ignore: prefer_interpolation_to_compose_strings
+      var dateString = date!.substring(0, 4) +
+          "-" +
+          date.substring(4, 6) +
+          "-" +
+          date.substring(6, 8);
+      var v1 = dateString;
+      var v2 = ewsList[i].hour.toString();
+      var v3 = ewsList[i].tair.toString();
+      var v4 = ewsList[i].humi.toString();
+      var v5 = ewsList[i].radi.toString();
+      var v6 = ewsList[i].rain.toString();
+      var v7 = ewsList[i].maxAirtemp.toString();
+      var v8 = ewsList[i].minAirtemp.toString();
+      var v9 = ewsList[i].wet.toString();
+      var v10 = ewsList[i].wspd.toString();
+      var v11 = ewsList[i].tGrowth.toString();
+      var v12 = ewsList[i].tHI.toString();
+      var v13 = ewsList[i].av_t_7d.toString();
+      var v14 = ewsList[i].av_rh_5d.toString();
 
       weatherString =
           "$weatherString$v1,$v2,$v3,$v4,$v5,$v6,$v7,$v8,$v9,$v10,$v11,$v12,$v13,$v14\n";
     }
-
-    var weatherString2 = "2023-03-01,2023-03-07,day,AppleBoks";
+    var sdateString = DateFormat('yyyy-MM-dd').format(sdate);
+    var edateString = DateFormat('yyyy-MM-dd').format(edate);
+    var weatherString2 = "$sdateString,$edateString,day,AppleBoks";
     print(weatherString);
     print(weatherString2);
     // zip weather.csv
@@ -1032,20 +1046,20 @@ class MyAppState extends ChangeNotifier {
 
     var jsonObj = jsonDecode(rrr);
 
-    asosList[0].deg = jsonObj[0]['BoksDEG'];
-    asosList[1].deg = jsonObj[1]['BoksDEG'];
-    asosList[2].deg = jsonObj[2]['BoksDEG'];
-    asosList[3].deg = jsonObj[3]['BoksDEG'];
-    asosList[4].deg = jsonObj[4]['BoksDEG'];
-    asosList[5].deg = jsonObj[5]['BoksDEG'];
-    asosList[6].deg = jsonObj[6]['BoksDEG'];
-    print(asosList[0].deg);
-    print(asosList[1].deg);
-    print(asosList[2].deg);
-    print(asosList[3].deg);
-    print(asosList[4].deg);
-    print(asosList[5].deg);
-    print(asosList[6].deg);
+    ewsList[0].deg = jsonObj[0]['BoksDEG'];
+    ewsList[1].deg = jsonObj[1]['BoksDEG'];
+    ewsList[2].deg = jsonObj[2]['BoksDEG'];
+    ewsList[3].deg = jsonObj[3]['BoksDEG'];
+    ewsList[4].deg = jsonObj[4]['BoksDEG'];
+    ewsList[5].deg = jsonObj[5]['BoksDEG'];
+    ewsList[6].deg = jsonObj[6]['BoksDEG'];
+    print(ewsList[0].deg);
+    print(ewsList[1].deg);
+    print(ewsList[2].deg);
+    print(ewsList[3].deg);
+    print(ewsList[4].deg);
+    print(ewsList[5].deg);
+    print(ewsList[6].deg);
 
 // remove session
     urlm = "$urlapple/disconnect";

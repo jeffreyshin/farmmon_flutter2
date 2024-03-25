@@ -45,7 +45,120 @@ Fcst fcstBlank = Fcst(
   WSD: '0.0',
 );
 
+///////////////////////////////////////////////////////////////////
+
+class Asos {
+  String? date;
+  double? hour;
+  double? tair;
+  double? humi;
+  double? radi;
+  double? rain;
+  double? maxAirtemp;
+  double? minAirtemp;
+  double? wet;
+  double? wspd;
+  double? tGrowth;
+  double? tHI;
+  double? av_t_7d;
+  double? av_rh_5d;
+  double? deg;
+
+  Asos({
+    this.date,
+    this.hour,
+    this.tair,
+    this.humi,
+    this.radi,
+    this.rain,
+    this.maxAirtemp,
+    this.minAirtemp,
+    this.wet,
+    this.wspd,
+    this.tGrowth,
+    this.tHI,
+    this.av_t_7d,
+    this.av_rh_5d,
+    this.deg,
+  });
+}
+
+Asos asosBlank = Asos(
+  date: '20240101',
+  hour: 0.0,
+  tair: 0.0,
+  humi: 0.0,
+  radi: 0.0,
+  rain: 0.0,
+  maxAirtemp: 0.0,
+  minAirtemp: 0.0,
+  wet: 0.0,
+  wspd: 0.0,
+  tGrowth: 0.0,
+  tHI: 0.0,
+  av_t_7d: 0.0,
+  av_rh_5d: 0.0,
+  deg: 0.0,
+);
+
+class Ews {
+  String? date;
+  double? hour;
+  double? tair;
+  double? humi;
+  double? radi;
+  double? rain;
+  double? maxAirtemp;
+  double? minAirtemp;
+  double? wet;
+  double? wspd;
+  double? tGrowth;
+  double? tHI;
+  double? av_t_7d;
+  double? av_rh_5d;
+  double? deg;
+
+  Ews({
+    this.date,
+    this.hour,
+    this.tair,
+    this.humi,
+    this.radi,
+    this.rain,
+    this.maxAirtemp,
+    this.minAirtemp,
+    this.wet,
+    this.wspd,
+    this.tGrowth,
+    this.tHI,
+    this.av_t_7d,
+    this.av_rh_5d,
+    this.deg,
+  });
+}
+
+Ews ewsBlank = Ews(
+  date: '20240101',
+  hour: 0.0,
+  tair: 0.0,
+  humi: 0.0,
+  radi: 0.0,
+  rain: 0.0,
+  maxAirtemp: 0.0,
+  minAirtemp: 0.0,
+  wet: 0.0,
+  wspd: 0.0,
+  tGrowth: 0.0,
+  tHI: 0.0,
+  av_t_7d: 0.0,
+  av_rh_5d: 0.0,
+  deg: 0.0,
+);
+
 var fcstList = List<Fcst>.filled(200, fcstBlank, growable: true);
+var asosList = List<Asos>.filled(200, asosBlank, growable: true);
+var ewsList = List<Ews>.filled(200, ewsBlank, growable: true);
+
 var fcstDate = List<String>.filled(200, '20230801', growable: true);
 var fcstTime = List<String>.filled(200, '1200', growable: true);
 var TMP = List<String>.filled(200, '0.0', growable: true);
@@ -189,9 +302,9 @@ class _WeatherPageState extends State<WeatherPage> {
 
     String ASOS =
         'http://apis.data.go.kr/1360000/AsosDalyInfoService/getWthrDataList'
-        '?serviceKey=$apiKey&numOfRows=10&pageNo=1&'
+        '?serviceKey=$apiKey&numOfRows=60&pageNo=1&'
         'DataType=JSON&dataCd=ASOS&dateCd=DAY&'
-        'startDt=20200101&endDt=20100110&stnIds=119';
+        'startDt=20230301&endDt=20230311&stnIds=119';
 
     KMA kmaData = KMA(today2am, shortTermWeather, currentWeather,
         superShortWeather, airConditon, ASOS);
@@ -201,8 +314,10 @@ class _WeatherPageState extends State<WeatherPage> {
     var shortTermWeatherData = await kmaData.getShortTermWeatherData();
     print("getShortTermWeatherData");
     print(kmaData.shortTermWeatherUrl);
-    var ASOSData = await kmaData.getASOSData();
-    print(ASOSData);
+    print("getASOSData");
+    print(kmaData.ASOSUrl);
+    var asosData = await kmaData.getASOSData();
+    print(asosData);
 
     // var currentWeatherData = await kmaData.getCurrentWeatherData();
     // var superShortWeatherData = await kmaData.getSuperShortWeatherData();
@@ -212,6 +327,78 @@ class _WeatherPageState extends State<WeatherPage> {
     // print('2am: $today2amData');
     // print('shortTermWeather: $shortTermWeatherData');
     print("pause");
+
+///////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+// get ASOS data
+
+    var asos_json;
+    var alist = [];
+
+    //ASOS data
+
+    // print("asosData");
+    // print(asosData['response']['body']['items']['item']);
+
+    int totalCountASOS = asosData['response']['body']['totalCount'];
+    // print(totalCountASOS);
+
+    for (int i = 0; i < totalCountASOS; i++) {
+      //데이터 전체를 돌면서 원하는 데이터 추출
+      asos_json = asosData['response']['body']['items']['item'][i];
+      // print('asos_json ========= ${asos_json['tm']}');
+      // print('asos_json ========= ${asos_json['avgTa']}');
+
+      var adata = {
+        'date': asos_json['tm'],
+        'hour': '0.0',
+        'tair': asos_json['avgTa'],
+        'humi': asos_json['avgRhm'],
+        'radi': asos_json['sumGsr'],
+        'rain': (asos_json['sumRn'] == '' ? '0.0' : asos_json['sumRn']),
+        'maxAirtemp': asos_json['maxTa'],
+        'minAirtemp': asos_json['minTa'],
+        'wet': '0.0',
+        'wspd': asos_json['avgWs'],
+        'tGrowth': '0.0',
+        'tHI': '0.0',
+        'av_t_7d': asos_json['avgTa'],
+        'av_rh_5d': asos_json['avgRhm'],
+        'deg': '0.0',
+      };
+      alist.add(adata);
+
+      // print('alist added!!!!!!!!!!!!!!!!!!!!');
+      // print(i);
+    }
+
+    // print(alist[0]);
+    asosList.clear();
+
+    for (int i = 0; i < alist.length; i++) {
+      // print(alist[i]['date']);
+      Asos asosdata = Asos(
+        date: alist[i]['date'],
+        hour: double.parse(alist[i]['hour']),
+        tair: double.parse(alist[i]['tair']),
+        humi: double.parse(alist[i]['humi']),
+        radi: double.parse(alist[i]['radi']),
+        rain: double.parse(alist[i]['rain']),
+        maxAirtemp: double.parse(alist[i]['maxAirtemp']),
+        minAirtemp: double.parse(alist[i]['minAirtemp']),
+        wet: double.parse(alist[i]['wet']),
+        wspd: double.parse(alist[i]['wspd']),
+        tGrowth: double.parse(alist[i]['tGrowth']),
+        tHI: double.parse(alist[i]['tHI']),
+        av_t_7d: double.parse(alist[i]['av_t_7d']),
+        av_rh_5d: double.parse(alist[i]['av_rh_5d']),
+        deg: double.parse(alist[i]['deg']),
+      );
+      asosList.add(asosdata);
+      // print("after: asosList.add(asosdata);");
+    }
+
+///////////////////////////////////////////////////////////////////////////
 
 ///////////////////////////////////////////////////////////////////////////
 
@@ -287,7 +474,8 @@ class _WeatherPageState extends State<WeatherPage> {
       var ttttt = fcstData.WSD.toString();
       print("$t $tt : $ttt, $tttt, $ttttt");
     }
-    print("pause");
+    print("end of API request!!!");
+
     //내일, 모레 sky 코드
 
     //모레

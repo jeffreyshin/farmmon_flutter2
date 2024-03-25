@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:fl_heatmap/fl_heatmap.dart';
 import 'package:farmmon_flutter/view/view_homepage.dart';
+import 'package:farmmon_flutter/view/view_weatherpage.dart';
 import 'package:flutter/material.dart';
 import 'package:farmmon_flutter/main.dart';
 import 'package:farmmon_flutter/model/kma.dart';
@@ -14,95 +15,10 @@ import 'package:http/http.dart' as http;
 
 ///////////////////////////////////////////////////////////////////
 
-class Fcst {
-  String? fcstDate;
-  String? fcstTime;
-  String? TMP;
-  String? REH;
-  String? WSD;
-
-  Fcst({
-    this.fcstDate,
-    this.fcstTime,
-    this.TMP,
-    this.REH,
-    this.WSD,
-  });
-}
-
-Fcst fcstBlank = Fcst(
-  fcstDate: '20230801',
-  fcstTime: '1200',
-  TMP: '0.0',
-  REH: '0.0',
-  WSD: '0.0',
-);
-
-///////////////////////////////////////////////////////////////////
-
-class Asos {
-  String? date;
-  double? hour;
-  double? tair;
-  double? humi;
-  double? radi;
-  double? rain;
-  double? maxAirtemp;
-  double? minAirtemp;
-  double? wet;
-  double? wspd;
-  double? tGrowth;
-  double? tHI;
-  double? av_t_7d;
-  double? av_rh_5d;
-  double? deg;
-
-  Asos({
-    this.date,
-    this.hour,
-    this.tair,
-    this.humi,
-    this.radi,
-    this.rain,
-    this.maxAirtemp,
-    this.minAirtemp,
-    this.wet,
-    this.wspd,
-    this.tGrowth,
-    this.tHI,
-    this.av_t_7d,
-    this.av_rh_5d,
-    this.deg,
-  });
-}
-
-Asos asosBlank = Asos(
-  date: '20240101',
-  hour: 0.0,
-  tair: 0.0,
-  humi: 0.0,
-  radi: 0.0,
-  rain: 0.0,
-  maxAirtemp: 0.0,
-  minAirtemp: 0.0,
-  wet: 0.0,
-  wspd: 0.0,
-  tGrowth: 0.0,
-  tHI: 0.0,
-  av_t_7d: 0.0,
-  av_rh_5d: 0.0,
-  deg: 0.0,
-);
-
-var fcstList = List<Fcst>.filled(200, fcstBlank, growable: true);
-var asosList = List<Asos>.filled(200, asosBlank, growable: true);
-
 var fcstDate = List<String>.filled(200, '20230801', growable: true);
 var fcstTime = List<String>.filled(200, '1200', growable: true);
-var TMP = List<String>.filled(200, '0.0', growable: true);
-var REH = List<String>.filled(200, '0.0', growable: true);
-var WSD = List<String>.filled(200, '0.0', growable: true);
-var tag = 0;
+
+var tag2 = 0;
 
 var avgTa = List<String>.filled(200, '0.0', growable: true);
 
@@ -132,8 +48,7 @@ class _ApplePageState extends State<ApplePage> {
 
   @override
   void initState() {
-    // getWeather();
-    Provider.of<MyAppState>(context, listen: false);
+    // getWeather2();
     _initExampleData();
     super.initState();
   }
@@ -149,260 +64,31 @@ class _ApplePageState extends State<ApplePage> {
         .format(DateTime.now().subtract(Duration(days: 1)));
   }
 
-  Future getWeather() async {
-    var appState = context.watch<MyAppState>();
-
-    xCoordinate = 55; // userLocation.currentX; //x좌표
-    yCoordinate = 127; // userLocation.currentY; //y좌표
-
-    var tm_x = 55;
-    var tm_y = 127;
-
-    var obsJson;
-    var obs;
-
-    var apiKey =
-        "Mhl9mL16kvqOfLoUJxorRFlPrkeLeO%2FoTgVPBEjFs4pj73UcWtPnsTpOikSTt1Xu9tSM7%2ByzbcMh4WyL7TGypA%3D%3D";
-
-    if (now.hour < 2 || now.hour == 2 && now.minute < 10) {
-      baseDate_2am = getYesterdayDate();
-      baseTime_2am = "2300";
-    } else {
-      baseDate_2am = getSystemTime();
-      baseTime_2am = "0200";
-    }
-
-    //단기 예보 시간별 baseTime, baseDate
-    //오늘 최저 기온
-    String today2am =
-        'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?'
-        'serviceKey=$apiKey&numOfRows=1000&pageNo=1&'
-        'base_date=$baseDate_2am&base_time=$baseTime_2am&nx=$xCoordinate&ny=$yCoordinate&dataType=JSON';
-
-    shortWeatherDate();
-    //단기 예보 데이터
-    String shortTermWeather =
-        'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?'
-        'serviceKey=$apiKey&numOfRows=1000&pageNo=1&'
-        'base_date=$baseDate&base_time=$baseTime&nx=$xCoordinate&ny=$yCoordinate&dataType=JSON';
-
-    currentWeatherDate();
-    //현재 날씨(초단기 실황)
-    String currentWeather =
-        'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?'
-        'serviceKey=$apiKey&numOfRows=10&pageNo=1&'
-        'base_date=$currentBaseDate&base_time=$currentBaseTime&nx=$xCoordinate&ny=$yCoordinate&dataType=JSON';
-
-    superShortWeatherDate();
-    //초단기 예보
-    String superShortWeather =
-        'http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtFcst'
-        '?serviceKey=$apiKey&numOfRows=60&pageNo=1'
-        '&base_date=$sswBaseDate&base_time=$sswBaseTime&nx=$xCoordinate&ny=$yCoordinate&dataType=JSON';
-
-    print(baseDate);
-    print(baseTime);
-
-    String airConditon =
-        'http://apis.data.go.kr/B552584/ArpltnInforInqireSvc/getMsrstnAcctoRltmMesureDnsty?'
-        'stationName=$obs&dataTerm=DAILY&pageNo=1&ver=1.0'
-        '&numOfRows=1&returnType=json&serviceKey=$apiKey';
-
-    String ASOS =
-        'http://apis.data.go.kr/1360000/AsosDalyInfoService/getWthrDataList'
-        '?serviceKey=$apiKey&numOfRows=60&pageNo=1&'
-        'DataType=JSON&dataCd=ASOS&dateCd=DAY&'
-        'startDt=20230301&endDt=20230311&stnIds=119';
-
-    KMA kmaData = KMA(today2am, shortTermWeather, currentWeather,
-        superShortWeather, airConditon, ASOS);
-
-    // json 데이터
-    var today2amData = await kmaData.getToday2amData();
-    var shortTermWeatherData = await kmaData.getShortTermWeatherData();
-    // print("getShortTermWeatherData");
-    // print(kmaData.shortTermWeatherUrl);
-    print("getASOSData");
-    print(kmaData.ASOSUrl);
-    var asosData = await kmaData.getASOSData();
-    // print(asosData.toString());
-    // await Future.delayed(Duration(seconds: 2));
-    // print(asosData.toString());
-
-///////////////////////////////////////////////////////////////////////////
-// get ASOS data
-
-    var asos_json;
-    var alist = [];
-
-    //ASOS data
-
-    // print("asosData");
-    // print(asosData['response']['body']['items']['item']);
-
-    int totalCountASOS = asosData['response']['body']['totalCount'];
-    // print(totalCountASOS);
-
-    for (int i = 0; i < totalCountASOS; i++) {
-      //데이터 전체를 돌면서 원하는 데이터 추출
-      asos_json = asosData['response']['body']['items']['item'][i];
-      // print('asos_json ========= ${asos_json['tm']}');
-      // print('asos_json ========= ${asos_json['avgTa']}');
-
-      var adata = {
-        'date': asos_json['tm'],
-        'hour': '0.0',
-        'tair': asos_json['avgTa'],
-        'humi': asos_json['avgRhm'],
-        'radi': asos_json['sumGsr'],
-        'rain': (asos_json['sumRn'] == '' ? '0.0' : asos_json['sumRn']),
-        'maxAirtemp': asos_json['maxTa'],
-        'minAirtemp': asos_json['minTa'],
-        'wet': '0.0',
-        'wspd': asos_json['avgWs'],
-        'tGrowth': '0.0',
-        'tHI': '0.0',
-        'av_t_7d': asos_json['avgTa'],
-        'av_rh_5d': asos_json['avgRhm'],
-        'deg': '0.0',
-      };
-      alist.add(adata);
-
-      // print('alist added!!!!!!!!!!!!!!!!!!!!');
-      // print(i);
-    }
-
-    // print(alist[0]);
-    asosList.clear();
-
-    for (int i = 0; i < alist.length; i++) {
-      // print(alist[i]['date']);
-      Asos asosdata = Asos(
-        date: alist[i]['date'],
-        hour: double.parse(alist[i]['hour']),
-        tair: double.parse(alist[i]['tair']),
-        humi: double.parse(alist[i]['humi']),
-        radi: double.parse(alist[i]['radi']),
-        rain: double.parse(alist[i]['rain']),
-        maxAirtemp: double.parse(alist[i]['maxAirtemp']),
-        minAirtemp: double.parse(alist[i]['minAirtemp']),
-        wet: double.parse(alist[i]['wet']),
-        wspd: double.parse(alist[i]['wspd']),
-        tGrowth: double.parse(alist[i]['tGrowth']),
-        tHI: double.parse(alist[i]['tHI']),
-        av_t_7d: double.parse(alist[i]['av_t_7d']),
-        av_rh_5d: double.parse(alist[i]['av_rh_5d']),
-        deg: double.parse(alist[i]['deg']),
-      );
-      asosList.add(asosdata);
-      // print("after: asosList.add(asosdata);");
-    }
-
-///////////////////////////////////////////////////////////////////////////
-
-///////////////////////////////////////////////////////////////////////////
-
-    var fcst_json;
-    var wlist = [];
-
-    //단기예보
-    //내일, 모레 최고 최저 온도
-
-    int totalCount = shortTermWeatherData['response']['body']['totalCount'];
-    for (int i = 0; i < totalCount; i++) {
-      //데이터 전체를 돌면서 원하는 데이터 추출
-      fcst_json = shortTermWeatherData['response']['body']['items']['item'][i];
-      // print(parsed_json['fcstTime']);
-      //기온
-      var wdata = {
-        'baseTime': fcst_json['baseDate'],
-        'baseDate': fcst_json['baseTime'],
-        'fcstDate': fcst_json['fcstDate'],
-        'fcstTime': fcst_json['fcstTime'],
-        'category': fcst_json['category'],
-        'fcstValue': fcst_json['fcstValue'],
-        'nx': fcst_json['nx'],
-        'ny': fcst_json['ny'],
-      };
-
-      wlist.add(wdata);
-    }
-
-    int j = 0;
-    fcstDate.clear();
-    fcstTime.clear();
-    TMP.clear();
-    REH.clear();
-    WSD.clear();
-    for (int i = 0; i < wlist.length; i++) {
-      if (wlist[i]['category'] == 'TMP') {
-        fcstDate.add(wlist[i]['fcstDate']);
-        fcstTime.add(wlist[i]['fcstTime']);
-        TMP.add(wlist[i]['fcstValue']);
-      }
-      if (wlist[i]['category'] == 'REH') {
-        REH.add(wlist[i]['fcstValue']);
-      }
-      if (wlist[i]['category'] == 'WSD') {
-        WSD.add(wlist[i]['fcstValue']);
-      }
-    }
-
-    for (int i = 0; i < fcstTime.length; i++) {
-      Fcst fcstData = Fcst(
-        fcstDate: fcstDate[i],
-        fcstTime: fcstTime[i],
-        TMP: TMP[i],
-        REH: REH[i],
-        WSD: WSD[i],
-      );
-      fcstList.add(fcstData);
-      var t = fcstData.fcstDate.toString();
-      var tt = fcstData.fcstTime.toString();
-      var ttt = fcstData.TMP.toString();
-      var tttt = fcstData.REH.toString();
-      var ttttt = fcstData.WSD.toString();
-      // print("$t $tt : $ttt, $tttt, $ttttt");
-    }
-    print("end of API request!!!");
-
-////////////////////////////////////////////////////////////////////////////
-
-    await appState.apiRequestApple(context).then((value) {
-      _initExampleData();
-      tag = 1; //1;
-      setState(() {});
-    });
-
-////////////////////////////////////////////////////////////////////////////
-
-    // print('currentWeather: $currentWeatherData');
-    // print('superShortWeather: $superShortWeatherData');
-    // print('air: $airConditionData');
-
-    // Navigator.push(context, MaterialPageRoute(builder: (context) {
-    //   return WeatherScreen(
-    // parse2amData: today2amData,
-    // parseShortTermWeatherData: shortTermWeatherData,
-    // parseCurrentWeatherData: currentWeatherData,
-    // parseSuperShortWeatherData: superShortWeatherData,
-    // parseAirConditionData: airConditionData,
-    // parseAddrData: addrData,
-    //   );
-    // }));
-    // Navigator.push(context, MaterialPageRoute(builder: (context) {
-    //   return WeatherPage();
-    // }));
-    return 0;
-  }
-
   Future getWeather2() async {
-    var appState = context.watch<MyAppState>();
+    var appState = context.read<MyAppState>();
 
     var i;
     var region = 'hadong';
-    var itemsList = ['tmax', 'tmin', 'rain'];
-    var daysList = ['20230716', '20230717'];
+    var itemsList = [
+      'tavg',
+      'tmax',
+      'tmin',
+      'hm',
+      'ins',
+      'sunshine',
+      'wsa',
+      'wsx',
+      'rain'
+    ];
+    var daysList = [
+      '20240321',
+      '20240322',
+      '20240323',
+      '20240324',
+      '20240325',
+      '20240326',
+      '20240327',
+    ];
     var items = itemsList.join(', ');
     var days = daysList.join(', ');
 
@@ -410,29 +96,127 @@ class _ApplePageState extends State<ApplePage> {
     var rda_30mUrl =
         "https://hadong.agmet.kr/farm/pickvalue/${region}/${items}/${days}/${geocode}/json";
 
+    print(rda_30mUrl);
+
 // request url
     var headers = {
       'Accept': 'application/json; charset=utf-8',
       'Content-Type': 'application/json; charset=utf-8'
     };
 //response = requests.get(api_url, headers=headers)
-
+    var ewsData;
     http.Response response = await http.get(Uri.parse(rda_30mUrl));
     if (response.statusCode == 200) {
       String jsonData = response.body;
-      var parsingData = jsonDecode(jsonData);
-      print(parsingData);
+      ewsData = jsonDecode(jsonData);
+      print(ewsData);
     }
+
+///////////////////////////////////////////////////////////////////////////
+// get EWS data
+    var ews_json;
+    var elist = [];
+
+    if (response.statusCode == 200) {
+      for (var j in daysList) {
+        var edata = {
+          'date': j,
+          'hour': '0.0',
+          'tair': (ewsData['tavg'][j][geocode] == ''
+              ? '0.0'
+              : ewsData['tavg'][j][geocode].toString()),
+          'humi': (ewsData['hm'][j][geocode] == ''
+              ? '0.0'
+              : ewsData['hm'][j][geocode].toString()),
+          'radi': (ewsData['ins'][j][geocode] == ''
+              ? '0.0'
+              : ewsData['ins'][j][geocode].toString()),
+          'rain': (ewsData['rain'][j][geocode] == ''
+              ? '0.0'
+              : ewsData['rain'][j][geocode].toString()),
+          'maxAirtemp': (ewsData['tmax'][j][geocode] == ''
+              ? '0.0'
+              : ewsData['tmax'][j][geocode].toString()),
+          'minAirtemp': (ewsData['tmin'][j][geocode] == ''
+              ? '0.0'
+              : ewsData['tmin'][j][geocode].toString()),
+          'wet': '0.0',
+          'wspd': (ewsData['wsa'][j][geocode] == ''
+              ? '0.0'
+              : ewsData['wsa'][j][geocode].toString()),
+          'tGrowth': '0.0',
+          'tHI': '0.0',
+          'av_t_7d': '0.0',
+          'av_rh_5d': '0.0',
+          'deg': '0.0',
+        };
+        elist.add(edata);
+        print(edata.toString());
+        // for (var k in itemsList) {
+        //   if (ewsData[k][j][geocode] != null) {
+        //     print("$j $k ${ewsData[k][j][geocode]}");
+        //   }
+        // }
+      }
+    }
+
+    // int totalCountEWS = ewsData['response']['body']['totalCount'];
+
+    // for (int i = 0; i < totalCountASOS; i++) {
+    //데이터 전체를 돌면서 원하는 데이터 추출
+    // ews_json = ewsData['response']['body']['items']['item'][i];
+
+    // print(i);
+    // }
+
+    print('elist added!!!!!!!!!!!!!!!!!!!!');
+    print(elist.length);
+    ewsList.clear();
+
+    for (int i = 0; i < elist.length; i++) {
+      print(elist[i]['date']);
+      Ews ewsdata = Ews(
+        date: elist[i]['date'],
+        hour: double.parse(elist[i]['hour']),
+        tair: double.parse(elist[i]['tair']),
+        humi: double.parse(elist[i]['humi']),
+        radi: double.parse(elist[i]['radi']),
+        rain: double.parse(elist[i]['rain']),
+        maxAirtemp: double.parse(elist[i]['maxAirtemp']),
+        minAirtemp: double.parse(elist[i]['minAirtemp']),
+        wet: double.parse(elist[i]['wet']),
+        wspd: double.parse(elist[i]['wspd']),
+        tGrowth: double.parse(elist[i]['tGrowth']),
+        tHI: double.parse(elist[i]['tHI']),
+        av_t_7d: double.parse(elist[i]['av_t_7d']),
+        av_rh_5d: double.parse(elist[i]['av_rh_5d']),
+        deg: double.parse(elist[i]['deg']),
+      );
+      ewsList.add(ewsdata);
+      // print("after: ewsList.add(ewsdata);");
+    }
+
+///////////////////////////////////////////////////////////////////////////
+
+    await appState.apiRequestApple(context).then((value) {
+      _initExampleData();
+      tag2 = 1; //1;
+      setState(() {});
+    });
+
+////////////////////////////////////////////////////////////////////////////
   }
 
   // final AppStorage storage = AppStorage();
   Future _future() async {
     // await Future.delayed(Duration(seconds: 5));
-    if (tag == 0) {
-      if (Platform.isAndroid) {
-        showToast(context, "기상청 ASOS 데이터를 가져옵니다", Colors.blueAccent);
-      }
-      return await getWeather();
+    if (tag2 == 0) {
+      // if (Platform.isAndroid) {
+      //   showToast(context, "날씨 데이터를 가져옵니다", Colors.blueAccent);
+      // }
+      print("날씨 데이터를 가져옵니다");
+
+      return await getWeather2();
     }
     return 0;
     // return 'done!';
@@ -479,7 +263,7 @@ class _ApplePageState extends State<ApplePage> {
       '+3d',
     ];
 
-    final r = asosList[0].deg; //Random();
+    final r = ewsList[0].deg; //Random();
     // print(asosList.length);
     // print("######################################");
     // print(asosList[0].tair);
@@ -493,7 +277,7 @@ class _ApplePageState extends State<ApplePage> {
       for (int row = 0; row < rows.length; row++)
         for (int col = 0; col < columns.length; col++)
           HeatmapItem(
-              value: asosList[col].deg as double, //r.nextDouble() * 6,
+              value: ewsList[col].deg as double, //r.nextDouble() * 6,
               // style: row == 0 && col > 1
               //     ? HeatmapItemStyle.hatched
               //     : HeatmapItemStyle.filled,
@@ -542,14 +326,14 @@ class _ApplePageState extends State<ApplePage> {
                   print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
                   print("LineChartPage() - ppfarm: $ppfarm / ${farmNo - 1}");
                   if (Platform.isAndroid) {
-                    showToast(
-                        context, "기상청 ASOS 데이터를 가져옵니다", Colors.blueAccent);
+                    showToast(context, "클릭 날씨 데이터를 가져옵니다", Colors.blueAccent);
                   }
-                  await getWeather().then((value) {
+                  print("클릭 날씨 데이터를 가져옵니다");
+                  await getWeather2().then((value) {
                     if (mounted) {
                       setState(() {
                         // appState.pp = 0;
-                        // appState.getNext();
+                        appState.getNext();
                         // print("setState");
                       });
                     }
