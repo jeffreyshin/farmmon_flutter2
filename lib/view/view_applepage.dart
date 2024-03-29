@@ -264,6 +264,7 @@ class _ApplePageState extends State<ApplePage> {
     ];
 
     final r = ewsList[0].deg; //Random();
+    final rr = Random();
     // print(asosList.length);
     // print("######################################");
     // print(asosList[0].tair);
@@ -277,7 +278,7 @@ class _ApplePageState extends State<ApplePage> {
       for (int row = 0; row < rows.length; row++)
         for (int col = 0; col < columns.length; col++)
           HeatmapItem(
-              value: ewsList[col].deg as double, //r.nextDouble() * 6,
+              value: (ewsList[col].deg as double), //r.nextDouble() * 6,
               // style: row == 0 && col > 1
               //     ? HeatmapItemStyle.hatched
               //     : HeatmapItemStyle.filled,
@@ -314,7 +315,7 @@ class _ApplePageState extends State<ApplePage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                "사과 병해충 예측",
+                "사과 병해충",
                 style: TextStyle(fontSize: 25),
               ),
               SizedBox(width: 20),
@@ -326,9 +327,9 @@ class _ApplePageState extends State<ApplePage> {
                   print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
                   print("LineChartPage() - ppfarm: $ppfarm / ${farmNo - 1}");
                   if (Platform.isAndroid) {
-                    showToast(context, "클릭 날씨 데이터를 가져옵니다", Colors.blueAccent);
+                    showToast(context, "날씨 데이터를 가져옵니다", Colors.blueAccent);
                   }
-                  print("클릭 날씨 데이터를 가져옵니다");
+                  print("날씨 데이터를 가져옵니다");
                   await getWeather2().then((value) {
                     if (mounted) {
                       setState(() {
@@ -344,6 +345,12 @@ class _ApplePageState extends State<ApplePage> {
                 child: Text('예측'),
               ),
             ],
+          ),
+          SizedBox(height: 20),
+          Text(
+            // DateTime.now(). toString(),
+            DateFormat('yyyy-MM-dd').format(DateTime.now()),
+            style: TextStyle(fontSize: 20),
           ),
           SizedBox(height: 10),
           Column(
