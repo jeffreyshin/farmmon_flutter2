@@ -854,320 +854,320 @@ class MyAppState extends ChangeNotifier {
     return 0;
   }
 
-  Future apiRequestApple(BuildContext context) async {
-    print("apiRequestApple!!");
-    var encoder = ZipFileEncoder();
-    final dir = await getApplicationDocumentsDirectory();
-    // Directory dir = Directory('/storage/emulated/0/Documents ');
+//   Future apiRequestApple(BuildContext context) async {
+//     print("apiRequestApple!!");
+//     var encoder = ZipFileEncoder();
+//     final dir = await getApplicationDocumentsDirectory();
+//     // Directory dir = Directory('/storage/emulated/0/Documents ');
 
-    String formatTime = '';
-    var kk = sensorLists[ppfarm].length;
-    var k = 0;
+//     String formatTime = '';
+//     var kk = sensorLists[ppfarm].length;
+//     var k = 0;
 
-    final today = DateTime.now();
-    final sdate = today.subtract(Duration(days: 4));
-    final edate = today.add(Duration(days: 2));
-    var weatherString =
-        'date,hour,tair,humi,radi,rain,maxAirtemp,minAirtemp,wet,'
-        'wspd,tGrowth,tHI,av_t_7d,av_rh_5d\n';
+//     final today = DateTime.now();
+//     final sdate = today.subtract(Duration(days: 4));
+//     final edate = today.add(Duration(days: 2));
+//     var weatherString =
+//         'date,hour,tair,humi,radi,rain,maxAirtemp,minAirtemp,wet,'
+//         'wspd,tGrowth,tHI,av_t_7d,av_rh_5d\n';
 
-    for (int i = 0; i < 7; i++) {
-      var date = ewsList[i].date;
-      // ignore: prefer_interpolation_to_compose_strings
-      var dateString = date!.substring(0, 4) +
-          "-" +
-          date.substring(4, 6) +
-          "-" +
-          date.substring(6, 8);
-      var v1 = dateString;
-      var v2 = ewsList[i].hour.toString();
-      var v3 = ewsList[i].tair.toString();
-      var v4 = ewsList[i].humi.toString();
-      var v5 = ewsList[i].radi.toString();
-      var v6 = ewsList[i].rain.toString();
-      var v7 = ewsList[i].maxAirtemp.toString();
-      var v8 = ewsList[i].minAirtemp.toString();
-      var v9 = ewsList[i].wet.toString();
-      var v10 = ewsList[i].wspd.toString();
-      var v11 = ewsList[i].tGrowth.toString();
-      var v12 = ewsList[i].tHI.toString();
-      var v13 = ewsList[i].av_t_7d.toString();
-      var v14 = ewsList[i].av_rh_5d.toString();
+//     for (int i = 0; i < 7; i++) {
+//       var date = ewsList[i].date;
+//       // ignore: prefer_interpolation_to_compose_strings
+//       var dateString = date!.substring(0, 4) +
+//           "-" +
+//           date.substring(4, 6) +
+//           "-" +
+//           date.substring(6, 8);
+//       var v1 = dateString;
+//       var v2 = ewsList[i].hour.toString();
+//       var v3 = ewsList[i].tair.toString();
+//       var v4 = ewsList[i].humi.toString();
+//       var v5 = ewsList[i].radi.toString();
+//       var v6 = ewsList[i].rain.toString();
+//       var v7 = ewsList[i].maxAirtemp.toString();
+//       var v8 = ewsList[i].minAirtemp.toString();
+//       var v9 = ewsList[i].wet.toString();
+//       var v10 = ewsList[i].wspd.toString();
+//       var v11 = ewsList[i].tGrowth.toString();
+//       var v12 = ewsList[i].tHI.toString();
+//       var v13 = ewsList[i].av_t_7d.toString();
+//       var v14 = ewsList[i].av_rh_5d.toString();
 
-      weatherString =
-          "$weatherString$v1,$v2,$v3,$v4,$v5,$v6,$v7,$v8,$v9,$v10,$v11,$v12,$v13,$v14\n";
-    }
-    var sdateString = DateFormat('yyyy-MM-dd').format(sdate);
-    var edateString = DateFormat('yyyy-MM-dd').format(edate);
-    var weatherString2 = "$sdateString,$edateString,day,AppleBoks";
-    print(weatherString);
-    print(weatherString2);
-    // zip weather.csv
-    await (File('${dir.path}/setfile.txt').writeAsString(weatherString2))
-        .then((value) async {
-      await (File('${dir.path}/weather.csv').writeAsString(weatherString))
-          .then((value) {
-        encoder.create('${dir.path}/input.zip');
-        encoder.addFile(File('${dir.path}/weather.csv'));
-        encoder.addFile(File('${dir.path}/setfile.txt'));
-        encoder.close();
-      });
-    });
-    // base64 encoding
-    var z = await File('${dir.path}/input.zip').readAsBytes();
-    String token = base64.encode(z);
-    print("input.zip done!!!");
-/*
-    var body = jsonEncode({
-      'Input': token,
-      'type': "file",
-    });
-*/
+//       weatherString =
+//           "$weatherString$v1,$v2,$v3,$v4,$v5,$v6,$v7,$v8,$v9,$v10,$v11,$v12,$v13,$v14\n";
+//     }
+//     var sdateString = DateFormat('yyyy-MM-dd').format(sdate);
+//     var edateString = DateFormat('yyyy-MM-dd').format(edate);
+//     var weatherString2 = "$sdateString,$edateString,day,AppleBoks";
+//     print(weatherString);
+//     print(weatherString2);
+//     // zip weather.csv
+//     await (File('${dir.path}/setfile.txt').writeAsString(weatherString2))
+//         .then((value) async {
+//       await (File('${dir.path}/weather.csv').writeAsString(weatherString))
+//           .then((value) {
+//         encoder.create('${dir.path}/input.zip');
+//         encoder.addFile(File('${dir.path}/weather.csv'));
+//         encoder.addFile(File('${dir.path}/setfile.txt'));
+//         encoder.close();
+//       });
+//     });
+//     // base64 encoding
+//     var z = await File('${dir.path}/input.zip').readAsBytes();
+//     String token = base64.encode(z);
+//     print("input.zip done!!!");
+// /*
+//     var body = jsonEncode({
+//       'Input': token,
+//       'type': "file",
+//     });
+// */
 
-/////////////////////////////////////
-// apple AppleBoks
-/////////////////////////////////////
+// /////////////////////////////////////
+// // apple AppleBoks
+// /////////////////////////////////////
 
-    // http request
-    var urlapple = 'https://ncpms-apple-api.camp.re.kr/NCPMS/Apple';
+//     // http request
+//     var urlapple = 'https://ncpms-apple-api.camp.re.kr/NCPMS/Apple';
 
-    var apikey = "61cdc660a46f4fcc93004de201c58dff";
-    var param = jsonEncode({'apiKey': apikey});
+//     var apikey = "61cdc660a46f4fcc93004de201c58dff";
+//     var param = jsonEncode({'apiKey': apikey});
 
-    if (Platform.isAndroid) {
-      showToast(context, "병해충예측 서버에 접속합니다.", Colors.blueAccent);
-    }
+//     if (Platform.isAndroid) {
+//       showToast(context, "병해충예측 서버에 접속합니다.", Colors.blueAccent);
+//     }
 
-// create session
-    var urlm = "$urlapple/connect";
-    print(urlm);
-    http.Response responseC = await http.post(
-      Uri.parse(urlm),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        HttpHeaders.contentTypeHeader: 'application/json',
-      },
-      body: param,
-    );
-    var jobID = responseC.body;
-    print(responseC.statusCode);
-    print("NCPMS jobID호출");
-    print(jobID);
+// // create session
+//     var urlm = "$urlapple/connect";
+//     print(urlm);
+//     http.Response responseC = await http.post(
+//       Uri.parse(urlm),
+//       headers: <String, String>{
+//         'Content-Type': 'application/json',
+//         HttpHeaders.contentTypeHeader: 'application/json',
+//       },
+//       body: param,
+//     );
+//     var jobID = responseC.body;
+//     print(responseC.statusCode);
+//     print("NCPMS jobID호출");
+//     print(jobID);
 
-// launch model by session key
-    if (Platform.isAndroid) {
-      showToast(context, "사과 병해충 모델을 실행합니다", Colors.blueAccent);
-    }
-    param = jsonEncode({'apiKey': apikey, 'jobid': jobID, 'file': token});
-    urlm = "$urlapple/launch";
-    http.Response responseL = await http.post(
-      Uri.parse(urlm),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        HttpHeaders.contentTypeHeader: 'application/json',
-      },
-      body: param,
-    );
-    var rL = responseL.body;
-    print(rL);
+// // launch model by session key
+//     if (Platform.isAndroid) {
+//       showToast(context, "사과 병해충 모델을 실행합니다", Colors.blueAccent);
+//     }
+//     param = jsonEncode({'apiKey': apikey, 'jobid': jobID, 'file': token});
+//     urlm = "$urlapple/launch";
+//     http.Response responseL = await http.post(
+//       Uri.parse(urlm),
+//       headers: <String, String>{
+//         'Content-Type': 'application/json',
+//         HttpHeaders.contentTypeHeader: 'application/json',
+//       },
+//       body: param,
+//     );
+//     var rL = responseL.body;
+//     print(rL);
 
-// get Status model
-    urlm = "$urlapple/getStatus";
-    param = jsonEncode({'apiKey': apikey, 'jobid': jobID});
-    http.Response responseS = await http.post(
-      Uri.parse(urlm),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        HttpHeaders.contentTypeHeader: 'application/json',
-      },
-      body: param,
-    );
-    var rS = responseS.body;
-    print(rS);
+// // get Status model
+//     urlm = "$urlapple/getStatus";
+//     param = jsonEncode({'apiKey': apikey, 'jobid': jobID});
+//     http.Response responseS = await http.post(
+//       Uri.parse(urlm),
+//       headers: <String, String>{
+//         'Content-Type': 'application/json',
+//         HttpHeaders.contentTypeHeader: 'application/json',
+//       },
+//       body: param,
+//     );
+//     var rS = responseS.body;
+//     print(rS);
 
-    if (responseS.statusCode == 200) {
-      while (true) {
-        if (responseS.body == "completed") break;
-        responseS = await http.post(
-          Uri.parse(urlm),
-          headers: <String, String>{
-            'Content-Type': 'application/json',
-            HttpHeaders.contentTypeHeader: 'application/json',
-          },
-          body: param,
-        );
-        await Future.delayed(Duration(seconds: 1));
-      }
-      rS = responseS.body;
-      print(rS);
-    }
+//     if (responseS.statusCode == 200) {
+//       while (true) {
+//         if (responseS.body == "completed") break;
+//         responseS = await http.post(
+//           Uri.parse(urlm),
+//           headers: <String, String>{
+//             'Content-Type': 'application/json',
+//             HttpHeaders.contentTypeHeader: 'application/json',
+//           },
+//           body: param,
+//         );
+//         await Future.delayed(Duration(seconds: 1));
+//       }
+//       rS = responseS.body;
+//       print(rS);
+//     }
 
-// get output
-    if (Platform.isAndroid) {
-      showToast(context, "예측결과를 가져옵니다", Colors.blueAccent);
-    }
-    urlm = "$urlapple/getOutput";
-    param = jsonEncode({'apiKey': apikey, 'jobid': jobID, 'variable': "all"});
-    http.Response responseO = await http.post(
-      Uri.parse(urlm),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        HttpHeaders.contentTypeHeader: 'application/json',
-      },
-      body: param,
-    );
-    var rO = responseO.bodyBytes;
-    // var rOO = responseO.body;
-    print("output A NCPMS ######################################");
-    // print(rOO);
+// // get output
+//     if (Platform.isAndroid) {
+//       showToast(context, "예측결과를 가져옵니다", Colors.blueAccent);
+//     }
+//     urlm = "$urlapple/getOutput";
+//     param = jsonEncode({'apiKey': apikey, 'jobid': jobID, 'variable': "all"});
+//     http.Response responseO = await http.post(
+//       Uri.parse(urlm),
+//       headers: <String, String>{
+//         'Content-Type': 'application/json',
+//         HttpHeaders.contentTypeHeader: 'application/json',
+//       },
+//       body: param,
+//     );
+//     var rO = responseO.bodyBytes;
+//     // var rOO = responseO.body;
+//     print("output A NCPMS ######################################");
+//     // print(rOO);
 
-    await (File('${dir.path}/output.zip').writeAsBytes(rO));
+//     await (File('${dir.path}/output.zip').writeAsBytes(rO));
 
-// Decode the Zip file
-    final bytes = rO;
-    final archive = ZipDecoder().decodeBytes(bytes);
+// // Decode the Zip file
+//     final bytes = rO;
+//     final archive = ZipDecoder().decodeBytes(bytes);
 
-// Extract the contents of the Zip archive to disk.
-    for (final file in archive) {
-      final filename = file.name;
-      if (file.isFile) {
-        final data = file.content as List<int>;
-        File('${dir.path}/$filename')
-          ..createSync(recursive: true)
-          ..writeAsBytesSync(data);
-      } else {
-        File('${dir.path}/$filename').create(recursive: true);
-      }
-    }
+// // Extract the contents of the Zip archive to disk.
+//     for (final file in archive) {
+//       final filename = file.name;
+//       if (file.isFile) {
+//         final data = file.content as List<int>;
+//         File('${dir.path}/$filename')
+//           ..createSync(recursive: true)
+//           ..writeAsBytesSync(data);
+//       } else {
+//         File('${dir.path}/$filename').create(recursive: true);
+//       }
+//     }
 
-// Read the Zip file from disk.
-    var rrr = await File('${dir.path}/output.json').readAsString();
-    print(rrr);
+// // Read the Zip file from disk.
+//     var rrr = await File('${dir.path}/output.json').readAsString();
+//     print(rrr);
 
-    var jsonObj = jsonDecode(rrr);
+//     var jsonObj = jsonDecode(rrr);
 
-    ewsList[0].deg = jsonObj[0]['BoksDEG'];
-    ewsList[1].deg = jsonObj[1]['BoksDEG'];
-    ewsList[2].deg = jsonObj[2]['BoksDEG'];
-    ewsList[3].deg = jsonObj[3]['BoksDEG'];
-    ewsList[4].deg = jsonObj[4]['BoksDEG'];
-    ewsList[5].deg = jsonObj[5]['BoksDEG'];
-    ewsList[6].deg = jsonObj[6]['BoksDEG'];
-    print(ewsList[0].deg);
-    print(ewsList[1].deg);
-    print(ewsList[2].deg);
-    print(ewsList[3].deg);
-    print(ewsList[4].deg);
-    print(ewsList[5].deg);
-    print(ewsList[6].deg);
+//     ewsList[0].deg = jsonObj[0]['BoksDEG'];
+//     ewsList[1].deg = jsonObj[1]['BoksDEG'];
+//     ewsList[2].deg = jsonObj[2]['BoksDEG'];
+//     ewsList[3].deg = jsonObj[3]['BoksDEG'];
+//     ewsList[4].deg = jsonObj[4]['BoksDEG'];
+//     ewsList[5].deg = jsonObj[5]['BoksDEG'];
+//     ewsList[6].deg = jsonObj[6]['BoksDEG'];
+//     print(ewsList[0].deg);
+//     print(ewsList[1].deg);
+//     print(ewsList[2].deg);
+//     print(ewsList[3].deg);
+//     print(ewsList[4].deg);
+//     print(ewsList[5].deg);
+//     print(ewsList[6].deg);
 
-// remove session
-    urlm = "$urlapple/disconnect";
-    param = jsonEncode({'apiKey': apikey, 'jobid': jobID});
-    http.Response responseD = await http.post(
-      Uri.parse(urlm),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        HttpHeaders.contentTypeHeader: 'application/json',
-      },
-      body: param,
-    );
-    var rD = responseD.body;
-    print(rD);
+// // remove session
+//     urlm = "$urlapple/disconnect";
+//     param = jsonEncode({'apiKey': apikey, 'jobid': jobID});
+//     http.Response responseD = await http.post(
+//       Uri.parse(urlm),
+//       headers: <String, String>{
+//         'Content-Type': 'application/json',
+//         HttpHeaders.contentTypeHeader: 'application/json',
+//       },
+//       body: param,
+//     );
+//     var rD = responseD.body;
+//     print(rD);
 
-    // http request
-    // try {
-/*
-    http.Response response3 = await http.post(
-      Uri.parse(urlanthracnose),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        HttpHeaders.contentTypeHeader: 'application/json',
-      },
-      body: body,
-    );
-    var r = response3.body;
-    print(r);
-*/
+//     // http request
+//     // try {
+// /*
+//     http.Response response3 = await http.post(
+//       Uri.parse(urlanthracnose),
+//       headers: <String, String>{
+//         'Content-Type': 'application/json',
+//         HttpHeaders.contentTypeHeader: 'application/json',
+//       },
+//       body: body,
+//     );
+//     var r = response3.body;
+//     print(r);
+// */
 
-//////////////////////////////////////////////////////////////
-    ///
+// //////////////////////////////////////////////////////////////
+//     ///
 
-//    List<List<dynamic>> outputA = CsvToListConverter().convert(rrr);
+// //    List<List<dynamic>> outputA = CsvToListConverter().convert(rrr);
 
-    // print(outputA[0].date);
-    // print(outputA[0].type);
+//     // print(outputA[0].date);
+//     // print(outputA[0].type);
 
-    // if (Platform.isAndroid) {
-    //   showToast(
-    //       context, "${outputA[0].date}, ${outputA[0].type}", Colors.redAccent);
-    // }
+//     // if (Platform.isAndroid) {
+//     //   showToast(
+//     //       context, "${outputA[0].date}, ${outputA[0].type}", Colors.redAccent);
+//     // }
 
-/*
-    var r = rrr.replaceAll("\\", "");
-    print(r);
-    var i = r.indexOf('output');
-    var ii = r.indexOf("}]");
-    if (ii < 0) {
-      if (Platform.isAndroid) {
-        showToast(context, "기상데이터는 12시부터 시작해야합니다", Colors.redAccent);
-      }
-      print("기상데이터는 12시부터 시작해야합니다");
-      return 0;
-    }
-    var rr = r.substring(i + 10, ii + 2);
-    final outputA = json.decode(rr);
-*/
+// /*
+//     var r = rrr.replaceAll("\\", "");
+//     print(r);
+//     var i = r.indexOf('output');
+//     var ii = r.indexOf("}]");
+//     if (ii < 0) {
+//       if (Platform.isAndroid) {
+//         showToast(context, "기상데이터는 12시부터 시작해야합니다", Colors.redAccent);
+//       }
+//       print("기상데이터는 12시부터 시작해야합니다");
+//       return 0;
+//     }
+//     var rr = r.substring(i + 10, ii + 2);
+//     final outputA = json.decode(rr);
+// */
 
-    // if (Platform.isAndroid) {
-    //   showToast(
-    //       context, "${outputB[0].date}, ${outputB[0].type}", Colors.redAccent);
-    // }
+//     // if (Platform.isAndroid) {
+//     //   showToast(
+//     //       context, "${outputB[0].date}, ${outputB[0].type}", Colors.redAccent);
+//     // }
 
-//    List<List<dynamic>> outputB = CsvToListConverter().convert(rrr);
-//    print(outputB);
-//    print(outputB);
+// //    List<List<dynamic>> outputB = CsvToListConverter().convert(rrr);
+// //    print(outputB);
+// //    print(outputB);
 
-/*
-    var r2 = rrr2.replaceAll("\\", "");
-    print(r2);
+// /*
+//     var r2 = rrr2.replaceAll("\\", "");
+//     print(r2);
 
-    var i2 = r2.indexOf('output');
-    var ii2 = r2.indexOf("}]");
-    var rr2 = r2.substring(i2 + 10, ii2 + 2);
-    final outputB = json.decode(rr2);
+//     var i2 = r2.indexOf('output');
+//     var ii2 = r2.indexOf("}]");
+//     var rr2 = r2.substring(i2 + 10, ii2 + 2);
+//     final outputB = json.decode(rr2);
 
-    // print(rr);
-    // print(rr2);
-    // print(output.runtimeType);
-*/
-    if (Platform.isAndroid) {
-      showToast(context, "예측결과를 표시합니다", Colors.blueAccent);
-    }
-/////////////////////////////////////////////////////
-    //pinf update
+//     // print(rr);
+//     // print(rr2);
+//     // print(output.runtimeType);
+// */
+//     if (Platform.isAndroid) {
+//       showToast(context, "예측결과를 표시합니다", Colors.blueAccent);
+//     }
+// /////////////////////////////////////////////////////
+//     //pinf update
 
-    // } catch (e) {
-    //   if (Platform.isAndroid) {
-    //     showToast("모델호출 실패. 다시한번 시도해주세요", Colors.redAccent);
-    //   }
-    //   print("모델호출 실패. 다시한번 시도해주세요");
-    //   print(
-    //       e.toString()); // checking an error at the first api call, 2023-07-31
-    //   notifyListeners();
-    //   return -1;
-    // }
-    notifyListeners();
+//     // } catch (e) {
+//     //   if (Platform.isAndroid) {
+//     //     showToast("모델호출 실패. 다시한번 시도해주세요", Colors.redAccent);
+//     //   }
+//     //   print("모델호출 실패. 다시한번 시도해주세요");
+//     //   print(
+//     //       e.toString()); // checking an error at the first api call, 2023-07-31
+//     //   notifyListeners();
+//     //   return -1;
+//     // }
+//     notifyListeners();
 
-    return 0;
-  }
+//     return 0;
+//   }
 
   void getData() {
     notifyListeners();
   }
 
   void getNext() {
-    current = WordPair.random();
+    // current = WordPair.random();
     notifyListeners();
   }
 

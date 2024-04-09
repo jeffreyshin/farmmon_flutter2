@@ -324,13 +324,13 @@ class _MyHomePageState extends State<MyHomePage> {
         page = PearPage(); //Placeholder();
         break;
       case 3:
-        page = GamgyulPage(); //Placeholder();
+        page = CitrusPage(); //Placeholder();
         break;
       case 4:
         page = PepperPage(); //Placeholder();
         break;
       case 5:
-        page = ApplePage(); // GrapePage();
+        page = RicePage(); // GrapePage();
         break;
       case 6:
         page = MyLineChartPage();
@@ -360,27 +360,30 @@ class _MyHomePageState extends State<MyHomePage> {
                 labelType: NavigationRailLabelType.all,
                 destinations: [
                   NavigationRailDestination(
-                    icon: Icon(CustomIcons.strawberry), //solidLemon
+                    icon: Icon(Customicons.strawberry_svgrepo_com), //solidLemon
                     label: Text('딸기'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.apple), //solidLemon
+                    icon:
+                        Icon(Customicons.apple_fruit_svgrepo_com), //solidLemon
                     label: Text('사과'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(CustomIcons.bellpepper), //solidLemon
+                    icon:
+                        Icon(Customicons.fresh_fruit_svgrepo_com), //solidLemon
                     label: Text('배'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(CustomIcons.tomato), //solidLemon
+                    icon: Icon(
+                        Customicons.citrus_fruits_svgrepo_com), //solidLemon
                     label: Text('감귤'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.home), //solidLemon
+                    icon: Icon(Customicons.pepper_hot_svgrepo_com), //solidLemon
                     label: Text('고추'),
                   ),
                   NavigationRailDestination(
-                    icon: Icon(Icons.home), //solidLemon
+                    icon: Icon(Customicons.rice_grain_svgrepo_com), //solidLemon
                     label: Text('기타'),
                   ),
 

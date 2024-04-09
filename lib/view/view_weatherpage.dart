@@ -12,6 +12,9 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'dart:io';
+import 'package:farmmon_flutter/view/view_homepage.dart';
+
 /////////////////////////////////////////////////////////////
 
 class WeatherPage extends StatefulWidget {
@@ -62,7 +65,8 @@ class Asos {
   double? tHI;
   double? av_t_7d;
   double? av_rh_5d;
-  double? deg;
+  double? deg0;
+  double? deg1;
 
   Asos({
     this.date,
@@ -79,7 +83,8 @@ class Asos {
     this.tHI,
     this.av_t_7d,
     this.av_rh_5d,
-    this.deg,
+    this.deg0,
+    this.deg1,
   });
 }
 
@@ -98,7 +103,8 @@ Asos asosBlank = Asos(
   tHI: 0.0,
   av_t_7d: 0.0,
   av_rh_5d: 0.0,
-  deg: 0.0,
+  deg0: 0.0,
+  deg1: 0.0,
 );
 
 class Ews {
@@ -116,7 +122,8 @@ class Ews {
   double? tHI;
   double? av_t_7d;
   double? av_rh_5d;
-  double? deg;
+  double? deg0;
+  double? deg1;
 
   Ews({
     this.date,
@@ -133,7 +140,8 @@ class Ews {
     this.tHI,
     this.av_t_7d,
     this.av_rh_5d,
-    this.deg,
+    this.deg0,
+    this.deg1,
   });
 }
 
@@ -152,7 +160,8 @@ Ews ewsBlank = Ews(
   tHI: 0.0,
   av_t_7d: 0.0,
   av_rh_5d: 0.0,
-  deg: 0.0,
+  deg0: 0.0,
+  deg1: 0.0,
 );
 
 var fcstList = List<Fcst>.filled(200, fcstBlank, growable: true);
@@ -309,6 +318,10 @@ class _WeatherPageState extends State<WeatherPage> {
     KMA kmaData = KMA(today2am, shortTermWeather, currentWeather,
         superShortWeather, airConditon, ASOS);
 
+    if (Platform.isAndroid) {
+      showToast(context, "기상청 예보를 가져옵니다", Colors.blueAccent);
+    }
+    print("기상청 예보를 가져옵니다");
     // json 데이터
     var today2amData = await kmaData.getToday2amData();
     var shortTermWeatherData = await kmaData.getShortTermWeatherData();
@@ -316,6 +329,7 @@ class _WeatherPageState extends State<WeatherPage> {
     print(kmaData.shortTermWeatherUrl);
     print("getASOSData");
     print(kmaData.ASOSUrl);
+
     var asosData = await kmaData.getASOSData();
     print(asosData);
 
@@ -341,7 +355,7 @@ class _WeatherPageState extends State<WeatherPage> {
     // print(asosData['response']['body']['items']['item']);
 
     int totalCountASOS = asosData['response']['body']['totalCount'];
-    // print(totalCountASOS);
+    print(totalCountASOS);
 
     for (int i = 0; i < totalCountASOS; i++) {
       //데이터 전체를 돌면서 원하는 데이터 추출
@@ -364,7 +378,8 @@ class _WeatherPageState extends State<WeatherPage> {
         'tHI': '0.0',
         'av_t_7d': asos_json['avgTa'],
         'av_rh_5d': asos_json['avgRhm'],
-        'deg': '0.0',
+        'deg0': '0.0',
+        'deg1': '0.0',
       };
       alist.add(adata);
 
@@ -392,7 +407,8 @@ class _WeatherPageState extends State<WeatherPage> {
         tHI: double.parse(alist[i]['tHI']),
         av_t_7d: double.parse(alist[i]['av_t_7d']),
         av_rh_5d: double.parse(alist[i]['av_rh_5d']),
-        deg: double.parse(alist[i]['deg']),
+        deg0: double.parse(alist[i]['deg0']),
+        deg1: double.parse(alist[i]['deg1']),
       );
       asosList.add(asosdata);
       // print("after: asosList.add(asosdata);");

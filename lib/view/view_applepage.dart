@@ -6,12 +6,11 @@ import 'package:provider/provider.dart';
 import 'package:fl_heatmap/fl_heatmap.dart';
 import 'package:farmmon_flutter/view/view_homepage.dart';
 import 'package:farmmon_flutter/view/view_weatherpage.dart';
-import 'package:flutter/material.dart';
 import 'package:farmmon_flutter/main.dart';
-import 'package:farmmon_flutter/model/kma.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:http/http.dart' as http;
+import 'package:farmmon_flutter/model/model.dart';
 
 ///////////////////////////////////////////////////////////////////
 
@@ -21,6 +20,8 @@ var fcstTime = List<String>.filled(200, '1200', growable: true);
 var tag2 = 0;
 
 var avgTa = List<String>.filled(200, '0.0', growable: true);
+
+NCPMS apple = NCPMS();
 
 class ApplePage extends StatefulWidget {
   const ApplePage({Key? key}) : super(key: key);
@@ -69,6 +70,9 @@ class _ApplePageState extends State<ApplePage> {
 
     var i;
     var region = 'hadong';
+
+    DateFormat("yyyyMMdd").format(DateTime.now().subtract(Duration(days: 1)));
+
     var itemsList = [
       'tavg',
       'tmax',
@@ -81,13 +85,13 @@ class _ApplePageState extends State<ApplePage> {
       'rain'
     ];
     var daysList = [
-      '20240321',
-      '20240322',
-      '20240323',
-      '20240324',
-      '20240325',
-      '20240326',
-      '20240327',
+      DateFormat("yyyyMMdd").format(DateTime.now().subtract(Duration(days: 4))),
+      DateFormat("yyyyMMdd").format(DateTime.now().subtract(Duration(days: 3))),
+      DateFormat("yyyyMMdd").format(DateTime.now().subtract(Duration(days: 2))),
+      DateFormat("yyyyMMdd").format(DateTime.now().subtract(Duration(days: 1))),
+      DateFormat("yyyyMMdd").format(DateTime.now()),
+      DateFormat("yyyyMMdd").format(DateTime.now().add(Duration(days: 1))),
+      DateFormat("yyyyMMdd").format(DateTime.now().add(Duration(days: 2))),
     ];
     var items = itemsList.join(', ');
     var days = daysList.join(', ');
@@ -97,7 +101,9 @@ class _ApplePageState extends State<ApplePage> {
         "https://hadong.agmet.kr/farm/pickvalue/${region}/${items}/${days}/${geocode}/json";
 
     print(rda_30mUrl);
-
+    if (Platform.isAndroid) {
+      showToast(context, "농장 기상 데이터를 가져옵니다", Colors.blueAccent);
+    }
 // request url
     var headers = {
       'Accept': 'application/json; charset=utf-8',
@@ -109,7 +115,7 @@ class _ApplePageState extends State<ApplePage> {
     if (response.statusCode == 200) {
       String jsonData = response.body;
       ewsData = jsonDecode(jsonData);
-      print(ewsData);
+      //print(ewsData);
     }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -148,10 +154,11 @@ class _ApplePageState extends State<ApplePage> {
           'tHI': '0.0',
           'av_t_7d': '0.0',
           'av_rh_5d': '0.0',
-          'deg': '0.0',
+          'deg0': '0.0',
+          'deg1': '0.0',
         };
         elist.add(edata);
-        print(edata.toString());
+        //print(edata.toString());
         // for (var k in itemsList) {
         //   if (ewsData[k][j][geocode] != null) {
         //     print("$j $k ${ewsData[k][j][geocode]}");
@@ -169,12 +176,12 @@ class _ApplePageState extends State<ApplePage> {
     // print(i);
     // }
 
-    print('elist added!!!!!!!!!!!!!!!!!!!!');
-    print(elist.length);
+    print('ews elist added!!!!!!!!!!!!!!!!!!!!');
+    //print(elist.length);
     ewsList.clear();
 
     for (int i = 0; i < elist.length; i++) {
-      print(elist[i]['date']);
+      //print(elist[i]['date']);
       Ews ewsdata = Ews(
         date: elist[i]['date'],
         hour: double.parse(elist[i]['hour']),
@@ -190,7 +197,8 @@ class _ApplePageState extends State<ApplePage> {
         tHI: double.parse(elist[i]['tHI']),
         av_t_7d: double.parse(elist[i]['av_t_7d']),
         av_rh_5d: double.parse(elist[i]['av_rh_5d']),
-        deg: double.parse(elist[i]['deg']),
+        deg0: double.parse(elist[i]['deg0']),
+        deg1: double.parse(elist[i]['deg1']),
       );
       ewsList.add(ewsdata);
       // print("after: ewsList.add(ewsdata);");
@@ -198,11 +206,33 @@ class _ApplePageState extends State<ApplePage> {
 
 ///////////////////////////////////////////////////////////////////////////
 
-    await appState.apiRequestApple(context).then((value) {
+    await apple.apiRequestApple(context).then((value) {
       _initExampleData();
       tag2 = 1; //1;
       setState(() {});
     });
+
+    // await apple.apiRequestApple(context, "all").then((value) {
+    //   _initExampleData();
+    //   tag2 = 1; //1;
+    //   setState(() {});
+    // });
+    // await apple.apiRequestApple(context, "all").then((value) {
+    //   _initExampleData();
+    //   tag2 = 1; //1;
+    //   setState(() {});
+    // });
+    // await apple.apiRequestApple(context, "all").then((value) {
+    //   _initExampleData();
+    //   tag2 = 1; //1;
+    //   setState(() {});
+    // });
+
+    // await appState.apiRequestApple(context).then((value) {
+    //   _initExampleData();
+    //   tag2 = 1; //1;
+    //   setState(() {});
+    // });
 
 ////////////////////////////////////////////////////////////////////////////
   }
@@ -237,48 +267,75 @@ class _ApplePageState extends State<ApplePage> {
     print("_initExampleData()");
     const rows = [
       '가루깍지벌레',
-      '갈색무늬병',
       '검은별무늬병',
       '겹무늬썩음병',
       '굴나방',
       '꼬마배나무이',
       '복숭아순나방',
-      '복숭아순나방붙이',
+      '복숭아순나방2',
       '복숭아심식나방',
+      '복숭아심식나방2',
       '복숭아유리나방',
       '사과무늬잎말이나방',
       '사과응애',
-      '사과탄저병',
       '애모무늬잎말이나방',
-      '점박이응애'
     ];
 
     const columns = [
+      '-4D',
       '-3D',
       '-2d',
       '-1d',
       '0d',
       '+1d',
       '+2d',
-      '+3d',
     ];
 
-    final r = ewsList[0].deg; //Random();
+    final r = ewsList[0].deg0; //Random();
     final rr = Random();
-    // print(asosList.length);
-    // print("######################################");
-    // print(asosList[0].tair);
-    // print(asosList[1].tair);
-    // print(asosList[2].tair);
-    // print(asosList[3].tair);
-    // print("######################################");
 
     const String unit = '단위';
     final items = [
       for (int row = 0; row < rows.length; row++)
         for (int col = 0; col < columns.length; col++)
           HeatmapItem(
-              value: (ewsList[col].deg as double), //r.nextDouble() * 6,
+              value: ((row == 0)
+                  ? (applePestL[col].PearGaru as double)
+                  : (row == 1)
+                      ? (applePestL[col].PearScab as double)
+                      : (row == 2)
+                          ? (applePestL[col].AppleWhiteRot as double)
+                          : (row == 3)
+                              ? (applePestL[col].AppleGuln as double)
+                              : (row == 4)
+                                  ? (applePestL[col].PearBsun as double)
+                                  : (row == 5)
+                                      ? (applePestL[col].OrientalFruitMoth
+                                          as double)
+                                      : (row == 6)
+                                          ? (applePestL[col].PlumFruitMoth
+                                              as double)
+                                          : (row == 7)
+                                              ? (applePestL[col].AppleBoks
+                                                  as double)
+                                              : (row == 8)
+                                                  ? (applePestL[col]
+                                                      .PeachFruitMoth as double)
+                                                  : (row == 9)
+                                                      ? (applePestL[col]
+                                                              .CherryTreeBorer
+                                                          as double)
+                                                      : (row == 10)
+                                                          ? (applePestL[col]
+                                                                  .AppleArchips
+                                                              as double)
+                                                          : (row == 11)
+                                                              ? (applePestL[col]
+                                                                      .ApplePano
+                                                                  as double)
+                                                              : applePestL[col]
+                                                                      .AppleAemo
+                                                                  as double), //r.nextDouble() * 6,
               // style: row == 0 && col > 1
               //     ? HeatmapItemStyle.hatched
               //     : HeatmapItemStyle.filled,
@@ -299,7 +356,6 @@ class _ApplePageState extends State<ApplePage> {
   @override
   Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
-    // Provider.of<MyAppState>(context, listen: false); //2024-03-24
     final title = selectedItem != null
         ? '${selectedItem!.value.toStringAsFixed(2)} ${selectedItem!.unit}'
         : '--- ${heatmapDataPower.items.first.unit}';
@@ -407,7 +463,7 @@ class _ApplePageState extends State<ApplePage> {
                                 this.selectedItem = selectedItem;
                               });
                             },
-                            rowsVisible: 7,
+                            // rowsVisible: 7,
                             heatmapData: heatmapDataPower)
                       ],
                     );
