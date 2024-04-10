@@ -101,9 +101,9 @@ class _RicePageState extends State<RicePage> {
         "https://hadong.agmet.kr/farm/pickvalue/${region}/${items}/${days}/${geocode}/json";
 
     print(rda_30mUrl);
-    if (Platform.isAndroid) {
-      showToast(context, "농장 기상 데이터를 가져옵니다", Colors.blueAccent);
-    }
+    // if (Platform.isAndroid) {
+    //   showToast(context, "농장 기상 데이터를 가져옵니다", Colors.blueAccent);
+    // }
 // request url
     var headers = {
       'Accept': 'application/json; charset=utf-8',
@@ -111,61 +111,65 @@ class _RicePageState extends State<RicePage> {
     };
 //response = requests.get(api_url, headers=headers)
     var ewsData;
-    http.Response response = await http.get(Uri.parse(rda_30mUrl));
-    if (response.statusCode == 200) {
-      String jsonData = response.body;
-      ewsData = jsonDecode(jsonData);
-      //print(ewsData);
+    try {
+      http.Response response = await http.get(Uri.parse(rda_30mUrl));
+      if (response.statusCode == 200) {
+        String jsonData = response.body;
+        ewsData = jsonDecode(jsonData);
+        //print(ewsData);
+      }
+    } catch (e) {
+      print(e.toString());
+      return;
     }
-
 ///////////////////////////////////////////////////////////////////////////
 // get EWS data
     var ews_json;
     var elist = [];
 
-    if (response.statusCode == 200) {
-      for (var j in daysList) {
-        var edata = {
-          'date': j,
-          'hour': '0.0',
-          'tair': (ewsData['tavg'][j][geocode] == ''
-              ? '0.0'
-              : ewsData['tavg'][j][geocode].toString()),
-          'humi': (ewsData['hm'][j][geocode] == ''
-              ? '0.0'
-              : ewsData['hm'][j][geocode].toString()),
-          'radi': (ewsData['ins'][j][geocode] == ''
-              ? '0.0'
-              : ewsData['ins'][j][geocode].toString()),
-          'rain': (ewsData['rain'][j][geocode] == ''
-              ? '0.0'
-              : ewsData['rain'][j][geocode].toString()),
-          'maxAirtemp': (ewsData['tmax'][j][geocode] == ''
-              ? '0.0'
-              : ewsData['tmax'][j][geocode].toString()),
-          'minAirtemp': (ewsData['tmin'][j][geocode] == ''
-              ? '0.0'
-              : ewsData['tmin'][j][geocode].toString()),
-          'wet': '0.0',
-          'wspd': (ewsData['wsa'][j][geocode] == ''
-              ? '0.0'
-              : ewsData['wsa'][j][geocode].toString()),
-          'tGrowth': '0.0',
-          'tHI': '0.0',
-          'av_t_7d': '0.0',
-          'av_rh_5d': '0.0',
-          'deg0': '0.0',
-          'deg1': '0.0',
-        };
-        elist.add(edata);
-        //print(edata.toString());
-        // for (var k in itemsList) {
-        //   if (ewsData[k][j][geocode] != null) {
-        //     print("$j $k ${ewsData[k][j][geocode]}");
-        //   }
-        // }
-      }
+    // if (response.statusCode == 200) {
+    for (var j in daysList) {
+      var edata = {
+        'date': j,
+        'hour': '0.0',
+        'tair': (ewsData['tavg'][j][geocode] == ''
+            ? '0.0'
+            : ewsData['tavg'][j][geocode].toString()),
+        'humi': (ewsData['hm'][j][geocode] == ''
+            ? '0.0'
+            : ewsData['hm'][j][geocode].toString()),
+        'radi': (ewsData['ins'][j][geocode] == ''
+            ? '0.0'
+            : ewsData['ins'][j][geocode].toString()),
+        'rain': (ewsData['rain'][j][geocode] == ''
+            ? '0.0'
+            : ewsData['rain'][j][geocode].toString()),
+        'maxAirtemp': (ewsData['tmax'][j][geocode] == ''
+            ? '0.0'
+            : ewsData['tmax'][j][geocode].toString()),
+        'minAirtemp': (ewsData['tmin'][j][geocode] == ''
+            ? '0.0'
+            : ewsData['tmin'][j][geocode].toString()),
+        'wet': '0.0',
+        'wspd': (ewsData['wsa'][j][geocode] == ''
+            ? '0.0'
+            : ewsData['wsa'][j][geocode].toString()),
+        'tGrowth': '0.0',
+        'tHI': '0.0',
+        'av_t_7d': '0.0',
+        'av_rh_5d': '0.0',
+        'deg0': '0.0',
+        'deg1': '0.0',
+      };
+      elist.add(edata);
+      //print(edata.toString());
+      // for (var k in itemsList) {
+      //   if (ewsData[k][j][geocode] != null) {
+      //     print("$j $k ${ewsData[k][j][geocode]}");
+      //   }
+      // }
     }
+    // }
 
     // int totalCountEWS = ewsData['response']['body']['totalCount'];
 

@@ -743,15 +743,26 @@ class NCPMS {
 // create session: server check
     var urlm0 = "$urlapple0/connect";
     print(urlm0);
-    http.Response r = await http.post(
-      Uri.parse(urlm0),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        HttpHeaders.contentTypeHeader: 'application/json',
-      },
-      body: param0,
-    );
-
+    if (Platform.isAndroid) {
+      showToast(context, "CAMP 깨우기", Colors.redAccent);
+    }
+    try {
+      http.Response r = await http.post(
+        Uri.parse(urlm0),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          HttpHeaders.contentTypeHeader: 'application/json',
+        },
+        body: param0,
+      );
+    } catch (e) {
+      if (Platform.isAndroid) {
+        showToast(context, "모델호출 실패. 다시한번 시도해주세요", Colors.redAccent);
+      }
+      print("CAMP서버 깨우기");
+      print(
+          e.toString()); // checking an error at the first api call, 2023-07-31
+    }
     var encoder = ZipFileEncoder();
     final dir = await getApplicationDocumentsDirectory();
     // Directory dir = Directory('/storage/emulated/0/Documents ');
