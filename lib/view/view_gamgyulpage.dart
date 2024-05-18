@@ -226,9 +226,9 @@ class _CitrusPageState extends State<CitrusPage> {
     // var appState = context.watch<MyAppState>();
 
     if (tag2 == 0) {
-      // if (Platform.isAndroid) {
-      //   showToast(context, "농장 기상 데이터를 가져옵니다", Colors.blueAccent);
-      // }
+      if (Platform.isAndroid) {
+        showToast(context, "농장 기상 데이터를 가져옵니다", Colors.blueAccent);
+      }
       print("getWeather2()");
 
       return await getWeather2();

@@ -251,9 +251,9 @@ class _ApplePageState extends State<ApplePage> {
   Future _future() async {
     // await Future.delayed(Duration(seconds: 5));
     if (tag2 == 0) {
-      // if (Platform.isAndroid) {
-      //   showToast(context, "날씨 데이터를 가져옵니다", Colors.blueAccent);
-      // }
+      if (Platform.isAndroid) {
+        showToast(context, "농장 기상 데이터를 가져옵니다", Colors.blueAccent);
+      }
       print("future... getWeather2()");
 
       return await getWeather2();
@@ -393,9 +393,9 @@ class _ApplePageState extends State<ApplePage> {
                   print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
                   print("LineChartPage() - ppfarm: $ppfarm / ${farmNo - 1}");
                   if (Platform.isAndroid) {
-                    showToast(context, "날씨 데이터를 가져옵니다", Colors.blueAccent);
+                    showToast(context, "농장 기상 데이터를 가져옵니다", Colors.blueAccent);
                   }
-                  print("날씨 데이터를 가져옵니다");
+                  print("농장 기상 데이터를 가져옵니다");
                   await getWeather2().then((value) {
                     if (mounted) {
                       setState(() {

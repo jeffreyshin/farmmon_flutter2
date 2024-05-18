@@ -229,9 +229,9 @@ class _PearPageState extends State<PearPage> {
   Future _future() async {
     // await Future.delayed(Duration(seconds: 5));
     if (tag2 == 0) {
-      // if (Platform.isAndroid) {
-      //   showToast(context, "call getWeather2()", Colors.blueAccent);
-      // }
+      if (Platform.isAndroid) {
+        showToast(context, "농장 기상 데이터를 가져옵니다", Colors.blueAccent);
+      }
       print("call getWeather2()");
 
       return await getWeather2();

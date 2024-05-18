@@ -1014,6 +1014,7 @@ class NCPMS {
           case 'PearScab.json':
             for (int i = 0; i < 7; i++) {
               applePestL[i].PearScab = jsonObj[i]['ACCIR'] * 1.0;
+              print(applePestL[i].PearScab);
             }
             break;
           case 'PlumFruitMoth.json':
@@ -1080,14 +1081,26 @@ class NCPMS {
 // create session: server check
     var urlm0 = "$urlpear0/connect";
     print(urlm0);
-    http.Response r = await http.post(
-      Uri.parse(urlm0),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        HttpHeaders.contentTypeHeader: 'application/json',
-      },
-      body: param0,
-    );
+    if (Platform.isAndroid) {
+      showToast(context, "CAMP 깨우기", Colors.redAccent);
+    }
+    try {
+      http.Response r = await http.post(
+        Uri.parse(urlm0),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          HttpHeaders.contentTypeHeader: 'application/json',
+        },
+        body: param0,
+      );
+    } catch (e) {
+      if (Platform.isAndroid) {
+        showToast(context, "모델호출 실패. 다시한번 시도해주세요", Colors.redAccent);
+      }
+      print("CAMP서버 깨우기");
+      print(
+          e.toString()); // checking an error at the first api call, 2023-07-31
+    }
 
     var encoder = ZipFileEncoder();
     final dir = await getApplicationDocumentsDirectory();
@@ -1408,15 +1421,27 @@ class NCPMS {
 // create session: server check
     var urlm0 = "$urlrice0/connect";
     print(urlm0);
-    http.Response r = await http.post(
-      Uri.parse(urlm0),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        HttpHeaders.contentTypeHeader: 'application/json',
-      },
-      body: param0,
-    );
-    print(r.statusCode);
+    if (Platform.isAndroid) {
+      showToast(context, "CAMP 깨우기", Colors.redAccent);
+    }
+    try {
+      http.Response r = await http.post(
+        Uri.parse(urlm0),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          HttpHeaders.contentTypeHeader: 'application/json',
+        },
+        body: param0,
+      );
+    } catch (e) {
+      if (Platform.isAndroid) {
+        showToast(context, "모델호출 실패. 다시한번 시도해주세요", Colors.redAccent);
+      }
+      print("CAMP서버 깨우기");
+      print(
+          e.toString()); // checking an error at the first api call, 2023-07-31
+    }
+    // print(r.statusCode);
     var encoder = ZipFileEncoder();
     final dir = await getApplicationDocumentsDirectory();
     // Directory dir = Directory('/storage/emulated/0/Documents ');
@@ -1734,6 +1759,9 @@ class NCPMS {
 // create session: server check
     var urlm0 = "$urlpotato0/connect";
     print(urlm0);
+    if (Platform.isAndroid) {
+      showToast(context, "CAMP 깨우기", Colors.redAccent);
+    }
     http.Response r = await http.post(
       Uri.parse(urlm0),
       headers: <String, String>{
@@ -2060,15 +2088,28 @@ class NCPMS {
 // create session: server check
     var urlm0 = "$urlpepper0/connect";
     print(urlm0);
-    http.Response r = await http.post(
-      Uri.parse(urlm0),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        HttpHeaders.contentTypeHeader: 'application/json',
-      },
-      body: param0,
-    );
 
+    if (Platform.isAndroid) {
+      showToast(context, "CAMP 깨우기", Colors.redAccent);
+    }
+
+    try {
+      http.Response r = await http.post(
+        Uri.parse(urlm0),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          HttpHeaders.contentTypeHeader: 'application/json',
+        },
+        body: param0,
+      );
+    } catch (e) {
+      if (Platform.isAndroid) {
+        showToast(context, "모델호출 실패. 다시한번 시도해주세요", Colors.redAccent);
+      }
+      print("CAMP서버 깨우기");
+      print(
+          e.toString()); // checking an error at the first api call, 2023-07-31
+    }
     var encoder = ZipFileEncoder();
     final dir = await getApplicationDocumentsDirectory();
     // Directory dir = Directory('/storage/emulated/0/Documents ');
@@ -2155,6 +2196,7 @@ class NCPMS {
       },
       body: param,
     );
+
     var jobID = responseC.body;
     print(responseC.statusCode);
     print("NCPMS jobID호출");
@@ -2354,14 +2396,26 @@ class NCPMS {
 // create session: server check
     var urlm0 = "$urlgarlic0/connect";
     print(urlm0);
-    http.Response r = await http.post(
-      Uri.parse(urlm0),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        HttpHeaders.contentTypeHeader: 'application/json',
-      },
-      body: param0,
-    );
+    if (Platform.isAndroid) {
+      showToast(context, "CAMP 깨우기", Colors.redAccent);
+    }
+    try {
+      http.Response r = await http.post(
+        Uri.parse(urlm0),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          HttpHeaders.contentTypeHeader: 'application/json',
+        },
+        body: param0,
+      );
+    } catch (e) {
+      if (Platform.isAndroid) {
+        showToast(context, "모델호출 실패. 다시한번 시도해주세요", Colors.redAccent);
+      }
+      print("CAMP서버 깨우기");
+      print(
+          e.toString()); // checking an error at the first api call, 2023-07-31
+    }
 
     var encoder = ZipFileEncoder();
     final dir = await getApplicationDocumentsDirectory();
@@ -2680,14 +2734,26 @@ class NCPMS {
 // create session: server check
     var urlm0 = "$urlgrape0/connect";
     print(urlm0);
-    await http.post(
-      Uri.parse(urlm0),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        HttpHeaders.contentTypeHeader: 'application/json',
-      },
-      body: param0,
-    );
+    if (Platform.isAndroid) {
+      showToast(context, "CAMP 깨우기", Colors.redAccent);
+    }
+    try {
+      http.Response r = await http.post(
+        Uri.parse(urlm0),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          HttpHeaders.contentTypeHeader: 'application/json',
+        },
+        body: param0,
+      );
+    } catch (e) {
+      if (Platform.isAndroid) {
+        showToast(context, "모델호출 실패. 다시한번 시도해주세요", Colors.redAccent);
+      }
+      print("CAMP서버 깨우기");
+      print(
+          e.toString()); // checking an error at the first api call, 2023-07-31
+    }
 
     var encoder = ZipFileEncoder();
     final dir = await getApplicationDocumentsDirectory();
@@ -3005,15 +3071,26 @@ class NCPMS {
 // create session: server check
     var urlm0 = "$urlcitrus0/connect";
     print(urlm0);
-    http.Response r = await http.post(
-      Uri.parse(urlm0),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        HttpHeaders.contentTypeHeader: 'application/json',
-      },
-      body: param0,
-    );
-
+    if (Platform.isAndroid) {
+      showToast(context, "CAMP 깨우기", Colors.redAccent);
+    }
+    try {
+      http.Response r = await http.post(
+        Uri.parse(urlm0),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          HttpHeaders.contentTypeHeader: 'application/json',
+        },
+        body: param0,
+      );
+    } catch (e) {
+      if (Platform.isAndroid) {
+        showToast(context, "모델호출 실패. 다시한번 시도해주세요", Colors.redAccent);
+      }
+      print("CAMP서버 깨우기");
+      print(
+          e.toString()); // checking an error at the first api call, 2023-07-31
+    }
     var encoder = ZipFileEncoder();
     final dir = await getApplicationDocumentsDirectory();
     // Directory dir = Directory('/storage/emulated/0/Documents ');
@@ -3122,9 +3199,9 @@ class NCPMS {
       );
       var rL = responseL.body;
       print(rL);
-      if (Platform.isAndroid) {
-        showToast(context, "getStatus.", Colors.blueAccent);
-      }
+      // if (Platform.isAndroid) {
+      //   showToast(context, "getStatus.", Colors.blueAccent);
+      // }
 
 // get Status model
       urlm = "$urlcitrus/getStatus";
