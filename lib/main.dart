@@ -4,8 +4,8 @@
 
 import 'dart:io';
 import 'dart:convert';
-import 'package:farmmon_flutter/view/splash.dart';
-import 'package:flutter/material.dart';
+import 'package:farmmon_flutter2/view/splash.dart';
+import 'package:flutter2/material.dart';
 import 'package:english_words/english_words.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
