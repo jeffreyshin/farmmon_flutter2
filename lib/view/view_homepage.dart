@@ -315,7 +315,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     switch (selectedIndex) {
       case 0:
-        page = StrawberryPage(); // LoginPage();
+        page = Placeholder(); // LoginPage(); StrawberryPage();
         break;
       case 1:
         page = ApplePage(); //Placeholder();
