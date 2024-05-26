@@ -318,7 +318,7 @@ class _MyHomePageState extends State<MyHomePage> {
         page = Placeholder(); // LoginPage(); StrawberryPage();
         break;
       case 1:
-        page = ApplePage(); //Placeholder();
+        page = Placeholder(); //Placeholder(); ApplePage();
         break;
       case 2:
         page = PearPage(); //Placeholder();
