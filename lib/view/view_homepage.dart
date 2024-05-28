@@ -8,6 +8,7 @@ import 'package:farmmon_flutter/view/view_heatmap.dart';
 import 'package:farmmon_flutter/view/view_linechart.dart';
 import 'package:farmmon_flutter/view/view_settingpage.dart';
 import 'package:farmmon_flutter/view/view_strawberrypage.dart';
+import 'package:farmmon_flutter/view/view_summarypage.dart';
 import 'package:farmmon_flutter/view/view_applepage.dart';
 import 'package:farmmon_flutter/view/view_pearpage.dart';
 import 'package:farmmon_flutter/view/view_gamgyulpage.dart';
@@ -315,7 +316,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     switch (selectedIndex) {
       case 0:
-        page = Placeholder(); // LoginPage(); StrawberryPage();
+        page = SummaryPage(); // LoginPage(); StrawberryPage();
         break;
       case 1:
         page = ApplePage(); //Placeholder();
