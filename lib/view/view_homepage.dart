@@ -361,8 +361,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 labelType: NavigationRailLabelType.all,
                 destinations: [
                   NavigationRailDestination(
-                    icon: Icon(Customicons.strawberry_svgrepo_com), //solidLemon
-                    label: Text('딸기'),
+                    icon: Icon(Icons.home_filled), //solidLemon
+                    label: Text('요약'),
                   ),
                   NavigationRailDestination(
                     icon:

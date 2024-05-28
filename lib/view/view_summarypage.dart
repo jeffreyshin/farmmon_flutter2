@@ -381,41 +381,16 @@ class _SummaryPageState extends State<SummaryPage> {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                "사과 병해충",
+                "농장 정보 요약",
                 style: TextStyle(fontSize: 25),
               ),
               SizedBox(width: 20),
-              ElevatedButton(
-                onPressed: () async {
-                  SharedPreferences prefs =
-                      await SharedPreferences.getInstance();
-                  await prefs.setInt('myFarm', ppfarm);
-                  print('prefsLoad: ${(ppfarm + 1)} / $farmNo');
-                  print("LineChartPage() - ppfarm: $ppfarm / ${farmNo - 1}");
-                  if (Platform.isAndroid) {
-                    showToast(context, "농장 기상 데이터를 가져옵니다", Colors.blueAccent);
-                  }
-                  print("농장 기상 데이터를 가져옵니다");
-                  await getWeather2().then((value) {
-                    if (mounted) {
-                      setState(() {
-                        // appState.pp = 0;
-                        appState.getNext();
-                        // print("setState");
-                      });
-                    }
-                  });
-                  // await storage.readJsonAsString2().then((value) {
-                  // });
-                },
-                child: Text('예측'),
-              ),
             ],
           ),
           SizedBox(height: 20),
           Text(
             // DateTime.now(). toString(),
-            DateFormat('yyyy-MM-dd').format(DateTime.now()),
+            DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now()),
             style: TextStyle(fontSize: 20),
           ),
           SizedBox(height: 10),
@@ -461,20 +436,22 @@ class _SummaryPageState extends State<SummaryPage> {
                       children: [
                         // Expanded(child: MyLineChart2()),
                         const SizedBox(height: 16),
-                        Text(title, textScaleFactor: 1.4),
-                        Text(subtitle),
                         const SizedBox(height: 8),
-                        Heatmap(
-                            onItemSelectedListener:
-                                (HeatmapItem? selectedItem) {
-                              debugPrint(
-                                  'Item ${selectedItem?.yAxisLabel}/${selectedItem?.xAxisLabel} with value ${selectedItem?.value} selected');
-                              setState(() {
-                                this.selectedItem = selectedItem;
-                              });
-                            },
-                            // rowsVisible: 7,
-                            heatmapData: heatmapDataPower)
+                        Text(
+                          "날씨정보",
+                          style: TextStyle(fontSize: 20),
+                        ),
+                        const SizedBox(height: 16),
+
+                        Text(
+                          "토양정보",
+                          style: TextStyle(fontSize: 20),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          "생육정보",
+                          style: TextStyle(fontSize: 20),
+                        ),
                       ],
                     );
 
